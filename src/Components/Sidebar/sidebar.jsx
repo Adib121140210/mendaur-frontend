@@ -88,11 +88,21 @@ function NavSection({ title, links }) {
 }
 
 function NavItem({ item }) {
+  const { logout } = useAuth();
   const location = useLocation();
   const isActive = location.pathname === item.path;
 
+  // Handle logout
+  const handleClick = (e) => {
+    if (item.key === 'logout') {
+      e.preventDefault();
+      logout();
+      window.location.href = '/login';
+    }
+  };
+
   return (
-    <Link to={item.path} className={`navItem ${isActive ? "active" : ""}`}>
+    <Link to={item.path} onClick={handleClick} className={`navItem ${isActive ? "active" : ""}`}>
       <span className="navIcon">{item.icon}</span>
       <span className="navLabel">{item.label}</span>
     </Link>

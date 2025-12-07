@@ -26,6 +26,15 @@ const LeaderboardHeader = () => {
 
         if (!token || !userId) {
           console.warn('No authentication token or user ID found');
+          // Set some default stats for unauthenticated users
+          setStats({
+            poin: 0,
+            sampah: 0,
+            peringkat: '—',
+            totalPeserta: 0,
+            poinRatio: 0,
+            weeklyIncrease: 0,
+          });
           setLoading(false);
           return;
         }
@@ -49,59 +58,111 @@ const LeaderboardHeader = () => {
         console.log('User stats response status:', userStatsResponse.status);
         console.log('Leaderboard response status:', leaderboardResponse.status);
 
-        if (!userStatsResponse.ok || !leaderboardResponse.ok) {
-          throw new Error(`Failed to fetch stats: user(${userStatsResponse.status}), leaderboard(${leaderboardResponse.status})`);
+        // If either request fails, log the error and show default stats
+        if (!userStatsResponse.ok) {
+          console.error(`User stats API error: ${userStatsResponse.status} ${userStatsResponse.statusText}`);
+          const errorBody = await userStatsResponse.text();
+          console.error('Response body:', errorBody);
         }
 
-        const userStatsData = await userStatsResponse.json();
-        const leaderboardData = await leaderboardResponse.json();
+        if (!leaderboardResponse.ok) {
+          console.error(`Leaderboard API error: ${leaderboardResponse.status} ${leaderboardResponse.statusText}`);
+          const errorBody = await leaderboardResponse.text();
+          console.error('Response body:', errorBody);
+        }
 
-        console.log('User stats full response:', userStatsData);
-        console.log('Leaderboard full response:', leaderboardData);
+        // Continue even if one fails, use available data
+        let userStatsData = null;
+        let leaderboardData = null;
 
-        // Extract user stats (handle different response structures)
-        const userStats = userStatsData.data || userStatsData;
-        const userPoints = userStats.total_poin || userStats.poin_terkumpul || userStats.poin || 0;
-        const userWaste = userStats.total_sampah || userStats.sampah_terkumpul || userStats.sampah || 0;
-        const weeklyWaste = userStats.sampah_minggu_ini || userStats.weekly_waste || 0;
+        if (userStatsResponse.ok) {
+          userStatsData = await userStatsResponse.json();
+          console.log('User stats response:', userStatsData);
+        }
 
-        console.log('Extracted user points:', userPoints);
-        console.log('Extracted user waste:', userWaste);
-        console.log('Extracted weekly waste:', weeklyWaste);
-        console.log('===== END DEBUG =====' );
+        if (leaderboardResponse.ok) {
+          leaderboardData = await leaderboardResponse.json();
+          console.log('Leaderboard response:', leaderboardData);
+        }
 
-        // Extract leaderboard data
-        const leaderboard = leaderboardData.data || leaderboardData.leaderboard || leaderboardData;
+        // Extract user stats from the appropriate response
+        let userPoints = 0;
+        let userWaste = 0;
+        let weeklyWaste = 0;
+        let userRank = null;
+        const currentUserId = parseInt(userId, 10);
+
+        // Try to extract from userStatsData first (if it has user object)
+        if (userStatsData?.user) {
+          console.log('Using user stats from /api/dashboard/stats/{userId}');
+          userPoints = userStatsData.user.total_poin || userStatsData.user.poin || 0;
+          userWaste = userStatsData.user.total_setor_sampah || userStatsData.user.sampah || 0;
+        } else if (userStatsData?.statistics) {
+          console.log('Using statistics from /api/dashboard/stats/{userId}');
+          userPoints = userStatsData.statistics.total_poin || userStatsData.statistics.poin || 0;
+          userWaste = userStatsData.statistics.total_setor_sampah || userStatsData.statistics.sampah || 0;
+        }
+
+        // Get leaderboard array - try multiple possible structures
+        let leaderboard = [];
+        if (leaderboardData?.data && Array.isArray(leaderboardData.data)) {
+          leaderboard = leaderboardData.data;
+          console.log('Got leaderboard from leaderboardData.data');
+        } else if (Array.isArray(leaderboardData)) {
+          leaderboard = leaderboardData;
+          console.log('Got leaderboard directly');
+        }
+
         const totalPeserta = Array.isArray(leaderboard) ? leaderboard.length : 0;
 
-        // Calculate user's rank
-        let peringkat = '—';
+        console.log('Leaderboard array length:', totalPeserta);
+        console.log('Looking for user ID:', currentUserId);
+
+        // Find current user in leaderboard
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
-          // Find user's position in leaderboard
-          const userIndex = leaderboard.findIndex(user => {
-            // Check all possible ID field names and compare as numbers
-            const leaderboardUserId = user.user_id || user.id || user.id_user;
-            const currentUserId = parseInt(userId, 10);
-            const leaderboardUserIdNum = parseInt(leaderboardUserId, 10);
-            
-            return leaderboardUserIdNum === currentUserId;
+          const currentUser = leaderboard.find(user => {
+            const leaderboardUserId = parseInt(user.user_id || user.id, 10);
+            console.log('Comparing:', leaderboardUserId, '===', currentUserId, '?', leaderboardUserId === currentUserId);
+            return leaderboardUserId === currentUserId;
           });
-          
-          if (userIndex !== -1) {
-            peringkat = `#${userIndex + 1}`;
+
+          if (currentUser) {
+            console.log('Found current user in leaderboard:', currentUser);
+            userRank = currentUser.rank || null;
+            // If we didn't get points from user stats API, use leaderboard data
+            if (userPoints === 0) {
+              userPoints = currentUser.total_poin || 0;
+            }
+            if (userWaste === 0) {
+              userWaste = currentUser.total_setor_sampah || 0;
+            }
+          } else {
+            console.warn('Current user not found in leaderboard');
           }
         }
 
-        // Calculate average points
+        console.log('Extracted user points:', userPoints);
+        console.log('Extracted user waste:', userWaste);
+        console.log('Extracted user rank:', userRank);
+
+        // Calculate user's rank position
+        let peringkat = '—';
+        if (userRank) {
+          peringkat = `#${userRank}`;
+        }
+
+        // Calculate average points for ratio
         let poinRatio = 0;
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
           const totalPoints = leaderboard.reduce((sum, user) => {
-            const points = user.total_poin || user.poin_terkumpul || user.points || 0;
-            return sum + points;
+            return sum + (user.total_poin || 0);
           }, 0);
           const avgPoints = totalPoints / leaderboard.length;
           poinRatio = avgPoints > 0 ? (userPoints / avgPoints).toFixed(1) : 0;
         }
+
+        console.log('Final stats:', { userPoints, userWaste, peringkat, totalPeserta, poinRatio, weeklyWaste });
+        console.log('===== END DEBUG =====');
 
         setStats({
           poin: userPoints,
@@ -113,6 +174,15 @@ const LeaderboardHeader = () => {
         });
       } catch (err) {
         console.error('Error fetching leaderboard stats:', err);
+        // Set default stats on error
+        setStats({
+          poin: 0,
+          sampah: 0,
+          peringkat: '—',
+          totalPeserta: 0,
+          poinRatio: 0,
+          weeklyIncrease: 0,
+        });
       } finally {
         setLoading(false);
       }

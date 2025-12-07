@@ -13,49 +13,49 @@ export const Sidebarlinks = [
   {
     key: 'beranda',
     label: 'Beranda',
-    path: '/',
+    path: '/dashboard',
     icon: <Home/>
   },
 
   {
     key: 'profil',
     label: 'Profil',
-    path: '/profil',
+    path: '/dashboard/profil',
     icon: <User/>
   },
 
   {
     key: 'tabungSampah',
     label: 'Tabung Sampah',
-    path: '/tabungSampah',
+    path: '/dashboard/tabungSampah',
     icon: <Recycle/>
   },
 
   {
     key: 'tukarPoin',
     label: 'Tukar Poin',
-    path: '/tukarPoin',
+    path: '/dashboard/tukarPoin',
     icon: <Package/>
   },
 
   // {
   //   key: 'produk',
   //   label: 'Produk',
-  //   path: '/produk',
+  //   path: '/dashboard/produk',
   //   icon: <ShoppingBag/>
   // },
 
   {
     key: 'riwayat',
     label: 'Riwayat',
-    path: '/riwayatTransaksi',
+    path: '/dashboard/riwayatTransaksi',
     icon: <History/>
   },
 
   {
     key: 'leaderboard',
     label: 'Leaderboard',
-    path: '/leaderboard',
+    path: '/dashboard/leaderboard',
     icon: <Trophy/>
   },
 ];

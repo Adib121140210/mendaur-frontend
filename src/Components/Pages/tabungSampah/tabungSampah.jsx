@@ -214,7 +214,7 @@ export default function TabungSampah() {
               </span>
             </span>
             <div className="actionButtons">
-              <button className="riwayatButton" onClick={() => navigate('/riwayatTabung')}>
+              <button className="riwayatButton" onClick={() => navigate('/dashboard/riwayatTabung')}>
                 Riwayat Setoran
               </button>
               <button
