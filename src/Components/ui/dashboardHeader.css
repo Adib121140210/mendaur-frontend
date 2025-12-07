@@ -1,0 +1,105 @@
+/* === WRAPPER UTAMA === */
+.dashboardHeader {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 20;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* === CONTAINER === */
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* === KIRI & KANAN === */
+.headerLeft,
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* === JUDUL === */
+.headerTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* === RESPONSIF JUDUL === */
+.desktopTitle {
+  display: none;
+}
+
+.mobileTitle {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .desktopTitle {
+    display: block;
+  }
+
+  .mobileTitle {
+    display: none;
+  }
+}
+
+/* === TOMBOL IKON === */
+.iconButton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #374151;
+}
+
+.iconButton:hover .icon {
+  color: #111827;
+  transform: scale(1.1);
+}
+
+/* === RESPONSIF TAMBAHAN === */
+@media (max-width: 768px) {
+  .dashboardHeader {
+    padding: 0.75rem 1rem;
+  }
+
+  .headerLeft,
+  .headerRight {
+    gap: 0.75rem;
+  }
+
+  .headerTitle {
+    font-size: 1rem;
+  }
+
+  .headerSubtitle {
+    font-size: 0.75rem;
+  }
+}

@@ -1,0 +1,90 @@
+.bannerCard {
+  position: relative;
+  overflow: hidden;
+  background: #123524;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.bannerContent {
+  position: relative;
+  z-index: 1;
+  padding: 32px;
+  color: #ffffff;
+}
+
+.bannerBadge {
+  display: inline-block;
+  background-color: var(--color-accent);
+  color: var(--font-color-accent);
+  font-size: var(--font-desc);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.bannerTitle {
+  font-size: var(--font-title);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.bannerText {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 640px;
+  margin-bottom: 24px;
+}
+
+.bannerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .bannerActions {
+    flex-direction: row;
+  }
+}
+
+.bannerBtnPrimary {
+  background-color: #facc15;
+  color: var(--font-color-accent);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.bannerBtnPrimary:hover {
+  background-color: #eab308;
+}
+
+.bannerBtnSecondary {
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.bannerBtnSecondary:hover {
+  background-color: #ffffff;
+  color: #047857;
+}
+
+.arrowIcon {
+  font-size: 1rem;
+}

@@ -1,0 +1,30 @@
+/* Heading halaman produk */
+.produkHeading {
+  font-size: var(--font-title);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-align: center;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.produkHeading::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background-color: var(--color-accent);
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+/* Wrapper halaman produk */
+.ProdukWrapper {
+  padding: 2rem clamp(1rem, 5vw, 3rem); /* responsif horizontal */
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}

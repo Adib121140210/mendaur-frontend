@@ -1,0 +1,478 @@
+/* === BADGE REWARDS SUMMARY === */
+.badgeRewardsSummary {
+  margin-bottom: 24px;
+}
+
+.rewardsSummaryCard {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.summaryIcon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.summaryContent {
+  flex: 1;
+  color: white;
+}
+
+.summaryTitle {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+
+.summaryValue {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.earnedPoints {
+  color: #FFD700;
+}
+
+.totalPoints {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.summaryProgressBar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.summaryProgressFill {
+  height: 100%;
+  background-color: #FFD700;
+  transition: width 0.3s ease;
+}
+
+.summarySubtext {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
+/* === FILTER TOMBOL === */
+.badgeFilter {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.filterButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: #4ade80;
+}
+
+.filterButton.active {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  border-color: #4ade80;
+  box-shadow: 0 4px 16px rgba(74, 222, 128, 0.4);
+}
+
+.filterButton.active .filterLabel,
+.filterButton.active .filterCount {
+  color: #ffffff;
+}
+
+.filterIcon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.filterText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e1;
+  transition: color 0.3s ease;
+}
+
+.filterCount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4ade80;
+  transition: color 0.3s ease;
+}
+
+/* Filter Results */
+.filterResults {
+  margin-bottom: 20px;
+  padding: 12px 20px;
+  background: #1e293b;
+  border-left: 4px solid #4ade80;
+  border-radius: 8px;
+}
+
+.resultsText {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.resultsText strong {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+/* Empty State */
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.emptyTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin: 0 0 8px 0;
+}
+
+.emptySubtext {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 400px;
+}
+
+/* === GRID KARTU === */
+.achievementList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+/* === KARTU BADGE === */
+.achievementCard {
+  background-color: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.achievementCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.achievementThumbnail {
+  background-color: #0f172a;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.thumbnailIcon {
+  font-size: 3rem;
+  color: var(--color-primary);
+}
+
+.achievementContent {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.achievementTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.achievementDesc {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Badge Reward Section */
+.badgeRewardSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  background-color: rgba(255, 215, 0, 0.15);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.rewardLabel {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.rewardPoints {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #FFD700;
+  margin-left: auto;
+}
+
+.achievementTags {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.badgeTag {
+  background-color: #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.unlockedDate {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.progressBar {
+  height: 6px;
+  background-color: #475569;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  margin-top: 0.25rem;
+}
+
+.achievementCard.unlocked {
+  border: 2px solid #FFD700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.achievementCard.unlocked .achievementThumbnail {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a1e 100%);
+}
+
+.achievementCard.locked {
+  border: 2px solid #475569;
+  opacity: 0.85;
+}
+
+.achievementCard.locked .thumbnailIcon {
+  color: #64748b;
+}
+
+/* === BAGIAN ATAS KARTU === */
+.achievementTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.badgeIconWrapper {
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeIcon {
+  color: var(--color-primary-dark);
+}
+
+.badgeIcon.complete {
+  color: var(--color-primary);
+}
+
+/* === INFO BADGE === */
+.badgeInfo {
+  flex: 1;
+}
+
+.achievementSyarat {
+  font-size: var(--font-sm);
+  color: var(--color-gray);
+}
+
+.badgePoin {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+/* === RESPONSIF === */
+@media (max-width: 768px) {
+  .badgeRewardsSummary {
+    margin-bottom: 16px;
+  }
+
+  .rewardsSummaryCard {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .summaryIcon {
+    font-size: 2.5rem;
+  }
+
+  .summaryValue {
+    font-size: 1.5rem;
+  }
+
+  .badgeFilter {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filterButton {
+    min-width: 100%;
+  }
+
+  .filterIcon {
+    font-size: 20px;
+  }
+
+  .filterLabel {
+    font-size: 13px;
+  }
+
+  .filterCount {
+    font-size: 18px;
+  }
+
+  .filterResults {
+    padding: 10px 16px;
+  }
+
+  .resultsText {
+    font-size: 13px;
+  }
+
+  .achievementList {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .achievementCard {
+    min-height: 360px;
+  }
+
+  .achievementThumbnail {
+    min-height: 140px;
+  }
+
+  .thumbnailIcon {
+    font-size: 2.5rem;
+  }
+
+  .achievementContent {
+    padding: 0.875rem;
+  }
+
+  .achievementTitle {
+    font-size: 0.95rem;
+  }
+
+  .achievementDesc {
+    font-size: 0.8rem;
+  }
+
+  .badgeRewardSection {
+    padding: 6px 10px;
+  }
+
+  .emptyIcon {
+    font-size: 48px;
+  }
+
+  .emptyTitle {
+    font-size: 18px;
+  }
+
+  .emptySubtext {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .achievementList {
+    grid-template-columns: 1fr;
+  }
+}

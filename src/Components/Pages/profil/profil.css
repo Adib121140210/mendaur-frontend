@@ -1,0 +1,84 @@
+.profilPage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+}
+
+.profilContentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pastikan tabContent fleksibel */
+.tabContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* TabContentWrapper isi penuh */
+.tabContentWrapper {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1.5rem;
+}
+
+.editButtonWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end; /* konten ada dipojok kanan */
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  background-color: transparent;
+  color: var(--color-primary-dark);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.4s ease;
+}
+
+.editButton:hover {
+  background-color: var(--color-primary-dark);
+  color: var(--color-gray-light);
+  transition: background-color 0.4s ease;
+}
+
+
+.tabContent {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.tabContentWrapper {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1.5rem;
+}
+
+@media screen and (max-width: 768px) {
+  .tabContentWrapper {
+    padding: 0 1rem;
+  }
+
+  .achievementList {
+    gap: 1rem;
+  }
+}

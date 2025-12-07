@@ -1,0 +1,145 @@
+.artikelWrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* Card artikel */
+.artikelCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease;
+}
+
+.artikelCard:hover {
+  transform: translateY(-4px);
+}
+
+/* Gambar artikel */
+.artikelCard img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Konten artikel */
+.artikelContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Kategori */
+.artikelKategori {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #047857;
+  background-color: rgba(4, 120, 87, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+/* Judul dan isi */
+.artikelContent h3 {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: #111827;
+}
+
+.artikelContent p {
+  font-size: var(--font-sm);
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Metadata */
+.artikelMeta {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Tombol baca selengkapnya */
+.readMoreBtn {
+  margin-top: auto;
+  background-color: #047857;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.875rem;
+  text-decoration: none;
+  width: fit-content;
+}
+
+/* Pagination */
+.pagination {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination button {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+
+/* UX */
+/* Transisi masuk saat artikel muncul */
+.artikelCard {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Efek hover */
+.artikelCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Animasi keyframes */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+  .artikelCard img {
+    height: 160px;
+  }
+
+  .artikelContent h3 {
+    font-size: 0.95rem;
+  }
+
+  .readMoreBtn {
+    font-size: 0.8rem;
+  }
+}

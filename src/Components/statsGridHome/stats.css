@@ -1,0 +1,69 @@
+/* 🌿 Grid wrapper */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+/* 📦 Card */
+.statCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 30px;
+  transition: transform 0.2s ease;
+}
+.statCard:hover {
+  transform: translateY(-2px);
+}
+
+/* 📚 Content layout */
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 🧭 Icon box */
+.iconBox {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🎯 Icon style */
+.statIcon {
+  font-size: 1.5rem;
+}
+
+/* 📝 Text */
+.statText {
+  display: flex;
+  flex-direction: column;
+}
+.statTitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* 🎨 Color utility classes */
+.text-primary {
+  color: #047857;
+}
+.text-accent {
+  color: #9333ea;
+}
+.bg-primary-light {
+  background-color: #d1fae5;
+}
+.bg-accent-light {
+  background-color: #f3e8ff;
+}

@@ -1,0 +1,31 @@
+.leaderboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  background-color: var(--background);
+  font-family: var(--font-base);
+}
+
+/* Sinkronisasi tampilan header dan tabel */
+.leaderboard-header,
+.leaderboard-table {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+/* Responsif */
+@media screen and (max-width: 768px) {
+  .leaderboard-page {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .leaderboard-header,
+  .leaderboard-table {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,388 @@
+.formModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+
+.formModal {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.formModal h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.formModal h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 2px;
+}
+
+.formModal label {
+  display: block;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  transition: color 0.2s ease;
+}
+
+.formModal label:hover {
+  color: #10b981;
+}
+
+.formModal input,
+.formModal select {
+  width: 100%;
+  padding: 0.875rem;
+  margin-top: 0.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f9fafb;
+  font-family: inherit;
+}
+
+.formModal input::placeholder {
+  color: #9ca3af;
+}
+
+.formModal input:hover,
+.formModal select:hover {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+}
+
+.formModal input:focus,
+.formModal select:focus {
+  outline: none;
+  border-color: #10b981;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+/* Hide name and phone fields but still send data */
+.formModal .hiddenFields {
+  display: none;
+}
+
+.formNote {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.errorText {
+  color: #dc2626;
+  font-size: 0.825rem;
+  margin-top: 0.375rem;
+  display: block;
+  font-weight: 600;
+}
+
+.successText {
+  color: #059669;
+  font-size: 0.825rem;
+  margin-top: 0.375rem;
+  display: block;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.formActions button {
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.formActions button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.3s ease;
+  z-index: 0;
+}
+
+.formActions button:hover::before {
+  left: 100%;
+}
+
+.formActions button > * {
+  position: relative;
+  z-index: 1;
+}
+
+.formActions button:first-child {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.formActions button:first-child:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.formActions button:first-child:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.formActions button:last-child {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.formActions button:last-child:hover:not(:disabled) {
+  background-color: #d1d5db;
+  transform: translateY(-2px);
+}
+
+.formActions button:last-child:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.formActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lokasiButton {
+  margin-top: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.lokasiButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.lokasiButton:active {
+  transform: translateY(0);
+}
+
+/* Desktop Optimization */
+@media (min-width: 1025px) {
+  .formModalOverlay {
+    backdrop-filter: blur(8px);
+  }
+
+  .formModal {
+    max-width: 600px;
+    padding: 2.5rem;
+    border-radius: 20px;
+  }
+
+  .formModal h2 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .formModal h2::after {
+    width: 80px;
+    height: 4px;
+  }
+
+  .formModal label {
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .formModal input,
+  .formModal select {
+    padding: 1rem;
+    font-size: 1.05rem;
+    border-radius: 12px;
+  }
+
+  .formActions {
+    margin-top: 2.5rem;
+    gap: 1.25rem;
+  }
+
+  .formActions button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    min-width: 140px;
+  }
+
+  .lokasiButton {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .formNote {
+    font-size: 0.9rem;
+    padding: 1.25rem;
+  }
+
+  /* Add smooth scroll behavior */
+  .formModal {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .formModalOverlay {
+    padding: 0.5rem;
+  }
+
+  .formModal {
+    padding: 1rem;
+    border-radius: 8px;
+    max-height: 95vh;
+  }
+
+  .formModal h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .formModal h2::after {
+    width: 50px;
+    height: 2px;
+  }
+
+  .formModal label {
+    margin-bottom: 1rem;
+  }
+
+  .formModal input,
+  .formModal select {
+    padding: 0.65rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  .formActions {
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .formActions button {
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+    min-width: 100px;
+  }
+
+  .lokasiButton {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  iframe {
+    height: 150px !important;
+  }
+
+  .formNote {
+    font-size: 0.8rem;
+    padding: 0.875rem;
+    margin-top: 0.75rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .formModal {
+    max-width: 500px;
+    padding: 1.75rem;
+  }
+
+  .formModal h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .formModal label {
+    margin-bottom: 1.25rem;
+  }
+
+  .formModal input,
+  .formModal select {
+    padding: 0.8rem;
+  }
+
+  iframe {
+    height: 180px !important;
+  }
+}

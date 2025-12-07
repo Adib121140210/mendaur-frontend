@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.hero{
+  padding: 0;
+  top: 0;
+  margin: 0;
+  z-index: 100;
+  /* background-image: url('https://images.unsplash.com/photo-1629738444991-818a7157e690?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); */
+  background-color: rgba(2, 52, 2, 0.6);
+  background-size: cover;
+}
+
+.wrapHero {
+  padding: 4rem 2rem;
+  text-align: center;
+  font-family: "Work Sans", sans-serif;
+  color: #fdf6f0;
+  /* background-color: #023402; */
+}
+
+.heroContent {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 2rem;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #fdf6f0;
+  margin-bottom: 1rem;
+}
+
+.heroTitle span {
+  color: #d69e2e;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  max-width: 100%;
+  margin: 0 auto;
+  line-height: 1.5;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.heroButtons {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.heroButtons .daftarIcon{
+  margin-left: 0.5rem;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+.heroButtons .infoIcon{
+  margin-left: 0.5rem;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+.btnMulai,
+.btnInfo {
+  display: inline-flexbox;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #fdf6f0;
+  color: #fdf6f0;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btnMulai{
+  background-color: #fdf6f0;
+  color: #023402;
+}
+
+.btnMulai:hover {
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+.btnInfo:hover {
+  background-color: #fdf6f0;
+  color: #023402;
+}
+
+/* Capaian Bank Sampah */
+.capaian {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  margin-top: 4rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.capaian p{
+  padding: 5px;
+  font-size: medium;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .capaian {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.capaianItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.capaianNumber {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #10b981; 
+  margin-bottom: 0.25rem;
+}
+
+.capaianText {
+  font-size: 1rem;
+  color: #374151; 
+}
+
+  
+  .placeholder {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+  }
+
+  .visualImg {
+    width: 100%;
+    max-width: 480px; 
+    height: auto;
+    aspect-ratio: 4 / 3; 
+    object-fit: cover; 
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    display: block;
+  }
+  
+  /* Contact Section */
+.contact {
+  background-color: #fdf6f0;
+  text-align: center;
+  padding: 5rem 2rem;
+  font-family: 'Georgia', serif;
+  color: #2c2c2c;
+  border-bottom: 2px solid #2c2c2c;
+}
+
+.contactTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.contactSub {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.contactButton {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #2c2c2c;
+  background-color: transparent;
+  color: #2c2c2c;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 2rem;
+  transition: all 0.3s ease;
+}
+
+.contactButton:hover {
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+
+.footerBtn {
+  display: flex;
+  gap: 4rem;
+  font-weight: 400;
+  color: #2c2c2c; 
+  background-color: #fdfaf6; 
+  padding: 1rem 4rem;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+
+}
+
+.footerBtn a{
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.3s ease;
+}
+
+.footerBtn a:hover {
+  opacity: 0.7;
+}

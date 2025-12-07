@@ -1,0 +1,784 @@
+/* Riwayat Tabung Wrapper */
+.riwayatTabungWrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding-bottom: 40px;
+}
+
+/* Header Section */
+.riwayatTabungHeader {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  padding: 60px 20px 50px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.riwayatTabungHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  gap: 20px;
+}
+
+.headerTextSection {
+  flex: 1;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.pageTitle {
+  font-size: var(--font-title);
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  color: var(--color-primary-dark);
+}
+
+.pageSubtitle {
+  font-size: 16px;
+  opacity: 0.95;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.headerBadge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 28px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border-radius: 12px;
+  color: #27ae60;
+}
+
+.badgeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badgeLabel {
+  font-size: 13px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.badgeValue {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Stats Grid */
+.depositStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 5px;
+  background: white;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.statCard:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.statCard:hover::before {
+  opacity: 1;
+}
+
+.statCard.approved::before {
+  background: #27ae60;
+}
+
+.statCard.pending::before {
+  background: #f39c12;
+}
+
+.statCard.rejected::before {
+  background: #e74c3c;
+}
+
+.statIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.statNumber {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.statPercentage {
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0.9;
+  margin-left: auto;
+}
+
+/* Filter Section */
+.filterSection {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+  padding: 0 20px;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: white;
+  border: 2px solid #ecf0f1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #2c3e50;
+}
+
+.filterBtn:hover {
+  border-color: #bdc3c7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filterBtn.active {
+  background: #2ecc71;
+  color: white;
+  border-color: #27ae60;
+}
+
+.filterBtn.pending.active {
+  background: #f39c12;
+  border-color: #e67e22;
+}
+
+.filterBtn.approved.active {
+  background: #27ae60;
+  border-color: #229954;
+}
+
+.filterBtn.rejected.active {
+  background: #e74c3c;
+  border-color: #c0392b;
+}
+
+/* Deposits Container */
+.depositsContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.depositsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Deposit Card */
+.depositCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.depositCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border-color: #2ecc71;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.depositInfo {
+  flex: 1;
+}
+
+.depositTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+
+.depositDate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cardBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.depositDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.detailValue.points {
+  color: #f39c12;
+}
+
+.viewDetailBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.viewDetailBtn:hover {
+  background: #27ae60;
+  transform: scale(1.02);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.emptyIcon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.emptyTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.emptySubtext {
+  font-size: 16px;
+  color: #7f8c8d;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: #f8f9fa;
+  color: #2c3e50;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.modalStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 24px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* Photo Section */
+.photoSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.evidencePhoto {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Info Section */
+.infoSection {
+  margin-bottom: 24px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.infoValue.points {
+  color: #f39c12;
+  font-size: 18px;
+}
+
+/* Notes Section */
+.notesSection {
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.notesSection.rejected {
+  background: #fef2f2;
+  border-left: 4px solid #e74c3c;
+}
+
+.notesSection.approved {
+  background: #f0fdf4;
+  border-left: 4px solid #27ae60;
+}
+
+.notesText {
+  font-size: 14px;
+  color: #2c3e50;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* Approval Info */
+.approvalInfo {
+  text-align: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.approvalText {
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+/* Modal Footer */
+.modalFooter {
+  padding: 20px 24px;
+  border-top: 2px solid #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.closeModalBtn {
+  padding: 12px 32px;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.closeModalBtn:hover {
+  background: #27ae60;
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .headerTop {
+    flex-direction: column;
+  }
+
+  .headerBadge {
+    align-self: flex-start;
+  }
+
+  .depositStats {
+    grid-template-columns: 1fr;
+  }
+
+  .depositsList {
+    grid-template-columns: 1fr;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .titleGroup {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .iconWrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .pageTitle {
+    font-size: 32px;
+  }
+
+  .statCard {
+    padding: 20px;
+  }
+
+  .statIconWrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .statNumber {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .riwayatTabungHeader {
+    padding: 40px 20px 30px;
+  }
+
+  .titleGroup {
+    gap: 12px;
+  }
+
+  .iconWrapper {
+    width: 56px;
+    height: 56px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+  }
+
+  .pageSubtitle {
+    font-size: 14px;
+  }
+
+  .headerBadge {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .badgeIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .badgeValue {
+    font-size: 24px;
+  }
+
+  .depositStats {
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .statIconWrapper {
+    width: 44px;
+    height: 44px;
+  }
+
+  .statNumber {
+    font-size: 24px;
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .statPercentage {
+    font-size: 16px;
+  }
+
+  .filterButtons {
+    gap: 8px;
+  }
+
+  .filterBtn {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  .cardBody {
+    grid-template-columns: 1fr;
+  }
+
+  .modalContent {
+    max-height: 95vh;
+  }
+
+  .modalHeader {
+    padding: 20px;
+  }
+
+  .modalTitle {
+    font-size: 20px;
+  }
+
+  .modalBody {
+    padding: 20px;
+  }
+}

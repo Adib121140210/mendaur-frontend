@@ -1,0 +1,240 @@
+/* Layout Container */
+.userDataContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: var(--font-base);
+  padding: 2rem;
+}
+
+/* Statistik Pengguna */
+.userStatsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.statCard {
+  background-color: var(--color-white);
+  border: 1px solid var(--border-gray-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statCard.highlighted {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.15) 100%);
+  border: 2px solid rgba(255, 193, 7, 0.5);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.statCard.highlighted:hover {
+  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconBox {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statIcon {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+.statText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statTitle {
+  font-size: var(--font-md);
+  color: var(--color-gray);
+}
+
+.statValue {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--color-gray-dark);
+}
+
+.statValue.rewardValue {
+  color: #FFB800;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Aktivitas Timeline */
+.activityTimeline {
+  background-color: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activityTimeline .sectionTitle {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.timelineFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.timelineFilter button {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-gray-light);
+  color: var(--color-gray-dark);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.timelineFilter button:hover {
+  background-color: var(--color-primary-light);
+}
+
+.timelineFilter button.active {
+  background-color: var(--color-primary-dark);
+  color: white;
+}
+
+.timelineList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timelineItem {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-gray-light);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+}
+
+.timelineIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.timelineContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timelineDesc {
+  font-weight: 500;
+  color: var(--color-primary-dark);
+}
+
+.timelineDetail {
+  font-size: 0.75rem;
+  color: var(--color-gray);
+}
+
+/* Kategori Warna Ikon */
+.timelineIcon.penyetoran {
+  background-color: var(--color-green-soft);
+  color: #047857;
+}
+
+.timelineIcon.penukaran {
+  background-color: var(--color-yellow-soft);
+  color: #b45309;
+}
+
+.timelineIcon.partisipasi {
+  background-color: var(--color-blue-soft);
+  color: #0284c7;
+}
+
+.timelineIcon.penyelesaian {
+  background-color: var(--color-purple-soft);
+  color: #7c3aed;
+}
+
+.timelineIcon.badge {
+  background-color: var(--color-red-soft);
+  color: #db2777;
+}
+
+/* Responsif */
+@media screen and (max-width: 768px) {
+  .userDataContainer {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .activityTimeline {
+    padding: 1rem;
+    box-shadow: none;
+    border: 1px solid var(--border-gray-light);
+  }
+
+  .timelineItem {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .timelineDesc {
+    font-size: 0.75rem;
+  }
+
+  .timelineDetail {
+    font-size: 0.7rem;
+  }
+}
