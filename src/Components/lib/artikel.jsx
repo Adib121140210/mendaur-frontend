@@ -107,7 +107,7 @@ const ArtikelCard = ({
   return (
     <div className="artikelWrapper">
       {paginatedArtikel.map((item) => (
-        <div className="artikelCard" key={item.id}>
+        <div className="artikelCard" key={item.artikel_id}>
           {item.gambar_artikel && (
             <img 
               src={item.gambar_artikel.startsWith('http') 

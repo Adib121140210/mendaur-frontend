@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const storedRole = localStorage.getItem('role');
     const storedRoleData = localStorage.getItem('roleData');
     const storedPermissions = localStorage.getItem('permissions');
-    
+
     if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser));
@@ -43,18 +43,18 @@ export const AuthProvider = ({ children }) => {
     // Handle both old format and new backend format
     const userData = loginResponse.user || loginResponse;
     const token = loginResponse.token;
-    
+
     // Extract role information
     const roleName = userData.role?.nama_role || userData.role || 'nasabah';
     const roleObj = userData.role || null;
     const userPermissions = userData.role?.permissions || [];
-    
+
     // Store in state
     setUser(userData);
     setRole(roleName);
     setRoleData(roleObj);
     setPermissions(userPermissions);
-    
+
     // Store in localStorage
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('roleData', JSON.stringify(roleObj));
     localStorage.setItem('permissions', JSON.stringify(userPermissions));
     localStorage.setItem('id_user', userData.user_id); // For backward compatibility - now uses user_id from backend
-    
+
     console.log('✅ Login successful:', {
       userId: userData.user_id,
       role: roleName,
@@ -122,12 +122,12 @@ export const AuthProvider = ({ children }) => {
     role,
     roleData,
     permissions,
-    
+
     // Methods
     login,
     logout,
     updateUser,
-    
+
     // Checks
     isAuthenticated: !!user,
     isAdmin,

@@ -45,7 +45,7 @@ export default function LeaderboardTable() {
 
         // Handle different API response structures
         const data = result.data || result.leaderboard || result;
-        
+
         if (Array.isArray(data)) {
           setLeaderboardData(data);
         } else {
@@ -68,7 +68,7 @@ export default function LeaderboardTable() {
 
     // Apply search filter
     if (searchQuery.trim()) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         (user.nama || user.nama_user || user.name || '')
           .toLowerCase()
           .includes(searchQuery.toLowerCase())
@@ -98,7 +98,7 @@ export default function LeaderboardTable() {
   // Find current user's rank in full leaderboard
   const currentUserRank = useMemo(() => {
     if (!currentUserId) return null;
-    const index = filteredUsers.findIndex(user => 
+    const index = filteredUsers.findIndex(user =>
       String(user.user_id) === String(currentUserId)
     );
     return index >= 0 ? index + 1 : null;
@@ -115,7 +115,7 @@ export default function LeaderboardTable() {
     <section className="leaderboardContainer">
       <div className="leaderboardHeader">
         <h1 className="leaderboardTitle">Peringkat Pengguna</h1>
-        
+
         {/* Time Period Filters */}
         <div className="timePeriodFilters">
           {timePeriods.map(period => (
@@ -141,7 +141,7 @@ export default function LeaderboardTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
-            <button 
+            <button
               className="clearSearch"
               onClick={() => setSearchQuery('')}
               aria-label="Clear search"
@@ -171,7 +171,7 @@ export default function LeaderboardTable() {
       {error && (
         <div className="errorContainer">
           <p className="errorMessage">❌ {error}</p>
-          <button 
+          <button
             className="retryButton"
             onClick={() => window.location.reload()}
           >
@@ -184,7 +184,7 @@ export default function LeaderboardTable() {
       {!loading && !error && filteredUsers.length === 0 && (
         <div className="emptyContainer">
           <p className="emptyMessage">
-            {searchQuery 
+            {searchQuery
               ? `Tidak ada pengguna dengan nama "${searchQuery}"`
               : 'Belum ada data leaderboard'}
           </p>
@@ -225,8 +225,8 @@ export default function LeaderboardTable() {
                   const userPoints = user.total_poin || user.poin_terkumpul || user.points || 0;
 
                   return (
-                    <tr 
-                      key={user.user_id || `user-${globalIndex}`} 
+                    <tr
+                      key={user.user_id || `user-${globalIndex}`}
                       className={isCurrentUser ? 'currentUserRow' : ''}
                     >
                       <td className={`rankColumn ranking ${rankClass}`}>
