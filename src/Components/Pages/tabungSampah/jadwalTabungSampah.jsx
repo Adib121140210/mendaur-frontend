@@ -163,12 +163,12 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
       ) : (
         <div className="jadwalCardGrid">
           {schedules.map((schedule) => {
-            const isActive = showSelection && activeSchedule === schedule.id;
+            const isActive = showSelection && activeSchedule === schedule.jadwal_penyetoran_id;
             return (
               <div 
-                key={schedule.id} 
+                key={schedule.jadwal_penyetoran_id} 
                 className={`jadwalCardItem ${isActive ? "active" : ""} ${showSelection ? "selectable" : ""}`}
-                onClick={() => showSelection && handleScheduleSelect(schedule.id)}
+                onClick={() => showSelection && handleScheduleSelect(schedule.jadwal_penyetoran_id)}
               >
                 <div className="jadwalCardTop">
                   <div className="cardTitleSection">
@@ -221,7 +221,7 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
                     className={`selectButton ${isActive ? "selected" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleScheduleSelect(schedule.id);
+                      handleScheduleSelect(schedule.jadwal_penyetoran_id);
                     }}
                   >
                     {isActive ? "✓ Dipilih" : "Pilih Jadwal"}

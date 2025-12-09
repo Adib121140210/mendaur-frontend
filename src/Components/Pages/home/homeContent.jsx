@@ -263,7 +263,7 @@ const HomeContent = () => {
         {recentActivities.length > 0 ? (
           <div className="activityList">
             {recentActivities.map((activity, index) => (
-              <div key={activity.id || `activity-${index}`} className="activityItem">
+              <div key={activity.log_user_activity_id || `activity-${index}`} className="activityItem">
                 <div className="activityIcon">
                   {activity.tipe_aktivitas === 'badge_unlock' ? '🏆' :
                    activity.tipe_aktivitas === 'setor_sampah' ? '♻️' :

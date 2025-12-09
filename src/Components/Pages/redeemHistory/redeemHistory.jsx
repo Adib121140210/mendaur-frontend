@@ -268,7 +268,7 @@ const AllRedemptions = () => {
                 {/* Card Footer */}
                 <div className="card-footer">
                   <span className="transaction-id">
-                    ID: {redemption.id}
+                    ID: {redemption.penukaran_produk_id}
                   </span>
                 </div>
               </div>

@@ -160,7 +160,7 @@ const ArtikelPage = () => {
             <div className="popularList">
               {popularArticles.map((article) => (
                 <a
-                  key={article.id}
+                  key={article.artikel_id}
                   href={`/artikel/${article.slug}`}
                   className="popularItem"
                 >

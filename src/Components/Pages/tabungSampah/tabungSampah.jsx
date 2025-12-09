@@ -53,7 +53,7 @@ export default function TabungSampah() {
               }
               
               return {
-                id_sampah: jenis.id,
+                id_sampah: jenis.jenis_sampah_id,
                 nama_sampah: jenis.nama_jenis || jenis.name,
                 kategori: jenis.kategori_sampah?.nama_kategori || jenis.kategori_name || 'Sampah',
                 satuan: jenis.satuan || "kg",

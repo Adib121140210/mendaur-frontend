@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { apiGet } from "../../../services/api";
 import "./achievementList.css";
 import {
   Medal,
@@ -33,8 +34,8 @@ const iconMap = {
 function BadgeCard({ badge }) {
   const isUnlocked = badge.isUnlocked;
   // Use progressPercent from API if available, otherwise calculate it
-  const progressPercent = badge.progressPercent !== undefined 
-    ? badge.progressPercent 
+  const progressPercent = badge.progressPercent !== undefined
+    ? badge.progressPercent
     : (badge.target > 0 ? Math.min((badge.progress / badge.target) * 100, 100) : 0);
 
   // Choose icon based on badge type, ID, or default
@@ -69,7 +70,7 @@ function BadgeCard({ badge }) {
       <div className="achievementContent">
         <h3 className="achievementTitle">{badge.nama_badge}</h3>
         <p className="achievementDesc">{badge.deskripsi || 'Raih badge ini!'}</p>
-        
+
         {/* Reward Points Display */}
         <div className="badgeRewardSection">
           <span className="rewardLabel">
@@ -140,24 +141,20 @@ export default function AchievementList() {
   const fetchTotalRewards = async () => {
     try {
       // Fetch ALL badges to calculate total rewards
-      const allBadgesRes = await fetch(`http://127.0.0.1:8000/api/users/${user.id}/badges-list?filter=all`);
-      
-      if (!allBadgesRes.ok) return;
-      
-      const result = await allBadgesRes.json();
-      
+      const result = await apiGet(`/users/${user.id}/badges-list?filter=all`);
+
       if (result.status === 'success') {
         const badges = result.data || [];
-        
+
         // Calculate total rewards earned (only unlocked badges)
         const earned = badges
           .filter(b => b.is_unlocked)
           .reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
-        
+
         // Calculate total possible rewards (all badges)
         const possible = badges
           .reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
-        
+
         setTotalRewardsEarned(earned);
         setTotalPossibleRewards(possible);
       }
@@ -169,35 +166,27 @@ export default function AchievementList() {
   const fetchBadges = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch badges with progress using the new optimized endpoint
-      const badgesRes = await fetch(`http://127.0.0.1:8000/api/users/${user.id}/badges-list?filter=${filter}`);
-      
-      if (!badgesRes.ok) {
-        console.warn('Badges list API not available yet');
-        setAllBadges([]);
-        return;
-      }
-      
-      const result = await badgesRes.json();
-      
+      const result = await apiGet(`/users/${user.id}/badges-list?filter=${filter}`);
+
       if (result.status === 'success') {
         const badges = result.data || [];
-        
+
         // Update counts from API response
         if (result.counts) {
           setCounts(result.counts);
         }
-        
+
         // Update message from API response
         if (result.message) {
           setMessage(result.message);
         }
-        
+
         // Map the new API structure to our component structure
         const badgesWithStatus = badges.map(badge => ({
           ...badge,
-          id_badge: badge.id,
+          badge_id: badge.badge_id || badge.id,
           nama_badge: badge.nama,
           isUnlocked: badge.is_unlocked,
           unlocked_at: badge.unlocked_at,
@@ -208,7 +197,7 @@ export default function AchievementList() {
           kategori: badge.tipe || 'general',
           reward_poin: badge.reward_poin || 0
         }));
-        
+
         setAllBadges(badgesWithStatus);
         setUserBadges(badges.filter(b => b.is_unlocked));
       }
@@ -238,8 +227,8 @@ export default function AchievementList() {
                 <span className="totalPoints"> / {totalPossibleRewards} Poin</span>
               </p>
               <div className="summaryProgressBar">
-                <div 
-                  className="summaryProgressFill" 
+                <div
+                  className="summaryProgressFill"
                   style={{ width: `${totalPossibleRewards > 0 ? (totalRewardsEarned / totalPossibleRewards) * 100 : 0}%` }}
                 ></div>
               </div>
@@ -302,15 +291,15 @@ export default function AchievementList() {
               {filter === 'unlocked' ? '🎯' : filter === 'locked' ? '🎉' : '🔍'}
             </div>
             <p className="emptyTitle">
-              {filter === 'unlocked' 
-                ? 'Belum ada badge yang didapat' 
+              {filter === 'unlocked'
+                ? 'Belum ada badge yang didapat'
                 : filter === 'locked'
                 ? 'Semua badge sudah didapat!'
                 : 'Tidak ada badge tersedia'}
             </p>
             <p className="emptySubtext">
-              {filter === 'unlocked' 
-                ? 'Mulai setor sampah untuk mendapatkan badge pertamamu!' 
+              {filter === 'unlocked'
+                ? 'Mulai setor sampah untuk mendapatkan badge pertamamu!'
                 : filter === 'locked'
                 ? 'Selamat! Kamu sudah mengumpulkan semua badge! 🎊'
                 : 'Badge akan muncul di sini'}
@@ -318,7 +307,7 @@ export default function AchievementList() {
           </div>
         ) : (
           allBadges.map((badge, index) => (
-            <BadgeCard key={badge.id_badge || badge.id || `badge-${index}`} badge={badge} />
+            <BadgeCard key={badge.badge_id || `badge-${index}`} badge={badge} />
           ))
         )}
       </div>

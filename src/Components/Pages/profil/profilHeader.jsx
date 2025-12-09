@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { getUserBadges } from "../../../services/api";
 import "../profil/profilHeader.css";
 
 export default function ProfilHeader() {
@@ -9,18 +10,11 @@ export default function ProfilHeader() {
 
   const fetchUserBadges = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/users/${user.id}/badges`);
-      
-      if (!res.ok) {
-        console.warn('Badges endpoint not ready (404)');
-        return;
-      }
-      
-      const result = await res.json();
-      
+      const result = await getUserBadges(user.id);
+
       if (result.status === 'success') {
         setUserBadges(result.data || []);
-        
+
         // Set active badge from localStorage or first badge
         const savedBadge = localStorage.getItem("badge_aktif");
         if (savedBadge) {
@@ -48,7 +42,7 @@ export default function ProfilHeader() {
   };
 
   const currentBadge = userBadges.find(b => b.badge_id === activeBadge);
-  
+
   // Generate avatar URL
   const getAvatarUrl = () => {
     if (user.foto_profil) {

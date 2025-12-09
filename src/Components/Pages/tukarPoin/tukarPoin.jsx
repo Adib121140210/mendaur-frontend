@@ -64,7 +64,7 @@ export default function TukarPoin() {
             const transformedProducts = result.data
               .filter(item => item.status === 'tersedia') // Only show available products
               .map(item => ({
-                id_produk: `produk-${item.id.toString().padStart(4, '0')}`,
+                id_produk: `produk-${item.produk_id.toString().padStart(4, '0')}`,
                 tipe_produk: "Fisik",
                 nama_produk: item.nama,
                 gambar_produk: item.foto || "/public/assets/lampu.jpg",

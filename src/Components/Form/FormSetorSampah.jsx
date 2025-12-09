@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./FormSetorSampah.css";
 import KategoriSampahWrapper from "../Pages/tabungSampah/kategoriSampah";
 import { useAuth } from "../Pages/context/AuthContext";
@@ -19,10 +19,14 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [selectedKategori, setSelectedKategori] = useState(null);
+  const [mapCoords, setMapCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default: Jakarta
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const markerInstance = useRef(null);
 
-  // ✅ AUTO-POPULATE user data and auto-track location on mount
+  // Set user data otomatis saat pertama kali load
   useEffect(() => {
-    // Pre-fill user data from authenticated user
+    // Isi nama dan nomor HP dari data user yang login
     if (user) {
       setFormData(prev => ({
         ...prev,
@@ -31,17 +35,18 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       }));
     }
 
-    // Auto-track location on mount
+    // Ambil lokasi user secara otomatis
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
           const mapsLink = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
           setFormData(prev => ({ ...prev, lokasi: mapsLink }));
-          console.log('✅ Lokasi otomatis terdeteksi:', mapsLink);
+          setMapCoords({ lat: coords.latitude, lng: coords.longitude });
+          console.log('Lokasi otomatis terdeteksi:', mapsLink);
         },
         (error) => {
-          console.warn('⚠️ Gagal mengambil lokasi otomatis:', error.message);
-          // Don't show alert, user can manually set location
+          console.warn('Gagal mengambil lokasi otomatis:', error.message);
+          // Tidak menampilkan alert, user bisa set lokasi secara manual
         }
       );
     }
@@ -62,7 +67,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         const schedules = result.data || [];
-        // Filter only active schedules on frontend
+        // Filter jadwal yang masih aktif
         const activeSchedules = schedules.filter(s => s.status === 'aktif');
         setJadwalList(activeSchedules);
       } catch (err) {
@@ -73,31 +78,145 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     fetchJadwal();
   }, []);
 
-  // Handler input umum
+  // Inisialisasi Google Maps
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Load Google Maps API jika belum di-load
+    if (!window.google) {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY') {
+        console.error('Google Maps API key tidak ditemukan. Tambahkan VITE_GOOGLE_MAPS_API_KEY ke .env');
+        // Tampilkan placeholder message
+        if (mapRef.current) {
+          mapRef.current.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 8px;">
+              <div style="text-align: center; padding: 20px;">
+                <p style="color: #666; margin: 0 0 10px 0; font-weight: bold;">⚠️ Google Maps API Key Tidak Dikonfigurasi</p>
+                <p style="color: #999; margin: 0; font-size: 0.9rem;">Hubungi admin untuk setup Google Maps API</p>
+              </div>
+            </div>
+          `;
+        }
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initializeMap();
+      script.onerror = () => {
+        console.error('Gagal memuat Google Maps API');
+        if (mapRef.current) {
+          mapRef.current.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #fee; border: 2px solid #f99; border-radius: 8px;">
+              <div style="text-align: center; padding: 20px;">
+                <p style="color: #c33; margin: 0 0 10px 0; font-weight: bold;">❌ Gagal Memuat Peta</p>
+                <p style="color: #999; margin: 0; font-size: 0.9rem;">Periksa konfigurasi API Key</p>
+              </div>
+            </div>
+          `;
+        }
+      };
+      document.head.appendChild(script);
+    } else {
+      initializeMap();
+    }
+
+    const initializeMap = () => {
+      const map = new window.google.maps.Map(mapRef.current, {
+        zoom: 15,
+        center: mapCoords,
+        mapTypeControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+      });
+
+      mapInstance.current = map;
+
+      // Tambah marker awal di lokasi default
+      const marker = new window.google.maps.Marker({
+        position: mapCoords,
+        map: map,
+        title: 'Lokasi Anda',
+        animation: window.google.maps.Animation.DROP,
+      });
+
+      markerInstance.current = marker;
+
+      // Event listener saat user klik peta
+      map.addListener('click', (event) => {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+
+        // Update marker position dengan animasi
+        marker.setPosition({ lat, lng });
+        marker.setAnimation(window.google.maps.Animation.BOUNCE);
+        
+        // Hentikan animasi setelah 750ms
+        setTimeout(() => {
+          marker.setAnimation(null);
+        }, 750);
+
+        // Update state dengan koordinat baru
+        setMapCoords({ lat, lng });
+
+        // Buat Google Maps link
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+        setFormData(prev => ({ ...prev, lokasi: mapsLink }));
+
+        console.log(`📍 Lokasi dipilih: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      });
+
+      // Geolocation - set marker ke lokasi user saat load
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const userLocation = { lat: userLat, lng: userLng };
+
+            map.setCenter(userLocation);
+            marker.setPosition(userLocation);
+            setMapCoords(userLocation);
+
+            const mapsLink = `https://www.google.com/maps?q=${userLat},${userLng}`;
+            setFormData(prev => ({ ...prev, lokasi: mapsLink }));
+          },
+          (error) => {
+            console.warn('Geolocation error:', error.message);
+            // Tetap gunakan default Jakarta
+          }
+        );
+      }
+    };
+  }, [mapCoords]);
+
+  // Handle input perubahan form
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
-    // Clear error for this field
+    // Hapus error untuk field ini jika ada
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
-  // ✅ Handle kategori selection from KategoriSampahWrapper
+  // Handle kategori selection dari KategoriSampahWrapper
   const handleKategoriChange = (kategoriId, kategoriLabel) => {
     setSelectedKategori(kategoriId);
     setFormData(prev => ({
       ...prev,
-      jenis: kategoriLabel || kategoriId // Store label or ID
+      jenis: kategoriLabel || kategoriId
     }));
-    // Clear error
+    // Hapus error
     if (errors.jenis) {
       setErrors(prev => ({ ...prev, jenis: null }));
     }
-    console.log('✅ Kategori dipilih:', kategoriLabel || kategoriId);
+    console.log('Kategori dipilih:', kategoriLabel || kategoriId);
   };
 
   // Ambil lokasi otomatis
@@ -110,6 +229,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       ({ coords }) => {
         const mapsLink = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
         setFormData((prev) => ({ ...prev, lokasi: mapsLink }));
+        setMapCoords({ lat: coords.latitude, lng: coords.longitude });
       },
       (error) => {
         alert("Gagal mengambil lokasi: " + error.message);
@@ -140,7 +260,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       return;
     }
 
-    // ✅ Check authentication token
+    // Check authentication token
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Anda harus login terlebih dahulu untuk mengajukan penjemputan sampah');
@@ -151,9 +271,9 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     
     const data = new FormData();
     
-    // ✅ FIX: Use fallback to 1 if userId is not provided
+    // Gunakan fallback ke 1 jika userId tidak diberikan
     const validUserId = userId || 1;
-    console.log('Sending user_id:', validUserId); // Debug log
+    console.log('Sending user_id:', validUserId);
     
     data.append("user_id", validUserId);
     data.append("jadwal_id", formData.jadwalId);
@@ -171,19 +291,19 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         method: "POST",
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`, // ✅ ADD AUTHORIZATION HEADER
+          'Authorization': `Bearer ${token}`,
         },
         body: data,
       });
 
       const result = await res.json();
       
-      // ✅ Better error logging
+      // Log response untuk debugging
       console.log('Response status:', res.status);
       console.log('Response data:', result);
 
       if (!res.ok) {
-        // Handle validation errors dari Laravel
+        // Tangani validation errors dari Laravel
         if (result.errors) {
           console.error('Validation errors:', result.errors);
           
@@ -193,7 +313,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
           });
           setErrors(backendErrors);
           
-          // Show detailed error message
+          // Tampilkan pesan error detail
           const errorMessages = Object.values(result.errors).flat().join('\n');
           alert(`Validasi gagal:\n${errorMessages}`);
           
@@ -206,7 +326,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
       if (result.status === "success") {
         alert(result.message || "Setor sampah berhasil!");
-        // Reset form
+        // Reset form kembali ke awal
         setFormData({
           nama: "",
           noHp: "",
@@ -231,15 +351,15 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       <div className="formModal" onClick={(e) => e.stopPropagation()}>
         <h2>Form Penjemputan Sampah</h2>
 
-        {/* ✅ Add debug info */}
+        {/* Add debug info */}
         {!userId && (
           <div style={{padding: '10px', background: '#fff3cd', marginBottom: '10px', borderRadius: '4px'}}>
-            ⚠️ User ID not provided. Using default user (ID: 1)
+            User ID tidak diberikan. Menggunakan user default (ID: 1)
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Hidden fields - sent to backend but not visible to user */}
+          {/* Field tersembunyi - dikirim ke backend tapi tidak terlihat user */}
           <div className="hiddenFields">
             <input 
               type="hidden" 
@@ -267,7 +387,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                 <option disabled>Tidak ada jadwal tersedia</option>
               ) : (
                 jadwalList.map((j) => {
-                  // Format date properly
+                  // Format tanggal dengan benar
                   const date = new Date(j.tanggal);
                   const formattedDate = date.toLocaleDateString('id-ID', { 
                     weekday: 'long', 
@@ -275,7 +395,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                     month: 'long', 
                     day: 'numeric' 
                   });
-                  // Format time (remove seconds)
+                  // Format waktu (tanpa detik)
                   const timeStart = j.waktu_mulai?.substring(0, 5) || '';
                   const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
                   
@@ -291,35 +411,72 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
           </label>
 
           <label>
-            Titik Lokasi* (Otomatis Terdeteksi):
-            <input
-              type="text"
-              name="lokasi"
-              value={formData.lokasi}
-              onChange={handleChange}
-              placeholder="Lokasi akan terdeteksi otomatis..."
-              required
-            />
-            <button type="button" className="lokasiButton" onClick={handleAmbilLokasi}>
-            Perbarui Lokasi Saya
-            </button>
-            {errors.lokasi && <span className="errorText">{errors.lokasi}</span>}
-            {formData.lokasi && (
-              <span className="successText">✅ Lokasi terdeteksi</span>
-            )}
-          </label>
+            Titik Lokasi* (Pilih Lokasi di Peta):
+            <div style={{ marginTop: '0.8rem' }}>
+              {/* Container Peta Google Maps */}
+              <div
+                ref={mapRef}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '300px',
+                  backgroundColor: '#f0f0f0',
+                  border: '2px solid #ccc',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  marginBottom: '0.8rem'
+                }}
+              >
+              </div>
 
-          {formData.lokasi.includes("maps.google.com") && (
-            <iframe
-              src={formData.lokasi}
-              width="100%"
-              height="200"
-              style={{ border: 0, marginBottom: "1rem", borderRadius: "8px" }}
-              allowFullScreen
-              loading="lazy"
-              title="Preview Lokasi"
-            ></iframe>
-          )}
+              {/* Input Lokasi - Otomatis Terisi */}
+              <input
+                type="text"
+                name="lokasi"
+                value={formData.lokasi}
+                onChange={handleChange}
+                placeholder="📍 Klik pada peta untuk memilih lokasi..."
+                readOnly
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  marginBottom: '0.8rem',
+                  fontSize: '0.9rem',
+                  backgroundColor: '#f5f5f5',
+                  cursor: 'not-allowed'
+                }}
+              />
+
+              {/* Tombol Aksi */}
+              <button
+                type="button"
+                className="lokasiButton"
+                onClick={handleAmbilLokasi}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  marginBottom: '0.8rem'
+                }}
+              >
+                � Gunakan Lokasi Saya Saat Ini
+              </button>
+
+              {errors.lokasi && <span className="errorText">{errors.lokasi}</span>}
+              {formData.lokasi && (
+                <span className="successText" style={{ marginTop: '0.5rem', display: 'block' }}>
+                  ✅ Lokasi telah diatur
+                </span>
+              )}
+            </div>
+          </label>
 
           <label>
             {/* Jenis Sampah */}
@@ -330,7 +487,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
             />
             {errors.jenis && <span className="errorText">{errors.jenis}</span>}
             {selectedKategori && (
-              <span className="successText">✅ Kategori terseleksi: {formData.jenis}</span>
+              <span className="successText">Kategori terseleksi: {formData.jenis}</span>
             )}
           </label>
 

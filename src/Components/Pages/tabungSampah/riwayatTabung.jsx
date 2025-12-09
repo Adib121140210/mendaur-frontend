@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { 
-  Recycle, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Recycle,
+  Clock,
+  CheckCircle,
+  XCircle,
   Filter,
   Calendar,
   Package,
@@ -41,32 +41,72 @@ const RiwayatTabung = () => {
     try {
       setLoading(true);
 
+      // Security: Validate user is authenticated
+      if (!user?.id) {
+        console.error("User ID not found - user not authenticated");
+        setDeposits([]);
+        return;
+      }
+
       const params = new URLSearchParams();
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
 
       const url = `http://127.0.0.1:8000/api/users/${user.id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await fetch(url);
+
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token');      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      });
+
+      // Handle different HTTP status codes
+      if (response.status === 401) {
+        console.error("Unauthorized: Session expired or token invalid");
+        // Token might be expired, clear and redirect to login if needed
+        localStorage.removeItem('token');
+        setDeposits([]);
+        return;
+      }
+
+      if (response.status === 403) {
+        console.error("Forbidden: Cannot access other user's deposit data");
+        // Security: User trying to access data that doesn't belong to them
+        setDeposits([]);
+        return;
+      }
 
       if (!response.ok) {
-        console.warn("Tabung Sampah API not available yet");
+        console.warn(`Tabung Sampah API error: ${response.status} ${response.statusText}`);
         setDeposits([]);
         return;
       }
 
       const result = await response.json();
 
-      if (result.status === "success") {
-        setDeposits(result.data || []);
-        
-        // Calculate stats from all data
+      // Validate response format and content
+      if (result.status === "success" && Array.isArray(result.data)) {
+        // Security: Verify all returned data belongs to current user
+        const validData = result.data.filter(deposit => {
+          return deposit.user_id === user.id;
+        });
+
+        setDeposits(validData);
+
+        // Calculate stats from filtered data
         if (result.stats) {
           setStats(result.stats);
         } else {
           // Calculate manually if not provided
-          calculateStats(result.data || []);
+          calculateStats(validData);
         }
+      } else {
+        console.warn("Invalid response format from API");
+        setDeposits([]);
       }
     } catch (error) {
       console.error("Error fetching tabung sampah:", error.message);
@@ -86,6 +126,10 @@ const RiwayatTabung = () => {
   };
 
   const openModal = (deposit) => {
+    // Security: Verify deposit belongs to current user before opening
+    if (deposit.user_id !== user.id) {
+      return;
+    }
     setSelectedDeposit(deposit);
     setShowModal(true);
   };
@@ -122,11 +166,11 @@ const RiwayatTabung = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "#f39c12";
+        return "var(--color-orange)";
       case "approved":
-        return "#27ae60";
+        return "var(--color-primary-dark)";
       case "rejected":
-        return "#e74c3c";
+        return "var(--destructive)";
       default:
         return "#95a5a6";
     }
@@ -158,78 +202,33 @@ const RiwayatTabung = () => {
   return (
     <div className="riwayatTabungWrapper">
       {/* Header */}
-      <div className="riwayatTabungHeader">
-        <div className="headerContent">
-          <div className="headerTop">
-            <div className="headerTextSection">
-              <div className="titleGroup">
-                <div className="iconWrapper">
-                  <Recycle size={48} />
-                </div>
-                <div>
-                  <h1 className="pageTitle">Riwayat Tabung Sampah</h1>
-                  <p className="pageSubtitle">
-                    Pantau kontribusi Anda untuk lingkungan yang lebih baik
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="headerBadge">
-              <div className="badgeIcon">
-                <Package size={24} />
-              </div>
-              <div className="badgeContent">
-                <span className="badgeLabel">Total Setoran</span>
-                <span className="badgeValue">{stats.total}</span>
-              </div>
-            </div>
+      <div className="headerTop">
+        <div className="headerTitle">
+          <Recycle size={28} className="headerIcon" />
+          <h1 className="headerText">Riwayat Penyetoran Sampah</h1>
+        </div>
+      </div>
+      <div className="riwayatTabungContent">
+        {/* Stats Info */}
+        <div className="riwayatTabungInfo">
+          <div className="statItem">
+            <span className="statLabel">Total Penyetoran</span>
+            <span className="statValue">{stats.total}</span>
           </div>
-
-          {/* Stats Grid */}
-          <div className="depositStats">
-            <div className="statCard approved">
-              <div className="statIconWrapper">
-                <CheckCircle size={32} />
-              </div>
-              <div className="statContent">
-                <span className="statNumber">{stats.approved}</span>
-                <span className="statLabel">Disetujui</span>
-              </div>
-              <div className="statPercentage">
-                {stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}%
-              </div>
-            </div>
-            
-            <div className="statCard pending">
-              <div className="statIconWrapper">
-                <Clock size={32} />
-              </div>
-              <div className="statContent">
-                <span className="statNumber">{stats.pending}</span>
-                <span className="statLabel">Menunggu</span>
-              </div>
-              <div className="statPercentage">
-                {stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0}%
-              </div>
-            </div>
-            
-            <div className="statCard rejected">
-              <div className="statIconWrapper">
-                <XCircle size={32} />
-              </div>
-              <div className="statContent">
-                <span className="statNumber">{stats.rejected}</span>
-                <span className="statLabel">Ditolak</span>
-              </div>
-              <div className="statPercentage">
-                {stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0}%
-              </div>
-            </div>
+          <div className="statItem">
+            <span className="statLabel">Menunggu</span>
+            <span className="statValue">{stats.pending}</span>
+          </div>
+          <div className="statItem">
+            <span className="statLabel">Disetujui</span>
+            <span className="statValue">{stats.approved}</span>
+          </div>
+          <div className="statItem">
+            <span className="statLabel">Ditolak</span>
+            <span className="statValue">{stats.rejected}</span>
           </div>
         </div>
       </div>
-
       {/* Filter Section */}
       <div className="filterSection">
         <div className="filterButtons">
@@ -269,18 +268,18 @@ const RiwayatTabung = () => {
         {deposits.length === 0 ? (
           <div className="emptyState">
             <div className="emptyIcon">
-              {statusFilter === "all" ? "📦" : 
-               statusFilter === "pending" ? "⏳" : 
+              {statusFilter === "all" ? "📦" :
+               statusFilter === "pending" ? "⏳" :
                statusFilter === "approved" ? "✅" : "❌"}
             </div>
             <h3 className="emptyTitle">
-              {statusFilter === "all" 
-                ? "Belum ada penyetoran" 
+              {statusFilter === "all"
+                ? "Belum ada penyetoran"
                 : `Tidak ada penyetoran ${getStatusText(statusFilter).toLowerCase()}`}
             </h3>
             <p className="emptySubtext">
-              {statusFilter === "all" 
-                ? "Mulai setor sampah untuk berkontribusi pada lingkungan!" 
+              {statusFilter === "all"
+                ? "Mulai setor sampah untuk berkontribusi pada lingkungan!"
                 : `Ubah filter untuk melihat penyetoran lainnya.`}
             </p>
           </div>
@@ -288,7 +287,7 @@ const RiwayatTabung = () => {
           <div className="depositsList">
             {deposits.map((deposit) => (
               <DepositCard
-                key={deposit.id}
+                key={deposit.tabung_sampah_id}
                 deposit={deposit}
                 onViewDetail={() => openModal(deposit)}
                 formatDate={formatDate}
@@ -385,8 +384,8 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
             <div className="photoSection">
               <h3 className="sectionTitle">Foto Bukti</h3>
               <img
-                src={deposit.foto_bukti.startsWith('http') 
-                  ? deposit.foto_bukti 
+                src={deposit.foto_bukti.startsWith('http')
+                  ? deposit.foto_bukti
                   : `http://127.0.0.1:8000${deposit.foto_bukti}`}
                 alt="Bukti penyetoran"
                 className="evidencePhoto"

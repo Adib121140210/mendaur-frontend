@@ -51,7 +51,7 @@ export default function RiwayatTransaksi() {
       if (withdrawalsResponse.ok) {
         const withdrawalsData = await withdrawalsResponse.json();
         withdrawals = (withdrawalsData.data?.data || []).map(item => ({
-          id: `withdrawal-${item.id}`,
+          id: `withdrawal-${item.penarikan_tunai_id}`,
           type: 'tarik_tunai',
           kategori: 'penukaran',
           deskripsi: `Penarikan Tunai ke ${item.nama_bank}`,
@@ -90,7 +90,7 @@ export default function RiwayatTransaksi() {
             const wasteArray = wasteData.data || [];
             
             wasteDeposits = wasteArray.map(item => ({
-              id: `waste-${item.id}`,
+              id: `waste-${item.tabung_sampah_id}`,
               type: 'setor_sampah',
               kategori: 'penyetoran',
               deskripsi: `Setoran ${item.jenis_sampah}`,
@@ -131,7 +131,7 @@ export default function RiwayatTransaksi() {
             : (productData.data?.data || productData.data || []);
           
           productRedemptions = redemptionsArray.map(item => ({
-            id: `product-${item.id}`,
+            id: `product-${item.penukaran_produk_id}`,
             type: 'tukar_produk',
             kategori: 'penukaran',
             deskripsi: `Penukaran ${item.nama_produk || item.produk?.nama || 'Produk'}`,

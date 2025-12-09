@@ -1,227 +1,99 @@
 /* Riwayat Tabung Wrapper */
 .riwayatTabungWrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-color: #f9fafb;
+  padding: 2rem;
   padding-bottom: 40px;
 }
 
-/* Header Section */
-.riwayatTabungHeader {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  color: white;
-  padding: 60px 20px 50px;
+/* Header Content */
+.riwayatTabungContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 20px;
   margin-bottom: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: var(--color-primary-dark);
+  border-radius: 16px;
+  border: 2px solid rgba(255, 215, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
 
-.riwayatTabungHeader::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  transform: translate(30%, -30%);
+/* Header Top - Title and Info Section */
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
 }
 
-.headerContent {
-  max-width: 1200px;
-  margin: 0 auto;
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.headerIcon {
+  color: var(--color-primary-dark);
+  flex-shrink: 0;
+}
+
+.headerText {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Riwayat Tabung Info - Stats Container (inspired by kategoriSampah) */
+.riwayatTabungInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  width: 100%;
   position: relative;
   z-index: 1;
 }
 
-.headerTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
-  gap: 20px;
-}
-
-.headerTextSection {
-  flex: 1;
-}
-
-.titleGroup {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.iconWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-}
-
-.pageTitle {
-  font-size: var(--font-title);
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  line-height: 1.2;
-  color: var(--color-primary-dark);
-}
-
-.pageSubtitle {
-  font-size: 16px;
-  opacity: 0.95;
-  margin: 0;
-  line-height: 1.5;
-  font-weight: 400;
-}
-
-.headerBadge {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 28px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.badgeIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
+.statItem {
   background: white;
+  border: 2px solid rgba(255, 215, 0, 0.3);
   border-radius: 12px;
-  color: #27ae60;
-}
-
-.badgeContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.badgeLabel {
-  font-size: 13px;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-.badgeValue {
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-/* Stats Grid */
-.depositStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.statCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: default;
   position: relative;
   overflow: hidden;
 }
 
-.statCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 5px;
-  background: white;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
-.statCard:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.statCard:hover::before {
-  opacity: 1;
-}
-
-.statCard.approved::before {
-  background: #27ae60;
-}
-
-.statCard.pending::before {
-  background: #f39c12;
-}
-
-.statCard.rejected::before {
-  background: #e74c3c;
-}
-
-.statIconWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 14px;
-  flex-shrink: 0;
-}
-
-.statContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.statNumber {
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 1;
-}
-
 .statLabel {
-  font-size: 14px;
-  opacity: 0.9;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 10px;
 }
 
-.statPercentage {
-  font-size: 18px;
-  font-weight: 700;
-  opacity: 0.9;
-  margin-left: auto;
+.statValue {
+  font-size: 28px;
+  font-weight: 900;
+  background: var(--color-primary-dark);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  display: block;
 }
 
 /* Filter Section */
 .filterSection {
   max-width: 1200px;
   margin: 0 auto 30px;
-  padding: 0 20px;
+  padding: 20px;
 }
 
 .filterButtons {
@@ -236,7 +108,7 @@
   gap: 8px;
   padding: 12px 20px;
   background: white;
-  border: 2px solid #ecf0f1;
+  border: 2px solid #e5e7eb;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
@@ -246,30 +118,30 @@
 }
 
 .filterBtn:hover {
-  border-color: #bdc3c7;
+  border-color: #d1d5db;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .filterBtn.active {
-  background: #2ecc71;
+  background: var(--color-primary-dark);
   color: white;
-  border-color: #27ae60;
+  border-color: var(--color-primary-dark);
 }
 
 .filterBtn.pending.active {
-  background: #f39c12;
-  border-color: #e67e22;
+  background: var(--color-orange);
+  border-color: var(--color-accent-dark);
 }
 
 .filterBtn.approved.active {
-  background: #27ae60;
-  border-color: #229954;
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 .filterBtn.rejected.active {
-  background: #e74c3c;
-  border-color: #c0392b;
+  background: var(--destructive);
+  border-color: #7f1d1d;
 }
 
 /* Deposits Container */
@@ -298,7 +170,7 @@
 .depositCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-color: #2ecc71;
+  border-color: var(--color-primary-dark);
 }
 
 .cardHeader {
@@ -368,7 +240,7 @@
 }
 
 .detailValue.points {
-  color: #f39c12;
+  color: var(--color-orange);
 }
 
 .viewDetailBtn {
@@ -378,7 +250,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: #2ecc71;
+  background: var(--color-primary-dark);
   color: white;
   border: none;
   border-radius: 8px;
@@ -389,7 +261,7 @@
 }
 
 .viewDetailBtn:hover {
-  background: #27ae60;
+  opacity: 0.9;
   transform: scale(1.02);
 }
 
@@ -572,7 +444,7 @@
 }
 
 .infoValue.points {
-  color: #f39c12;
+  color: var(--color-orange);
   font-size: 18px;
 }
 
@@ -585,12 +457,12 @@
 
 .notesSection.rejected {
   background: #fef2f2;
-  border-left: 4px solid #e74c3c;
+  border-left: 4px solid var(--destructive);
 }
 
 .notesSection.approved {
   background: #f0fdf4;
-  border-left: 4px solid #27ae60;
+  border-left: 4px solid var(--color-primary-dark);
 }
 
 .notesText {
@@ -624,7 +496,7 @@
 
 .closeModalBtn {
   padding: 12px 32px;
-  background: #2ecc71;
+  background: var(--color-primary-dark);
   color: white;
   border: none;
   border-radius: 8px;
@@ -635,22 +507,34 @@
 }
 
 .closeModalBtn:hover {
-  background: #27ae60;
+  opacity: 0.9;
   transform: scale(1.05);
 }
 
-/* Responsive Design */
 @media (max-width: 968px) {
   .headerTop {
     flex-direction: column;
   }
 
-  .headerBadge {
-    align-self: flex-start;
+  .headerTitle {
+    width: 100%;
   }
 
-  .depositStats {
-    grid-template-columns: 1fr;
+  .riwayatTabungContent {
+    padding: 40px 16px;
+  }
+
+  .riwayatTabungInfo {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .statItem {
+    padding: 18px 14px;
+  }
+
+  .statValue {
+    font-size: 26px;
   }
 
   .depositsList {
@@ -663,94 +547,117 @@
 }
 
 @media (max-width: 768px) {
-  .titleGroup {
-    flex-direction: column;
-    align-items: flex-start;
+  .riwayatTabungWrapper {
+    padding: 1rem;
   }
 
-  .iconWrapper {
-    width: 64px;
-    height: 64px;
+  .riwayatTabungContent {
+    padding: 32px 16px;
+    margin-bottom: 24px;
+    border-radius: 14px;
   }
 
-  .pageTitle {
-    font-size: 32px;
+  .headerContent {
+    padding: 0 16px;
   }
 
-  .statCard {
-    padding: 20px;
+  .headerText {
+    font-size: 24px;
   }
 
-  .statIconWrapper {
-    width: 50px;
-    height: 50px;
+  .riwayatTabungInfo {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
-  .statNumber {
-    font-size: 28px;
+  .statItem {
+    padding: 16px 12px;
+    border-radius: 10px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .filterSection {
+    padding: 16px;
+  }
+
+  .depositsContainer {
+    padding: 0 16px;
+  }
+
+  .cardBody {
+    grid-template-columns: 1fr;
+  }
+
+  .depositCard {
+    padding: 16px;
+  }
+
+  .modalContent {
+    max-height: 95vh;
   }
 }
 
 @media (max-width: 480px) {
-  .riwayatTabungHeader {
-    padding: 40px 20px 30px;
+  .riwayatTabungWrapper {
+    padding: 1rem;
   }
 
-  .titleGroup {
-    gap: 12px;
+  .riwayatTabungContent {
+    padding: 28px 14px;
+    margin-bottom: 20px;
+    border-radius: 12px;
   }
 
-  .iconWrapper {
-    width: 56px;
-    height: 56px;
+  .headerContent {
+    padding: 0 12px;
+    margin-bottom: 20px;
   }
 
-  .pageTitle {
-    font-size: 24px;
+  .headerTop {
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
-  .pageSubtitle {
-    font-size: 14px;
+  .headerIcon {
+    width: 24px;
+    height: 24px;
   }
 
-  .headerBadge {
-    padding: 16px 20px;
-    gap: 12px;
+  .headerText {
+    font-size: 20px;
   }
 
-  .badgeIcon {
-    width: 40px;
-    height: 40px;
+  .riwayatTabungInfo {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
-  .badgeValue {
-    font-size: 24px;
-  }
-
-  .depositStats {
-    gap: 12px;
-  }
-
-  .statCard {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .statIconWrapper {
-    width: 44px;
-    height: 44px;
-  }
-
-  .statNumber {
-    font-size: 24px;
+  .statItem {
+    padding: 14px 10px;
+    border-radius: 8px;
   }
 
   .statLabel {
-    font-size: 12px;
+    font-size: 10px;
+    margin-bottom: 6px;
+    letter-spacing: 0.4px;
   }
 
-  .statPercentage {
-    font-size: 16px;
+  .statValue {
+    font-size: 20px;
+  }
+
+  .filterSection {
+    padding: 12px;
+    margin-bottom: 20px;
   }
 
   .filterButtons {
@@ -758,20 +665,34 @@
   }
 
   .filterBtn {
-    font-size: 13px;
-    padding: 10px 16px;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+
+  .depositsContainer {
+    padding: 0 12px;
+  }
+
+  .depositsList {
+    gap: 16px;
+  }
+
+  .depositCard {
+    padding: 14px;
   }
 
   .cardBody {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .modalContent {
     max-height: 95vh;
+    border-radius: 12px;
   }
 
   .modalHeader {
-    padding: 20px;
+    padding: 18px;
   }
 
   .modalTitle {
@@ -779,6 +700,14 @@
   }
 
   .modalBody {
-    padding: 20px;
+    padding: 18px;
+  }
+
+  .infoGrid {
+    gap: 12px;
+  }
+
+  .infoItem {
+    padding: 12px;
   }
 }
