@@ -53,7 +53,7 @@ const RiwayatTabung = () => {
         params.append("status", statusFilter);
       }
 
-      const url = `http://127.0.0.1:8000/api/users/${user.id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `http://127.0.0.1:8000/api/users/${user.user_id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
 
       // Get auth token from localStorage
       const token = localStorage.getItem('token');      const response = await fetch(url, {
@@ -92,7 +92,7 @@ const RiwayatTabung = () => {
       if (result.status === "success" && Array.isArray(result.data)) {
         // Security: Verify all returned data belongs to current user
         const validData = result.data.filter(deposit => {
-          return deposit.user_id === user.id;
+          return deposit.user_id === user.user_id;
         });
 
         setDeposits(validData);
@@ -127,7 +127,7 @@ const RiwayatTabung = () => {
 
   const openModal = (deposit) => {
     // Security: Verify deposit belongs to current user before opening
-    if (deposit.user_id !== user.id) {
+    if (deposit.user_id !== user.user_id) {
       return;
     }
     setSelectedDeposit(deposit);

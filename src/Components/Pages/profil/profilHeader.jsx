@@ -10,7 +10,7 @@ export default function ProfilHeader() {
 
   const fetchUserBadges = async () => {
     try {
-      const result = await getUserBadges(user.id);
+      const result = await getUserBadges(user.user_id);
 
       if (result.status === 'success') {
         setUserBadges(result.data || []);

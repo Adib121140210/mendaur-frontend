@@ -141,7 +141,7 @@ export default function AchievementList() {
   const fetchTotalRewards = async () => {
     try {
       // Fetch ALL badges to calculate total rewards
-      const result = await apiGet(`/users/${user.id}/badges-list?filter=all`);
+      const result = await apiGet(`/users/${user.user_id}/badges-list?filter=all`);
 
       if (result.status === 'success') {
         const badges = result.data || [];
@@ -168,7 +168,7 @@ export default function AchievementList() {
       setLoading(true);
 
       // Fetch badges with progress using the new optimized endpoint
-      const result = await apiGet(`/users/${user.id}/badges-list?filter=${filter}`);
+      const result = await apiGet(`/users/${user.user_id}/badges-list?filter=${filter}`);
 
       if (result.status === 'success') {
         const badges = result.data || [];

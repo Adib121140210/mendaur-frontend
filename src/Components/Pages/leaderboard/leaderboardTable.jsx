@@ -99,7 +99,7 @@ export default function LeaderboardTable() {
   const currentUserRank = useMemo(() => {
     if (!currentUserId) return null;
     const index = filteredUsers.findIndex(user => 
-      String(user.id || user.id_user) === String(currentUserId)
+      String(user.user_id) === String(currentUserId)
     );
     return index >= 0 ? index + 1 : null;
   }, [filteredUsers, currentUserId]);
@@ -217,7 +217,7 @@ export default function LeaderboardTable() {
                       : "";
 
                   // Check if this is the current user
-                  const isCurrentUser = String(user.id || user.id_user) === String(currentUserId);
+                  const isCurrentUser = String(user.user_id) === String(currentUserId);
 
                   // Get user data (handle different API field names)
                   const userName = user.nama || user.nama_user || user.name || 'Unknown';
@@ -226,7 +226,7 @@ export default function LeaderboardTable() {
 
                   return (
                     <tr 
-                      key={user.id || user.id_user || `user-${globalIndex}`} 
+                      key={user.user_id || `user-${globalIndex}`} 
                       className={isCurrentUser ? 'currentUserRow' : ''}
                     >
                       <td className={`rankColumn ranking ${rankClass}`}>

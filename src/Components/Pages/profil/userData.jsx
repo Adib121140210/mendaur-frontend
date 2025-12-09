@@ -20,7 +20,7 @@ export default function UserData() {
 
       // Fetch user detail to get created_at
       try {
-        const userDetail = await getUser(user.id);
+        const userDetail = await getUser(user.user_id);
         console.log("User detail response:", userDetail);
         if (userDetail.data && userDetail.data.created_at) {
           setUserCreatedAt(userDetail.data.created_at);
@@ -32,7 +32,7 @@ export default function UserData() {
 
       // Fetch activity logs
       try {
-        const aktResult = await getUserActivity(user.id);
+        const aktResult = await getUserActivity(user.user_id);
         if (aktResult.status === 'success') {
           setAktivitas(aktResult.data || []);
         }
@@ -42,7 +42,7 @@ export default function UserData() {
 
       // Fetch badges count and calculate total rewards
       try {
-        const badgeResult = await getUserBadges(user.id);
+        const badgeResult = await getUserBadges(user.user_id);
         if (badgeResult.status === 'success') {
           const badges = badgeResult.data || [];
           setBadgeCount(badges.length);

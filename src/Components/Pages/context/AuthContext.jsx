@@ -61,10 +61,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', roleName);
     localStorage.setItem('roleData', JSON.stringify(roleObj));
     localStorage.setItem('permissions', JSON.stringify(userPermissions));
-    localStorage.setItem('id_user', userData.id); // For backward compatibility
+    localStorage.setItem('id_user', userData.user_id); // For backward compatibility - now uses user_id from backend
     
     console.log('✅ Login successful:', {
-      userId: userData.id,
+      userId: userData.user_id,
       role: roleName,
       permissions: userPermissions.length,
       isAdmin: roleName === 'admin' || roleName === 'superadmin'
