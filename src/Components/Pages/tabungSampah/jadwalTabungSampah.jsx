@@ -66,10 +66,14 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         if (showSelection) {
           const activeStatuses = ['aktif', 'active', 'available', 'open'];
           data = normalized.filter(s => activeStatuses.includes((s.status || '').toLowerCase()));
+          console.log(`Selection mode: filtered from ${normalized.length} to ${data.length} schedules`);
+          console.log('Filtered data:', data);
         } else {
           data = normalized;
+          console.log(`View mode: showing all ${normalized.length} schedules`);
         }
 
+        console.log('Final setSchedules data:', data);
         setSchedules(data);
       } catch (err) {
         console.error("Error fetching schedules:", err);
