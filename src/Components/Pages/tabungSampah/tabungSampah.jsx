@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Recycle, Search } from "lucide-react";
-import { JenisSampah } from "../../lib/jenisSampah";
 import KategoriSampahWrapper from "./kategoriSampah";
 import JadwalTabungSampah from "./jadwalTabungSampah";
 import FormSetorSampah from "../../Form/FormSetorSampah";
@@ -13,7 +12,7 @@ export default function TabungSampah() {
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [sampahData, setSampahData] = useState(JenisSampah);
+  const [sampahData, setSampahData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -87,21 +86,18 @@ export default function TabungSampah() {
 
             setSampahData(allWasteTypes);
           } else {
-            console.warn("No data received from API, using local fallback");
-            setSampahData(JenisSampah);
+            console.warn("No data received from API");
+            setSampahData([]);
           }
         } else {
           console.error(`API Error: ${response.status} ${response.statusText}`);
           const errorText = await response.text();
           console.error('Response:', errorText);
-          console.warn("API error, using local fallback data");
-          setSampahData(JenisSampah);
+          setSampahData([]);
         }
       } catch (error) {
         console.error("Error fetching waste prices from jenis-sampah API:", error);
-        // Keep using JenisSampah from local data as fallback
-        console.log("Using local JenisSampah data as fallback");
-        setSampahData(JenisSampah);
+        setSampahData([]);
       } finally {
         setLoading(false);
       }
