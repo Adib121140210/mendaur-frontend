@@ -67,14 +67,14 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         let schedules = result.data || [];
         console.log('🔍 Jadwal dari API (raw):', schedules);
         console.log('📊 Total jadwal:', schedules.length);
-        
+
         // API tidak mengembalikan ID, jadi kita tambahkan ID sendiri berdasarkan index
         // Kemudian backend harus menggunakan ID ini untuk lookup
         const schedulesWithId = schedules.map((schedule, index) => ({
           ...schedule,
           id: index + 1  // Tambahkan ID berdasarkan index (1-based untuk database compatibility)
         }));
-        
+
         console.log('✅ Jadwal dengan ID:', schedulesWithId);
         setJadwalList(schedulesWithId);
       } catch (err) {
@@ -185,20 +185,28 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
     const data = new FormData();
 
-    // Gunakan fallback ke 1 jika userId tidak diberikan
-    const validUserId = userId || 1;
-    console.log('Sending user_id:', validUserId);
+    // Gunakan user_id dari authenticated user
+    // Fallback: gunakan userId prop jika diberikan, atau coba dari user context, terakhir fallback ke 1
+    let finalUserId = userId;
+    if (!finalUserId && user?.id) {
+      finalUserId = user.id;
+    }
+    if (!finalUserId) {
+      finalUserId = 1;
+    }
+    console.log('Sending user_id:', finalUserId);
 
     // jadwalId adalah index string, convert ke int dan get selected schedule
     const selectedIndex = parseInt(formData.jadwalId);
     const selectedSchedule = jadwalList[selectedIndex];
-    const scheduleId = selectedSchedule?.id;
-    
+    // Gunakan synthetic ID (1-based) karena API tidak mengembalikan id field
+    const scheduleId = selectedSchedule?.id || (selectedIndex + 1);
+
     console.log('Selected index:', selectedIndex);
     console.log('Selected schedule:', selectedSchedule);
     console.log('Schedule ID to send:', scheduleId);
 
-    data.append("user_id", validUserId);
+    data.append("user_id", finalUserId);
     data.append("jadwal_id", scheduleId);  // tabung_sampah table uses jadwal_id (not jadwal_penyetoran_id)
     data.append("nama_lengkap", formData.nama);
     data.append("no_hp", formData.noHp);
