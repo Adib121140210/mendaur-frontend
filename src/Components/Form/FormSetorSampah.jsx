@@ -67,7 +67,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         let schedules = result.data || [];
         console.log('🔍 Jadwal dari API:', schedules);
         console.log('📊 Total jadwal:', schedules.length);
-        
+
         // ✅ Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
         // Tidak perlu menambahkan synthetic IDs lagi
         setJadwalList(schedules);
@@ -183,8 +183,8 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     // Gunakan user_id dari authenticated user
     // Fallback: gunakan userId prop jika diberikan, atau coba dari user context, terakhir fallback ke 1
     let finalUserId = userId;
-    if (!finalUserId && user?.id) {
-      finalUserId = user.id;
+    if (!finalUserId && user?.user_id) {
+      finalUserId = user.user_id;  // ✅ Backend returns user_id, not id
     }
     if (!finalUserId) {
       finalUserId = 1;
