@@ -30,11 +30,11 @@ export default function ProfilHeader() {
 
   // Fetch user badges from backend
   useEffect(() => {
-    if (user?.id) {
+    if (user?.user_id) {
       fetchUserBadges();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.user_id]);
 
   const handleSelectBadge = (badgeId) => {
     setActiveBadge(badgeId);

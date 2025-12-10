@@ -16,21 +16,21 @@ const HomeContent = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated && user?.id) {
+    if (isAuthenticated && user?.user_id) {
       fetchDashboardData();
     } else {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.user_id]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      // Get user ID from multiple sources
-      const userId = user?.id || localStorage.getItem('id_user');
+      // Get user ID from user object (backend uses user_id)
+      const userId = user?.user_id || localStorage.getItem('id_user');
       
       console.log('Debug Info:', {
         userObject: user,
@@ -215,7 +215,7 @@ const HomeContent = () => {
           </h2>
           <div className="leaderboardList">
             {leaderboard.slice(0, 10).map((leader, index) => {
-              const currentUserId = user?.id || localStorage.getItem('id_user');
+              const currentUserId = user?.user_id || localStorage.getItem('id_user');
               return (
                 <div 
                   key={leader.user_id} 

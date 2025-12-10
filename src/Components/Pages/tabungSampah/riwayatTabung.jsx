@@ -31,18 +31,18 @@ const RiwayatTabung = () => {
   });
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.user_id) {
       fetchDeposits();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, statusFilter]);
+  }, [user?.user_id, statusFilter]);
 
   const fetchDeposits = async () => {
     try {
       setLoading(true);
 
       // Security: Validate user is authenticated
-      if (!user?.id) {
+      if (!user?.user_id) {
         console.error("User ID not found - user not authenticated");
         setDeposits([]);
         return;

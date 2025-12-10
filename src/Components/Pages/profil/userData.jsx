@@ -62,11 +62,11 @@ export default function UserData() {
   };
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.user_id) {
       fetchUserData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.user_id]);
 
   const formatDate = (dateString) => {
     if (!dateString) {

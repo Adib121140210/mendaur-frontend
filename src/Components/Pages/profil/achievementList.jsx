@@ -124,19 +124,19 @@ export default function AchievementList() {
   const [totalPossibleRewards, setTotalPossibleRewards] = useState(0);
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.user_id) {
       fetchBadges();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, filter]);
+  }, [user?.user_id, filter]);
 
   // Fetch total rewards separately on mount (independent of filter)
   useEffect(() => {
-    if (user?.id) {
+    if (user?.user_id) {
       fetchTotalRewards();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.user_id]);
 
   const fetchTotalRewards = async () => {
     try {
