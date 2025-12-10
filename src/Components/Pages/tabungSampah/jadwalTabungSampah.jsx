@@ -22,7 +22,11 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         const endpoint = `http://127.0.0.1:8000/api/jadwal-penyetoran`;
 
         const headers = {
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         };
 
         // For viewing mode (pickup), need auth - fetch user's schedules
@@ -33,7 +37,11 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
           headers.Authorization = `Bearer ${token}`;
         }
 
-        const response = await fetch(endpoint, { headers });
+        const response = await fetch(endpoint, { 
+          method: 'GET',
+          headers,
+          cache: 'no-store',
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch schedules");

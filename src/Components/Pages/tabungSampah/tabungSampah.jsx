@@ -31,8 +31,19 @@ export default function TabungSampah() {
     const fetchWastePrices = async () => {
       setLoading(true);
       try {
-        // ✅ Fetch from jenis-sampah endpoint
-        const response = await fetch("http://127.0.0.1:8000/api/jenis-sampah");
+        const token = localStorage.getItem('token');
+        // ✅ Fetch from jenis-sampah endpoint with proper headers
+        const response = await fetch("http://127.0.0.1:8000/api/jenis-sampah", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          cache: 'no-store',
+        });
         
         if (response.ok) {
           const result = await response.json();
@@ -73,12 +84,13 @@ export default function TabungSampah() {
             setSampahData(allWasteTypes);
           }
         } else {
-          console.warn("API response not OK, using local fallback");
+          console.error(`API Error: ${response.status} ${response.statusText}`);
+          const errorText = await response.text();
+          console.error('Response:', errorText);
           setSampahData(JenisSampah);
         }
       } catch (error) {
-        console.log("Error fetching waste prices from jenis-sampah API:", error);
-        console.log("Using local waste price data as fallback");
+        console.error("Error fetching waste prices from jenis-sampah API:", error);
         // Keep using JenisSampah from local data as fallback
         setSampahData(JenisSampah);
       } finally {
