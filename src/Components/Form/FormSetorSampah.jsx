@@ -152,7 +152,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         // Update marker position dengan animasi
         marker.setPosition({ lat, lng });
         marker.setAnimation(window.google.maps.Animation.BOUNCE);
-        
+
         // Hentikan animasi setelah 750ms
         setTimeout(() => {
           marker.setAnimation(null);
@@ -252,7 +252,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const validation = validate();
     if (Object.keys(validation).length > 0) {
@@ -268,20 +268,20 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     }
 
     setLoading(true);
-    
+
     const data = new FormData();
-    
+
     // Gunakan fallback ke 1 jika userId tidak diberikan
     const validUserId = userId || 1;
     console.log('Sending user_id:', validUserId);
-    
+
     data.append("user_id", validUserId);
     data.append("jadwal_id", formData.jadwalId);
     data.append("nama_lengkap", formData.nama);
     data.append("no_hp", formData.noHp);
     data.append("titik_lokasi", formData.lokasi);
     data.append("jenis_sampah", formData.jenis);
-    
+
     if (formData.foto) {
       data.append("foto_sampah", formData.foto);
     }
@@ -297,7 +297,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       });
 
       const result = await res.json();
-      
+
       // Log response untuk debugging
       console.log('Response status:', res.status);
       console.log('Response data:', result);
@@ -306,17 +306,17 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         // Tangani validation errors dari Laravel
         if (result.errors) {
           console.error('Validation errors:', result.errors);
-          
+
           const backendErrors = {};
           Object.keys(result.errors).forEach(key => {
             backendErrors[key] = result.errors[key][0];
           });
           setErrors(backendErrors);
-          
+
           // Tampilkan pesan error detail
           const errorMessages = Object.values(result.errors).flat().join('\n');
           alert(`Validasi gagal:\n${errorMessages}`);
-          
+
           throw new Error(result.message || "Validasi gagal");
         }
         throw new Error(result.message || "Terjadi kesalahan");
@@ -361,15 +361,15 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         <form onSubmit={handleSubmit}>
           {/* Field tersembunyi - dikirim ke backend tapi tidak terlihat user */}
           <div className="hiddenFields">
-            <input 
-              type="hidden" 
-              name="nama" 
-              value={formData.nama} 
+            <input
+              type="hidden"
+              name="nama"
+              value={formData.nama}
             />
-            <input 
-              type="hidden" 
-              name="noHp" 
-              value={formData.noHp} 
+            <input
+              type="hidden"
+              name="noHp"
+              value={formData.noHp}
             />
           </div>
 
@@ -389,16 +389,16 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                 jadwalList.map((j) => {
                   // Format tanggal dengan benar
                   const date = new Date(j.tanggal);
-                  const formattedDate = date.toLocaleDateString('id-ID', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  const formattedDate = date.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   });
                   // Format waktu (tanpa detik)
                   const timeStart = j.waktu_mulai?.substring(0, 5) || '';
                   const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
-                  
+
                   return (
                     <option key={j.jenis_sampah_id} value={j.id}>
                       {formattedDate} ({timeStart} - {timeEnd}) @ {j.lokasi}
@@ -480,8 +480,8 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
           <label>
             {/* Jenis Sampah */}
-            <KategoriSampahWrapper 
-              selectedKategori={selectedKategori} 
+            <KategoriSampahWrapper
+              selectedKategori={selectedKategori}
               setSelectedKategori={setSelectedKategori}
               onSelectionChange={handleKategoriChange}
             />
@@ -493,10 +493,10 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
           <label>
             Foto Sampah*:
-            <input 
-              type="file" 
-              name="foto" 
-              accept="image/*" 
+            <input
+              type="file"
+              name="foto"
+              accept="image/*"
               onChange={handleChange}
               required
             />

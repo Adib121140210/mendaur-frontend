@@ -4,9 +4,9 @@ import "./artikel.css";
 import Pagination from "../ui/pagination";
 import { Eye } from "lucide-react";
 
-const ArtikelCard = ({ 
-  data = null, 
-  showPagination = true, 
+const ArtikelCard = ({
+  data = null,
+  showPagination = true,
   perPage = 8,
   fetchFromAPI = false,
   category = "",
@@ -28,23 +28,23 @@ const ArtikelCard = ({
   const fetchArtikel = async () => {
     try {
       setLoading(true);
-      
+
       // Build query params
       const params = new URLSearchParams();
       if (category) params.append('kategori', category);
       if (searchQuery) params.append('search', searchQuery);
-      
+
       const url = `http://127.0.0.1:8000/api/artikel${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         console.warn('Artikel API not available, using empty array');
         setArtikel([]);
         return;
       }
-      
+
       const result = await response.json();
-      
+
       if (result.status === 'success') {
         setArtikel(result.data || []);
       }
@@ -109,12 +109,12 @@ const ArtikelCard = ({
       {paginatedArtikel.map((item) => (
         <div className="artikelCard" key={item.artikel_id}>
           {item.gambar_artikel && (
-            <img 
-              src={item.gambar_artikel.startsWith('http') 
-                ? item.gambar_artikel 
+            <img
+              src={item.gambar_artikel.startsWith('http')
+                ? item.gambar_artikel
                 : `http://127.0.0.1:8000${item.gambar_artikel}`
-              } 
-              alt={item.judul_artikel} 
+              }
+              alt={item.judul_artikel}
             />
           )}
           <div className="artikelContent">

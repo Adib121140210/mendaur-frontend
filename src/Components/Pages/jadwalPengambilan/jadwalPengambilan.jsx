@@ -245,7 +245,7 @@ const JadwalPengambilan = () => {
                   <div className="info-row">
                     <Clock size={16} />
                     <span>
-                      {schedule.jam || 
+                      {schedule.jam ||
                        (schedule.waktu_mulai && schedule.waktu_selesai
                          ? `${formatTime(schedule.waktu_mulai)} - ${formatTime(schedule.waktu_selesai)}`
                          : "-")}
@@ -255,11 +255,11 @@ const JadwalPengambilan = () => {
                   <div className="info-row">
                     <MapPin size={16} />
                     <span>
-                      {schedule.lokasi || 
-                       schedule.alamat || 
-                       (Array.isArray(schedule.area) 
-                         ? schedule.area.join(", ") 
-                         : schedule.area) || 
+                      {schedule.lokasi ||
+                       schedule.alamat ||
+                       (Array.isArray(schedule.area)
+                         ? schedule.area.join(", ")
+                         : schedule.area) ||
                        "-"}
                     </span>
                   </div>

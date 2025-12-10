@@ -28,10 +28,10 @@ const HomeContent = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       // Get user ID from user object (backend uses user_id)
       const userId = user?.user_id || localStorage.getItem('id_user');
-      
+
       console.log('Debug Info:', {
         userObject: user,
         userID: userId,
@@ -120,7 +120,7 @@ const HomeContent = () => {
           <p style={{ margin: '20px 0', color: '#666' }}>
             Login untuk melihat statistik dan mengumpulkan poin
           </p>
-          <button 
+          <button
             onClick={() => navigate('/login')}
             style={{
               padding: '12px 32px',
@@ -135,7 +135,7 @@ const HomeContent = () => {
             Login Sekarang
           </button>
         </div>
-        
+
         <section className="bannerSection">
           <Banner />
         </section>
@@ -217,8 +217,8 @@ const HomeContent = () => {
             {leaderboard.slice(0, 10).map((leader, index) => {
               const currentUserId = user?.user_id || localStorage.getItem('id_user');
               return (
-                <div 
-                  key={leader.user_id} 
+                <div
+                  key={leader.user_id}
                   className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
                 >
                   <span className="leaderRank">#{index + 1}</span>

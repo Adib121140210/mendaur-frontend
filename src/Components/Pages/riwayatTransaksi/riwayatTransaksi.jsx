@@ -38,7 +38,7 @@ export default function RiwayatTransaksi() {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       // Fetch cash withdrawals
       const withdrawalsResponse = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
         headers: {
@@ -73,7 +73,7 @@ export default function RiwayatTransaksi() {
       try {
         // Get user ID from localStorage
         const userId = localStorage.getItem('id_user');
-        
+
         if (userId) {
           const wasteResponse = await fetch(`http://127.0.0.1:8000/api/users/${userId}/tabung-sampah`, {
             headers: {
@@ -85,10 +85,10 @@ export default function RiwayatTransaksi() {
           if (wasteResponse.ok) {
             const wasteData = await wasteResponse.json();
             console.log('Waste deposits response:', wasteData); // Debug log
-            
+
             // Response format: { status: 'success', data: [...] }
             const wasteArray = wasteData.data || [];
-            
+
             wasteDeposits = wasteArray.map(item => ({
               id: `waste-${item.tabung_sampah_id}`,
               type: 'setor_sampah',
@@ -120,16 +120,16 @@ export default function RiwayatTransaksi() {
         });
 
         console.log('Penukaran produk response status:', productResponse.status);
-        
+
         if (productResponse.ok) {
           const productData = await productResponse.json();
           console.log('Product redemptions response:', productData); // Debug log
-          
+
           // Handle both array and object with data property
-          const redemptionsArray = Array.isArray(productData) 
-            ? productData 
+          const redemptionsArray = Array.isArray(productData)
+            ? productData
             : (productData.data?.data || productData.data || []);
-          
+
           productRedemptions = redemptionsArray.map(item => ({
             id: `product-${item.penukaran_produk_id}`,
             type: 'tukar_produk',
@@ -184,13 +184,13 @@ export default function RiwayatTransaksi() {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "approved": 
+      case "approved":
       case "selesai":
       case "delivered":
       case "claimed":
         return <CheckCircle className="statusIcon green" />;
       case "pending":
-      case "diproses": 
+      case "diproses":
         return <RefreshCcw className="statusIcon orange" />;
       case "rejected":
       case "dibatalkan":
@@ -199,7 +199,7 @@ export default function RiwayatTransaksi() {
       case "dikirim":
       case "shipped":
         return <Truck className="statusIcon blue" />;
-      default: 
+      default:
         return <Clock className="statusIcon gray" />;
     }
   };
@@ -387,7 +387,7 @@ export default function RiwayatTransaksi() {
                             <Package size={14} />
                             {item.productName} {item.quantity > 1 && `(${item.quantity}x)`}
                           </p>
-                          
+
                           {/* Claim Instructions for Approved Status */}
                           {item.status === 'approved' && item.claimInstructions && (
                             <div className="claimInstructions">
@@ -395,7 +395,7 @@ export default function RiwayatTransaksi() {
                               <p>{item.claimInstructions}</p>
                             </div>
                           )}
-                          
+
                           {/* Claimed Status */}
                           {item.status === 'claimed' && item.claimedAt && (
                             <p className="cardInfo success">
@@ -407,7 +407,7 @@ export default function RiwayatTransaksi() {
                               })}
                             </p>
                           )}
-                          
+
                           {/* Admin Note for Rejected */}
                           {item.status === 'rejected' && item.adminNote && (
                             <p className="adminNote">
@@ -415,7 +415,7 @@ export default function RiwayatTransaksi() {
                               Alasan: {item.adminNote}
                             </p>
                           )}
-                          
+
                           {item.trackingNumber && (
                             <p className="cardInfo">
                               <Truck size={14} />
@@ -424,8 +424,8 @@ export default function RiwayatTransaksi() {
                           )}
                           {item.deliveryAddress && (
                             <p className="cardInfo">
-                              � {item.deliveryAddress.length > 50 
-                                ? item.deliveryAddress.substring(0, 50) + '...' 
+                              � {item.deliveryAddress.length > 50
+                                ? item.deliveryAddress.substring(0, 50) + '...'
                                 : item.deliveryAddress}
                             </p>
                           )}

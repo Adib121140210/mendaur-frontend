@@ -12,31 +12,31 @@ export const KategoriSampah = [
   {
     id: "Kertas",
     label: "Kertas",
-    color: "#0284c7", // Biru
+    color: "#8B4513",
     icon: FileText,
   },
   {
     id: "Plastik",
     label: "Plastik",
-    color: "#047857", // Hijau
+    color: '#2196F3',
     icon: Package,
   },
   {
     id: "Logam",
     label: "Logam",
-    color: "#6b7280", // Abu-abu
+    color: '#A9A9A9', // Abu-abu
     icon: Hammer,
   },
   {
     id: "Tekstil",
     label: "Tekstil",
-    color: "#7c3aed", // Ungu
+    color: '#E91E63',
     icon: Shirt,
   },
   {
     id: "Elektronik",
     label: "Elektronik",
-    color: "#facc15", // Kuning terang (ganti dari #F59E0B)
+    color: '#FF9800',
     icon: Monitor,
   },
   {
