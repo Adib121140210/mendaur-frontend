@@ -22,11 +22,7 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         const endpoint = `http://127.0.0.1:8000/api/jadwal-penyetoran`;
 
         const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          Accept: "application/json",
         };
 
         // For viewing mode (pickup), need auth - fetch user's schedules
@@ -37,11 +33,7 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
           headers.Authorization = `Bearer ${token}`;
         }
 
-        const response = await fetch(endpoint, { 
-          method: 'GET',
-          headers,
-          cache: 'no-store',
-        });
+        const response = await fetch(endpoint, { headers });
 
         if (!response.ok) {
           throw new Error("Failed to fetch schedules");
@@ -49,12 +41,34 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
 
         const result = await response.json();
         let data = result.data || result || [];
-        
-        // For selection mode, filter only active schedules
+
+        // Normalization: map known alternative field names to expected shape
+        const normalized = (Array.isArray(data) ? data : []).map(item => {
+          return {
+            jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || null,
+            status: (item.status || item.keterangan || item.st || "").toString(),
+            tanggal: item.tanggal || item.date || item.day || null,
+            jam: item.jam || item.time || item.waktu || null,
+            waktu_mulai: item.waktu_mulai || item.start_time || null,
+            waktu_selesai: item.waktu_selesai || item.end_time || null,
+            lokasi: item.lokasi || item.alamat || item.location || null,
+            area: item.area || item.areas || null,
+            catatan: item.catatan || item.notes || null,
+            hari: item.hari || null,
+          };
+        });
+
+        console.log('Fetched schedules raw:', result);
+        console.log('Normalized schedules:', normalized);
+
+        // For selection mode, filter only active schedules (tolerate different status strings)
         if (showSelection) {
-          data = data.filter(s => s.status === 'aktif');
+          const activeStatuses = ['aktif', 'active', 'available', 'open'];
+          data = normalized.filter(s => activeStatuses.includes((s.status || '').toLowerCase()));
+        } else {
+          data = normalized;
         }
-        
+
         setSchedules(data);
       } catch (err) {
         console.error("Error fetching schedules:", err);
@@ -140,8 +154,8 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
             {showSelection ? " Pilih Jadwal Penyetoran" : " Jadwal Pengambilan Sampah"}
           </p>
           <p className="jadwalSubtitle">
-            {showSelection 
-              ? "Pilih jadwal untuk menyetor sampah Anda" 
+            {showSelection
+              ? "Pilih jadwal untuk menyetor sampah Anda"
               : "Lihat jadwal pengambilan sampah Anda (Penjadwalan diatur oleh admin)"}
           </p>
         </div>
@@ -173,8 +187,8 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
           {schedules.map((schedule) => {
             const isActive = showSelection && activeSchedule === schedule.jadwal_penyetoran_id;
             return (
-              <div 
-                key={schedule.jadwal_penyetoran_id} 
+              <div
+                key={schedule.jadwal_penyetoran_id}
                 className={`jadwalCardItem ${isActive ? "active" : ""} ${showSelection ? "selectable" : ""}`}
                 onClick={() => showSelection && handleScheduleSelect(schedule.jadwal_penyetoran_id)}
               >
@@ -197,7 +211,7 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
                   <div className="infoRow">
                     <Clock size={14} />
                     <span>
-                      {schedule.jam || 
+                      {schedule.jam ||
                        (schedule.waktu_mulai && schedule.waktu_selesai
                          ? `${formatTime(schedule.waktu_mulai)} - ${formatTime(schedule.waktu_selesai)}`
                          : "-")}
@@ -207,11 +221,11 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
                   <div className="infoRow">
                     <MapPin size={14} />
                     <span>
-                      {schedule.lokasi || 
-                       schedule.alamat || 
-                       (Array.isArray(schedule.area) 
-                         ? schedule.area.join(", ") 
-                         : schedule.area) || 
+                      {schedule.lokasi ||
+                       schedule.alamat ||
+                       (Array.isArray(schedule.area)
+                         ? schedule.area.join(", ")
+                         : schedule.area) ||
                        "-"}
                     </span>
                   </div>
