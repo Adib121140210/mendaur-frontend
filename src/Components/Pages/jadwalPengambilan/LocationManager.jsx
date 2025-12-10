@@ -200,7 +200,7 @@ const LocationManager = ({ onClose }) => {
             ) : (
               locations.map((location) => (
                 <div
-                  key={location.id}
+                  key={location.location_id}
                   className={`location-card ${editingId === location.id ? "editing" : ""}`}
                 >
                   <div className="location-icon">
