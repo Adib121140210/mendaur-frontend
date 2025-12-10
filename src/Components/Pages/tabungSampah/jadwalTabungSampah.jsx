@@ -44,7 +44,6 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
 
         // Normalization: map known alternative field names to expected shape
         const normalized = (Array.isArray(data) ? data : []).map((item, index) => {
-          console.log(`Raw item ${index}:`, item); // Debug: see actual field names
           return {
             jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || index, // Use index as fallback
             status: (item.status || item.keterangan || item.st || "aktif").toString().toLowerCase(), // Default to 'aktif'
@@ -59,21 +58,14 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
           };
         });
 
-        console.log('Fetched schedules raw:', result);
-        console.log('Normalized schedules:', normalized);
-
         // For selection mode, filter only active schedules (tolerate different status strings)
         if (showSelection) {
           const activeStatuses = ['aktif', 'active', 'available', 'open'];
           data = normalized.filter(s => activeStatuses.includes((s.status || '').toLowerCase()));
-          console.log(`Selection mode: filtered from ${normalized.length} to ${data.length} schedules`);
-          console.log('Filtered data:', data);
         } else {
           data = normalized;
-          console.log(`View mode: showing all ${normalized.length} schedules`);
         }
 
-        console.log('Final setSchedules data:', data);
         setSchedules(data);
       } catch (err) {
         console.error("Error fetching schedules:", err);
