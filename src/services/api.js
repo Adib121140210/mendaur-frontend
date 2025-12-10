@@ -13,6 +13,9 @@ export const apiCall = async (endpoint, options = {}) => {
 
     const headers = {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     };
@@ -20,6 +23,7 @@ export const apiCall = async (endpoint, options = {}) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      cache: 'no-store',
     });
 
     if (!response.ok) {
