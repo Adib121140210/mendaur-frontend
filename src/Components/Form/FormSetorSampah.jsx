@@ -21,8 +21,6 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
   const [selectedKategori, setSelectedKategori] = useState(null);
   const [mapCoords, setMapCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default: Jakarta
   const mapRef = useRef(null);
-  const mapInstance = useRef(null);
-  const markerInstance = useRef(null);
 
   // Set user data otomatis saat pertama kali load
   useEffect(() => {
@@ -78,118 +76,25 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     fetchJadwal();
   }, []);
 
-  // Inisialisasi Google Maps
+  // Inisialisasi Static Map (tanpa perlu API key)
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Load Google Maps API jika belum di-load
-    if (!window.google) {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        console.error('Google Maps API key tidak ditemukan. Tambahkan VITE_GOOGLE_MAPS_API_KEY ke .env');
-        // Tampilkan placeholder message
-        if (mapRef.current) {
-          mapRef.current.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 8px;">
-              <div style="text-align: center; padding: 20px;">
-                <p style="color: #666; margin: 0 0 10px 0; font-weight: bold;">⚠️ Google Maps API Key Tidak Dikonfigurasi</p>
-                <p style="color: #999; margin: 0; font-size: 0.9rem;">Hubungi admin untuk setup Google Maps API</p>
-              </div>
-            </div>
-          `;
-        }
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => initializeMap();
-      script.onerror = () => {
-        console.error('Gagal memuat Google Maps API');
-        if (mapRef.current) {
-          mapRef.current.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #fee; border: 2px solid #f99; border-radius: 8px;">
-              <div style="text-align: center; padding: 20px;">
-                <p style="color: #c33; margin: 0 0 10px 0; font-weight: bold;">❌ Gagal Memuat Peta</p>
-                <p style="color: #999; margin: 0; font-size: 0.9rem;">Periksa konfigurasi API Key</p>
-              </div>
-            </div>
-          `;
-        }
-      };
-      document.head.appendChild(script);
-    } else {
-      initializeMap();
-    }
-
-    const initializeMap = () => {
-      const map = new window.google.maps.Map(mapRef.current, {
-        zoom: 15,
-        center: mapCoords,
-        mapTypeControl: true,
-        fullscreenControl: true,
-        zoomControl: true,
-      });
-
-      mapInstance.current = map;
-
-      // Tambah marker awal di lokasi default
-      const marker = new window.google.maps.Marker({
-        position: mapCoords,
-        map: map,
-        title: 'Lokasi Anda',
-        animation: window.google.maps.Animation.DROP,
-      });
-
-      markerInstance.current = marker;
-
-      // Event listener saat user klik peta
-      map.addListener('click', (event) => {
-        const lat = event.latLng.lat();
-        const lng = event.latLng.lng();
-
-        // Update marker position dengan animasi
-        marker.setPosition({ lat, lng });
-        marker.setAnimation(window.google.maps.Animation.BOUNCE);
-
-        // Hentikan animasi setelah 750ms
-        setTimeout(() => {
-          marker.setAnimation(null);
-        }, 750);
-
-        // Update state dengan koordinat baru
-        setMapCoords({ lat, lng });
-
-        // Buat Google Maps link
-        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
-        setFormData(prev => ({ ...prev, lokasi: mapsLink }));
-
-        console.log(`📍 Lokasi dipilih: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      });
-
-      // Geolocation - set marker ke lokasi user saat load
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-            const userLocation = { lat: userLat, lng: userLng };
-
-            map.setCenter(userLocation);
-            marker.setPosition(userLocation);
-            setMapCoords(userLocation);
-
-            const mapsLink = `https://www.google.com/maps?q=${userLat},${userLng}`;
-            setFormData(prev => ({ ...prev, lokasi: mapsLink }));
-          },
-          (error) => {
-            console.warn('Geolocation error:', error.message);
-            // Tetap gunakan default Jakarta
-          }
-        );
-      }
-    };
+    // Render static map image
+    const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCoords.lat},${mapCoords.lng}&zoom=15&size=600x300&markers=color:red%7C${mapCoords.lat},${mapCoords.lng}&style=feature:all%7Celement:labels.text%7Cvisibility:on`;
+    
+    mapRef.current.innerHTML = `
+      <div style="position: relative; width: 100%; height: 100%;">
+        <img 
+          src="${staticMapUrl}" 
+          alt="Static Map" 
+          style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;"
+        />
+        <div style="position: absolute; top: 10px; right: 10px; background: white; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+          📍 ${mapCoords.lat.toFixed(4)}, ${mapCoords.lng.toFixed(4)}
+        </div>
+      </div>
+    `;
   }, [mapCoords]);
 
   // Handle input perubahan form
@@ -400,7 +305,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                   const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
 
                   return (
-                    <option key={j.jenis_sampah_id} value={j.id}>
+                    <option key={j.jadwal_penyetoran_id || j.id || Math.random()} value={j.jadwal_penyetoran_id || j.id}>
                       {formattedDate} ({timeStart} - {timeEnd}) @ {j.lokasi}
                     </option>
                   );
