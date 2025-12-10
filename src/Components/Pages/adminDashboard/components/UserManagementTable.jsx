@@ -113,7 +113,7 @@ function UserManagementTable() {
               <tbody>
                 {users.length > 0 ? (
                   users.map((user, index) => (
-                    <tr key={user.id}>
+                    <tr key={user.user_id}>
                       <td>{(currentPage - 1) * 10 + index + 1}</td>
                       <td className="user-name">{user.nama}</td>
                       <td>{user.email}</td>
@@ -143,7 +143,7 @@ function UserManagementTable() {
           <div className="users-mobile-cards">
             {users.length > 0 ? (
               users.map((user) => (
-                <div key={user.id} className="user-card">
+                <div key={user.user_id} className="user-card">
                   <div className="user-card-row">
                     <span className="label">Name:</span>
                     <span className="value">{user.nama}</span>
