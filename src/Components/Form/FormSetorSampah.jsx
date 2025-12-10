@@ -65,18 +65,13 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         let schedules = result.data || [];
-        console.log('🔍 Jadwal dari API (raw):', schedules);
+        console.log('🔍 Jadwal dari API:', schedules);
         console.log('📊 Total jadwal:', schedules.length);
-
-        // API tidak mengembalikan ID, jadi kita tambahkan ID sendiri berdasarkan index
-        // Kemudian backend harus menggunakan ID ini untuk lookup
-        const schedulesWithId = schedules.map((schedule, index) => ({
-          ...schedule,
-          id: index + 1  // Tambahkan ID berdasarkan index (1-based untuk database compatibility)
-        }));
-
-        console.log('✅ Jadwal dengan ID:', schedulesWithId);
-        setJadwalList(schedulesWithId);
+        
+        // ✅ Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
+        // Tidak perlu menambahkan synthetic IDs lagi
+        setJadwalList(schedules);
+        console.log('📋 Jadwal yang ditampilkan:', schedules);
       } catch (err) {
         console.error("❌ Gagal ambil jadwal:", err);
         setJadwalList([]);
@@ -199,8 +194,8 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     // jadwalId adalah index string, convert ke int dan get selected schedule
     const selectedIndex = parseInt(formData.jadwalId);
     const selectedSchedule = jadwalList[selectedIndex];
-    // Gunakan synthetic ID (1-based) karena API tidak mengembalikan id field
-    const scheduleId = selectedSchedule?.id || (selectedIndex + 1);
+    // ✅ Backend sekarang mengembalikan real ID (1, 2, 3, dll)
+    const scheduleId = selectedSchedule?.id;
 
     console.log('Selected index:', selectedIndex);
     console.log('Selected schedule:', selectedSchedule);
