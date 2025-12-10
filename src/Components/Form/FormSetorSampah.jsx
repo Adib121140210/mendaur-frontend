@@ -64,13 +64,17 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         const res = await fetch("http://127.0.0.1:8000/api/jadwal-penyetoran");
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
-        const schedules = result.data || [];
-        // Filter jadwal yang masih aktif
-        const activeSchedules = schedules.filter(s => s.status === 'aktif');
-        setJadwalList(activeSchedules);
+        let schedules = result.data || [];
+        console.log('🔍 Jadwal dari API:', schedules);
+        console.log('📊 Total jadwal:', schedules.length);
+        
+        // Jika API tidak mengembalikan status, gunakan semua jadwal
+        // (API saat ini tidak punya field status, jadi kita gunakan semua data)
+        setJadwalList(schedules);
+        console.log('📋 Jadwal yang ditampilkan:', schedules);
       } catch (err) {
-        console.error("Gagal ambil jadwal:", err);
-        alert("Gagal memuat jadwal penyetoran");
+        console.error("❌ Gagal ambil jadwal:", err);
+        setJadwalList([]);
       }
     };
     fetchJadwal();
@@ -82,12 +86,12 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
     // Render static map image
     const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCoords.lat},${mapCoords.lng}&zoom=15&size=600x300&markers=color:red%7C${mapCoords.lat},${mapCoords.lng}&style=feature:all%7Celement:labels.text%7Cvisibility:on`;
-    
+
     mapRef.current.innerHTML = `
       <div style="position: relative; width: 100%; height: 100%;">
-        <img 
-          src="${staticMapUrl}" 
-          alt="Static Map" 
+        <img
+          src="${staticMapUrl}"
+          alt="Static Map"
           style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;"
         />
         <div style="position: absolute; top: 10px; right: 10px; background: white; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
@@ -180,8 +184,17 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     const validUserId = userId || 1;
     console.log('Sending user_id:', validUserId);
 
+    // jadwalId adalah index, kita perlu get jadwal_penyetoran_id dari jadwalList
+    const selectedIndex = parseInt(formData.jadwalId);
+    const selectedSchedule = jadwalList[selectedIndex];
+    const scheduleId = selectedSchedule?.jadwal_penyetoran_id || selectedSchedule?.id || selectedIndex;
+    
+    console.log('Selected index:', selectedIndex);
+    console.log('Selected schedule:', selectedSchedule);
+    console.log('Schedule ID to send:', scheduleId);
+
     data.append("user_id", validUserId);
-    data.append("jadwal_id", formData.jadwalId);
+    data.append("jadwal_id", scheduleId);
     data.append("nama_lengkap", formData.nama);
     data.append("no_hp", formData.noHp);
     data.append("titik_lokasi", formData.lokasi);
@@ -291,7 +304,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
               {jadwalList.length === 0 ? (
                 <option disabled>Tidak ada jadwal tersedia</option>
               ) : (
-                jadwalList.map((j) => {
+                jadwalList.map((j, index) => {
                   // Format tanggal dengan benar
                   const date = new Date(j.tanggal);
                   const formattedDate = date.toLocaleDateString('id-ID', {
@@ -305,7 +318,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                   const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
 
                   return (
-                    <option key={j.jadwal_penyetoran_id || j.id || Math.random()} value={j.jadwal_penyetoran_id || j.id}>
+                    <option key={index} value={index}>
                       {formattedDate} ({timeStart} - {timeEnd}) @ {j.lokasi}
                     </option>
                   );
