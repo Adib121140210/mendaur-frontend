@@ -242,7 +242,7 @@ const BookingModal = ({ onClose, onSuccess }) => {
               <select onChange={handleLocationSelect}>
                 <option value="">-- Pilih Lokasi --</option>
                 {savedLocations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
+                  <option key={loc.location_id} value={loc.location_id}>
                     {loc.name} - {loc.address}
                   </option>
                 ))}
