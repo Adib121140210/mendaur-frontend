@@ -17,6 +17,14 @@ export default function TabungSampah() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  // Get logged-in user ID from localStorage
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("id_user");
+    if (storedUserId) {
+      setUserId(parseInt(storedUserId, 10));
+    }
+  }, []);
+
   // Fetch waste prices from jenis-sampah API and kategori-sampah
   useEffect(() => {
     // Color mapping for categories
@@ -85,7 +93,7 @@ export default function TabungSampah() {
 
               // Look up category from the kategoriMap using kategori_sampah_id
               const kategoriInfo = kategoriMap[jenis.kategori_sampah_id] || {};
-              
+
               // Use color from backend if available, otherwise fallback to categoryColorMap
               const categoryColor = kategoriInfo.warna || categoryColorMap[kategoriInfo.nama_kategori] || '#10b981';
 
