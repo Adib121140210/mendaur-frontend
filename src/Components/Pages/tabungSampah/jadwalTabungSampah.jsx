@@ -43,10 +43,11 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         let data = result.data || result || [];
 
         // Normalization: map known alternative field names to expected shape
-        const normalized = (Array.isArray(data) ? data : []).map(item => {
+        const normalized = (Array.isArray(data) ? data : []).map((item, index) => {
+          console.log(`Raw item ${index}:`, item); // Debug: see actual field names
           return {
-            jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || null,
-            status: (item.status || item.keterangan || item.st || "").toString(),
+            jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || index, // Use index as fallback
+            status: (item.status || item.keterangan || item.st || "aktif").toString().toLowerCase(), // Default to 'aktif'
             tanggal: item.tanggal || item.date || item.day || null,
             jam: item.jam || item.time || item.waktu || null,
             waktu_mulai: item.waktu_mulai || item.start_time || null,

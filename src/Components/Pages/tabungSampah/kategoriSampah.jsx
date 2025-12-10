@@ -6,7 +6,8 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
   const handleCategoryClick = (kategoriId, kategoriLabel) => {
     const newSelection = selectedKategori === kategoriId ? null : kategoriId;
     setSelectedKategori(newSelection);
-  //     ✅ Notify parent component of selection change
+
+    // ✅ Notify parent component of selection change
     if (onSelectionChange) {
       onSelectionChange(newSelection, kategoriLabel);
     }
@@ -47,4 +48,3 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
     </div>
   );
 }
-
