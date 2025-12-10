@@ -22,7 +22,7 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
 
           return (
             <div
-              key={kategori.id}
+              key={kategori.kategori_sampah_id}
               className={`kategoriCard ${selectedKategori === kategori.id ? "active" : ""}`}
               style={{ borderColor: kategori.color }}
               onClick={() => handleCategoryClick(kategori.id, kategori.label)}
