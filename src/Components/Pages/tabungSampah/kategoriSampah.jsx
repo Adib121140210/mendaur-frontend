@@ -6,8 +6,7 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
   const handleCategoryClick = (kategoriId, kategoriLabel) => {
     const newSelection = selectedKategori === kategoriId ? null : kategoriId;
     setSelectedKategori(newSelection);
-    
-    // ✅ Notify parent component of selection change
+  //     ✅ Notify parent component of selection change
     if (onSelectionChange) {
       onSelectionChange(newSelection, kategoriLabel);
     }
@@ -22,7 +21,7 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
 
           return (
             <div
-              key={kategori.kategori_sampah_id}
+              key={kategori.id}
               className={`kategoriCard ${selectedKategori === kategori.id ? "active" : ""}`}
               style={{ borderColor: kategori.color }}
               onClick={() => handleCategoryClick(kategori.id, kategori.label)}
@@ -48,3 +47,4 @@ export default function KategoriSampahWrapper({ selectedKategori, setSelectedKat
     </div>
   );
 }
+
