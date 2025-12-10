@@ -44,54 +44,63 @@ export default function TabungSampah() {
           },
           cache: 'no-store',
         });
-        
+
         if (response.ok) {
           const result = await response.json();
-          
-          // Handle API response
+
+          // Handle API response - could be array or { data: array }
           const jenisArray = Array.isArray(result) ? result : result.data || [];
-          
+
           if (Array.isArray(jenisArray) && jenisArray.length > 0) {
             // Find the most recent update timestamp
             let mostRecentUpdate = null;
-            
+
             // Transform API data to match table format
+            // API returns: { jenis_sampah_id, nama_jenis, harga_per_kg, satuan, kode, kategori_sampah_id, kategori_sampah: {...} }
             const allWasteTypes = jenisArray.map(jenis => {
               // Track the most recent update
               const jenisUpdate = new Date(jenis.updated_at);
               if (!mostRecentUpdate || jenisUpdate > mostRecentUpdate) {
                 mostRecentUpdate = jenisUpdate;
               }
+
+              // Get category info from nested object or fallback to direct fields
+              const kategoriInfo = jenis.kategori_sampah || {};
               
               return {
                 id_sampah: jenis.jenis_sampah_id,
-                nama_sampah: jenis.nama_jenis || jenis.name,
-                kategori: jenis.kategori_sampah?.nama_kategori || jenis.kategori_name || 'Sampah',
+                nama_sampah: jenis.nama_jenis,
+                kategori: kategoriInfo.nama_kategori || 'Sampah',
                 satuan: jenis.satuan || "kg",
-                harga_satuan: parseFloat(jenis.harga_per_kg || jenis.price || 0),
-                deskripsi: jenis.deskripsi || jenis.description,
-                kategori_icon: jenis.kategori_sampah?.icon,
-                kategori_color: jenis.kategori_sampah?.warna || jenis.kategori_sampah?.color || '#10b981',
-                kode: jenis.kode || jenis.code,
+                harga_satuan: parseFloat(jenis.harga_per_kg || 0),
+                deskripsi: jenis.deskripsi || kategoriInfo.deskripsi || '',
+                kategori_icon: kategoriInfo.icon,
+                kategori_color: kategoriInfo.warna || '#10b981',
+                kode: jenis.kode,
               };
             });
-            
+
             // Set the last updated timestamp
             if (mostRecentUpdate) {
               setLastUpdated(mostRecentUpdate);
             }
-            
+
             setSampahData(allWasteTypes);
+          } else {
+            console.warn("No data received from API, using local fallback");
+            setSampahData(JenisSampah);
           }
         } else {
           console.error(`API Error: ${response.status} ${response.statusText}`);
           const errorText = await response.text();
           console.error('Response:', errorText);
+          console.warn("API error, using local fallback data");
           setSampahData(JenisSampah);
         }
       } catch (error) {
         console.error("Error fetching waste prices from jenis-sampah API:", error);
         // Keep using JenisSampah from local data as fallback
+        console.log("Using local JenisSampah data as fallback");
         setSampahData(JenisSampah);
       } finally {
         setLoading(false);
@@ -128,7 +137,7 @@ export default function TabungSampah() {
         selectedKategori={selectedKategori}
         setSelectedKategori={setSelectedKategori}
       />
-      
+
       {/* Tabel Harga Sampah */}
       <div className="daftarSampahWrapper">
         <div className="filterBar">
@@ -136,14 +145,14 @@ export default function TabungSampah() {
           {lastUpdated && (
             <div className="lastUpdatedBanner">
               <span className="updateText">
-                Terakhir diperbarui: {lastUpdated.toLocaleDateString('id-ID', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })} pukul {lastUpdated.toLocaleTimeString('id-ID', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
+                Terakhir diperbarui: {lastUpdated.toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })} pukul {lastUpdated.toLocaleTimeString('id-ID', {
+                  hour: '2-digit',
+                  minute: '2-digit'
                 })}
               </span>
             </div>
@@ -151,9 +160,9 @@ export default function TabungSampah() {
 
           <div className="searchWrapper">
             <Search className="searchIcon" size={20} />
-            <input 
-              type="text" 
-              className="searchInput" 
+            <input
+              type="text"
+              className="searchInput"
               placeholder="Cari jenis sampah…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -178,8 +187,8 @@ export default function TabungSampah() {
               {filteredSampah.length === 0 ? (
                 <tr>
                   <td colSpan="3" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                    {searchQuery 
-                      ? `Tidak ada hasil untuk "${searchQuery}"` 
+                    {searchQuery
+                      ? `Tidak ada hasil untuk "${searchQuery}"`
                       : "Tidak ada data harga sampah"}
                   </td>
                 </tr>
@@ -188,11 +197,11 @@ export default function TabungSampah() {
                   <tr key={item.id_sampah}>
                     <td className="namaBarang">
                       {item.nama_sampah}
-                      <span 
+                      <span
                         className="kategoriBadge"
-                        style={{ 
+                        style={{
                           borderColor: item.kategori_color,
-                          color: item.kategori_color 
+                          color: item.kategori_color
                         }}
                       >
                         {item.kategori}
