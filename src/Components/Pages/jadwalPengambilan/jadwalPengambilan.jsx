@@ -229,7 +229,7 @@ const JadwalPengambilan = () => {
         ) : (
           <div className="schedules-list">
             {filteredSchedules.map((schedule) => (
-              <div key={schedule.id} className="schedule-card">
+              <div key={schedule.jadwal_penyetoran_id} className="schedule-card">
                 <div className="card-header">
                   <div className="card-title">
                     <Calendar size={20} />
