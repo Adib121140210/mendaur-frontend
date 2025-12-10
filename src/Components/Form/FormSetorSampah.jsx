@@ -199,7 +199,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     console.log('Schedule ID to send:', scheduleId);
 
     data.append("user_id", validUserId);
-    data.append("jadwal_id", scheduleId);
+    data.append("jadwal_id", scheduleId);  // tabung_sampah table uses jadwal_id (not jadwal_penyetoran_id)
     data.append("nama_lengkap", formData.nama);
     data.append("no_hp", formData.noHp);
     data.append("titik_lokasi", formData.lokasi);
