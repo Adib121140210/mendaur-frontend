@@ -93,7 +93,7 @@ export default function TabungSampah() {
 
               // Look up category from the kategoriMap using kategori_sampah_id
               const kategoriInfo = kategoriMap[jenis.kategori_sampah_id] || {};
-
+              
               // Use color from backend if available, otherwise fallback to categoryColorMap
               const categoryColor = kategoriInfo.warna || categoryColorMap[kategoriInfo.nama_kategori] || '#10b981';
 
