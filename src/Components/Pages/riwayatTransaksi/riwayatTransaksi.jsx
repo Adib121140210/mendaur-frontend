@@ -328,7 +328,7 @@ export default function RiwayatTransaksi() {
               </div>
             ) : (
               filteredTransactions.map((item) => (
-                <li key={item.id} className={`riwayatCard ${item.status}`}>
+                <li key={item.poin_transaksi_id} className={`riwayatCard ${item.status}`}>
                   <div className="cardTop">
                     <div className="cardTitleBlock">
                       <h3 className="cardTitle">{item.deskripsi}</h3>
