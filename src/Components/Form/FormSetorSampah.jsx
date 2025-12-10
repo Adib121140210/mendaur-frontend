@@ -400,7 +400,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
                   const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
                   
                   return (
-                    <option key={j.id} value={j.id}>
+                    <option key={j.jenis_sampah_id} value={j.id}>
                       {formattedDate} ({timeStart} - {timeEnd}) @ {j.lokasi}
                     </option>
                   );
