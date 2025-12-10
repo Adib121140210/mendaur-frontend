@@ -17,16 +17,21 @@ export default function TabungSampah() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Get logged-in user ID from localStorage
-  useEffect(() => {
-    const storedUserId = localStorage.getItem("id_user");
-    if (storedUserId) {
-      setUserId(parseInt(storedUserId, 10));
-    }
-  }, []);
-
   // Fetch waste prices from jenis-sampah API and kategori-sampah
   useEffect(() => {
+    // Color mapping for categories
+    const categoryColorMap = {
+      'Plastik': '#2196F3',       // Light Blue
+      'Kertas': '#8B4513',        // Saddle Brown
+      'Logam': '#A9A9A9',         // Dark Gray
+      'Tekstil': '#E91E63',       // Pink
+      'Elektronik': '#FF9800',    // Deep Orange
+      'Kaca': '#00BCD4',          // Cyan
+      'Pecah Belah': '#00BCD4',   // Cyan
+      'Lainnya': '#607D8B',       // Blue Gray
+      'Campuran': '#607D8B',      // Blue Gray
+    };
+
     const fetchWastePrices = async () => {
       setLoading(true);
       try {
@@ -80,6 +85,9 @@ export default function TabungSampah() {
 
               // Look up category from the kategoriMap using kategori_sampah_id
               const kategoriInfo = kategoriMap[jenis.kategori_sampah_id] || {};
+              
+              // Use color from backend if available, otherwise fallback to categoryColorMap
+              const categoryColor = kategoriInfo.warna || categoryColorMap[kategoriInfo.nama_kategori] || '#10b981';
 
               return {
                 id_sampah: jenis.jenis_sampah_id,
@@ -90,7 +98,7 @@ export default function TabungSampah() {
                 harga_satuan: parseFloat(jenis.harga_per_kg || 0),
                 deskripsi: jenis.deskripsi || kategoriInfo.deskripsi || '',
                 kategori_icon: kategoriInfo.icon,
-                kategori_color: kategoriInfo.warna || '#10b981',
+                kategori_color: categoryColor, // Use the mapped/provided color
                 kode: jenis.kode,
               };
             });
