@@ -25,14 +25,13 @@ export default function TabungSampah() {
     }
   }, []);
 
-  // Fetch waste prices from jenis-sampah API
+  // Fetch waste prices from jenis-sampah API and kategori-sampah
   useEffect(() => {
     const fetchWastePrices = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        // ✅ Fetch from jenis-sampah endpoint with proper headers
-        const response = await fetch("http://127.0.0.1:8000/api/jenis-sampah", {
+        const fetchOptions = {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -42,20 +41,36 @@ export default function TabungSampah() {
             ...(token && { 'Authorization': `Bearer ${token}` }),
           },
           cache: 'no-store',
-        });
+        };
 
-        if (response.ok) {
-          const result = await response.json();
+        // ✅ Fetch BOTH jenis-sampah AND kategori-sampah in parallel
+        const [jenisResponse, kategoriResponse] = await Promise.all([
+          fetch("http://127.0.0.1:8000/api/jenis-sampah", fetchOptions),
+          fetch("http://127.0.0.1:8000/api/kategori-sampah", fetchOptions),
+        ]);
 
-          // Handle API response - could be array or { data: array }
-          const jenisArray = Array.isArray(result) ? result : result.data || [];
+        if (jenisResponse.ok && kategoriResponse.ok) {
+          const jenisResult = await jenisResponse.json();
+          const kategoriResult = await kategoriResponse.json();
+
+          // Handle API responses - could be array or { data: array }
+          const jenisArray = Array.isArray(jenisResult) ? jenisResult : jenisResult.data || [];
+          const kategoriArray = Array.isArray(kategoriResult) ? kategoriResult : kategoriResult.data || [];
+
+          // Create a map for quick kategori lookup by kategori_sampah_id
+          const kategoriMap = {};
+          kategoriArray.forEach(kat => {
+            kategoriMap[kat.kategori_sampah_id] = kat;
+          });
+
+          console.log('Kategori Map:', kategoriMap);
+          console.log('Jenis Array:', jenisArray);
 
           if (Array.isArray(jenisArray) && jenisArray.length > 0) {
             // Find the most recent update timestamp
             let mostRecentUpdate = null;
 
             // Transform API data to match table format
-            // API returns: { jenis_sampah_id, nama_jenis, harga_per_kg, satuan, kode, kategori_sampah_id, kategori_sampah: {...} }
             const allWasteTypes = jenisArray.map(jenis => {
               // Track the most recent update
               const jenisUpdate = new Date(jenis.updated_at);
@@ -63,13 +78,14 @@ export default function TabungSampah() {
                 mostRecentUpdate = jenisUpdate;
               }
 
-              // Get category info from nested object or fallback to direct fields
-              const kategoriInfo = jenis.kategori_sampah || {};
-              
+              // Look up category from the kategoriMap using kategori_sampah_id
+              const kategoriInfo = kategoriMap[jenis.kategori_sampah_id] || {};
+
               return {
                 id_sampah: jenis.jenis_sampah_id,
                 nama_sampah: jenis.nama_jenis,
-                kategori: kategoriInfo.nama_kategori || 'Sampah',
+                kategori: kategoriInfo.nama_kategori || 'Uncategorized', // Get from kategori lookup
+                kategori_sampah_id: jenis.kategori_sampah_id, // Link to kategoriSampah table
                 satuan: jenis.satuan || "kg",
                 harga_satuan: parseFloat(jenis.harga_per_kg || 0),
                 deskripsi: jenis.deskripsi || kategoriInfo.deskripsi || '',
@@ -90,13 +106,11 @@ export default function TabungSampah() {
             setSampahData([]);
           }
         } else {
-          console.error(`API Error: ${response.status} ${response.statusText}`);
-          const errorText = await response.text();
-          console.error('Response:', errorText);
+          console.error(`API Error: jenis=${jenisResponse.status}, kategori=${kategoriResponse.status}`);
           setSampahData([]);
         }
       } catch (error) {
-        console.error("Error fetching waste prices from jenis-sampah API:", error);
+        console.error("Error fetching waste prices:", error);
         setSampahData([]);
       } finally {
         setLoading(false);
