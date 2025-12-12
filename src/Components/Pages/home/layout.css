@@ -51,6 +51,23 @@
 
 
 /* 📱 Responsif */
+
+/* Tablet: 641px - 1024px (Bottom Nav visible) */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .contentWrapper {
+    padding-bottom: 70px; /* Avoid overlap with bottom nav */
+  }
+}
+
+/* Mobile: ≤ 640px (Bottom Nav smaller) */
 @media (max-width: 768px) {
   .layout {
     grid-template-columns: 1fr;
@@ -73,5 +90,16 @@
   .contentWrapper,
   .footer {
     padding: 16px;
+  }
+
+  .contentWrapper {
+    padding-bottom: 60px; /* Mobile bottom nav height */
+  }
+}
+
+/* Small Mobile: < 480px */
+@media (max-width: 480px) {
+  .contentWrapper {
+    padding-bottom: 56px; /* Smaller bottom nav */
   }
 }

@@ -1,6 +1,7 @@
 import {Routes, Route, Navigate} from 'react-router-dom'
 import "./index.css"
 import { useAuth } from './Components/Pages/context/AuthContext'
+import BottomNav from './Components/BottomNav/bottomNav'
 
 // Auth Pages
 import Landing from './Components/Pages/Landing/Landing'
@@ -65,18 +66,19 @@ const App = () => {
   }
 
   return (
-    <Routes>
-      {/* Root Route - Redirect based on auth status */}
-      <Route 
-        path="/" 
-        element={
-          isAuthenticated ? (
-            isAdmin ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />
-          ) : (
-            <Login />
-          )
-        } 
-      />
+    <>
+      <Routes>
+        {/* Root Route - Redirect based on auth status */}
+        <Route 
+          path="/" 
+          element={
+            isAuthenticated ? (
+              isAdmin ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />
+            ) : (
+              <Login />
+            )
+          } 
+        />
 
       {/* Public Auth Routes */}
       <Route path="/landing" element={<Landing />} />
@@ -160,7 +162,9 @@ const App = () => {
 
       {/* Catch-all - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+      <BottomNav />
+    </>
   );
 };
 
