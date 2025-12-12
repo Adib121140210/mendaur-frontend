@@ -194,12 +194,12 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     // jadwalId adalah index string, convert ke int dan get selected schedule
     const selectedIndex = parseInt(formData.jadwalId);
     const selectedSchedule = jadwalList[selectedIndex];
-    // ✅ Backend sekarang mengembalikan real ID (1, 2, 3, dll)
-    const scheduleId = selectedSchedule?.id;
+    // ✅ Backend uses custom primary key jadwal_penyetoran_id
+    const scheduleId = selectedSchedule?.jadwal_penyetoran_id;
 
     console.log('Selected index:', selectedIndex);
     console.log('Selected schedule:', selectedSchedule);
-    console.log('Schedule ID to send:', scheduleId);
+    console.log('Schedule ID to send (jadwal_penyetoran_id):', scheduleId);
 
     data.append("user_id", finalUserId);
     data.append("jadwal_penyetoran_id", scheduleId);  // Send with correct field name
