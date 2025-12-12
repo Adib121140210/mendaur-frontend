@@ -72,7 +72,7 @@
   .layout {
     grid-template-columns: 1fr;
   }
-  
+
   .contentbox {
     padding: 16px;
     gap: 24px;

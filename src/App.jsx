@@ -69,15 +69,15 @@ const App = () => {
     <>
       <Routes>
         {/* Root Route - Redirect based on auth status */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             isAuthenticated ? (
               isAdmin ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />
             ) : (
               <Login />
             )
-          } 
+          }
         />
 
       {/* Public Auth Routes */}
@@ -87,8 +87,8 @@ const App = () => {
       <Route path="/daftar" element={<Daftar />} />
 
       {/* User Dashboard Routes (Protected) */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute requiredRole="user">
             <Layout />
@@ -109,55 +109,55 @@ const App = () => {
       </Route>
 
       {/* Admin Dashboard Routes (Protected) */}
-      <Route 
-        path="/admin/dashboard" 
+      <Route
+        path="/admin/dashboard"
         element={
           <ProtectedRoute requiredRole="admin">
             <AdminDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
 
       {/* Admin Point System Routes (Protected) */}
-      <Route 
-        path="/admin/dashboard/points" 
+      <Route
+        path="/admin/dashboard/points"
         element={
           <ProtectedRoute requiredRole="admin">
             <AdminPointDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/dashboard/points/stats" 
+      <Route
+        path="/admin/dashboard/points/stats"
         element={
           <ProtectedRoute requiredRole="admin">
             <AdminStatsCard />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/dashboard/points/history" 
+      <Route
+        path="/admin/dashboard/points/history"
         element={
           <ProtectedRoute requiredRole="admin">
             <AllUsersHistory />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/dashboard/points/breakdown" 
+      <Route
+        path="/admin/dashboard/points/breakdown"
         element={
           <ProtectedRoute requiredRole="admin">
             <PointBreakdown />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/dashboard/points/redemptions" 
+      <Route
+        path="/admin/dashboard/points/redemptions"
         element={
           <ProtectedRoute requiredRole="admin">
             <AllRedemptions />
           </ProtectedRoute>
-        } 
+        }
       />
 
       {/* Catch-all - redirect to home */}
