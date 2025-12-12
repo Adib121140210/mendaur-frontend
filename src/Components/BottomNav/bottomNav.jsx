@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../Pages/context/authContext';
 import './bottomNav.css';
+import {
+    home,
+}
+from lucide-react
 
 // Icons as inline SVGs
 const Icons = {
@@ -46,18 +50,18 @@ const BottomNav = () => {
   // Update active tab based on current route
   useEffect(() => {
     const pathname = location.pathname;
-    
-    if (pathname === '/' || pathname.includes('/home')) {
+
+    if (pathname === '/dashboard' || pathname === '/') {
       setActiveTab('home');
-    } else if (pathname.includes('/tabung')) {
+    } else if (pathname.includes('/dashboard/tabungSampah')) {
       setActiveTab('tabung');
-    } else if (pathname.includes('/tukar-poin')) {
+    } else if (pathname.includes('/dashboard/tukarPoin')) {
       setActiveTab('tukar');
-    } else if (pathname.includes('/riwayat')) {
+    } else if (pathname.includes('/dashboard/riwayatTransaksi')) {
       setActiveTab('riwayat');
-    } else if (pathname.includes('/leaderboard')) {
+    } else if (pathname.includes('/dashboard/leaderboard')) {
       setActiveTab('leaderboard');
-    } else if (pathname.includes('/profil')) {
+    } else if (pathname.includes('/dashboard/profil')) {
       setActiveTab('profil');
     }
   }, [location]);
@@ -76,7 +80,7 @@ const BottomNav = () => {
         {/* Home */}
         <button
           className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`}
-          onClick={() => handleNavigation('home', '/')}
+          onClick={() => handleNavigation('home', '/dashboard')}
           title="Home"
         >
           <div className="bottom-nav-icon">{Icons.home}</div>
@@ -86,7 +90,7 @@ const BottomNav = () => {
         {/* Tabung Sampah */}
         <button
           className={`bottom-nav-item ${activeTab === 'tabung' ? 'active' : ''}`}
-          onClick={() => handleNavigation('tabung', '/tabung-sampah')}
+          onClick={() => handleNavigation('tabung', '/dashboard/tabungSampah')}
           title="Tabung Sampah"
         >
           <div className="bottom-nav-icon">{Icons.tabung}</div>
@@ -96,7 +100,7 @@ const BottomNav = () => {
         {/* Riwayat */}
         <button
           className={`bottom-nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
-          onClick={() => handleNavigation('riwayat', '/riwayat-transaksi')}
+          onClick={() => handleNavigation('riwayat', '/dashboard/riwayatTransaksi')}
           title="Riwayat"
         >
           <div className="bottom-nav-icon">{Icons.riwayat}</div>
@@ -106,7 +110,7 @@ const BottomNav = () => {
         {/* Tukar Poin */}
         <button
           className={`bottom-nav-item ${activeTab === 'tukar' ? 'active' : ''}`}
-          onClick={() => handleNavigation('tukar', '/tukar-poin')}
+          onClick={() => handleNavigation('tukar', '/dashboard/tukarPoin')}
           title="Tukar Poin"
         >
           <div className="bottom-nav-icon">{Icons.tukar}</div>
@@ -116,7 +120,7 @@ const BottomNav = () => {
         {/* Leaderboard */}
         <button
           className={`bottom-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
-          onClick={() => handleNavigation('leaderboard', '/leaderboard')}
+          onClick={() => handleNavigation('leaderboard', '/dashboard/leaderboard')}
           title="Leaderboard"
         >
           <div className="bottom-nav-icon">{Icons.leaderboard}</div>
@@ -126,7 +130,7 @@ const BottomNav = () => {
         {/* Profil */}
         <button
           className={`bottom-nav-item ${activeTab === 'profil' ? 'active' : ''}`}
-          onClick={() => handleNavigation('profil', '/profil')}
+          onClick={() => handleNavigation('profil', '/dashboard/profil')}
           title="Profil"
         >
           <div className="bottom-nav-icon">{Icons.profil}</div>
