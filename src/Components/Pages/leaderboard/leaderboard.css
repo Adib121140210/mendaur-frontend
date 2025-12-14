@@ -5,6 +5,7 @@
   padding: 2rem;
   background-color: var(--background);
   font-family: var(--font-base);
+  min-height: 100vh;
 }
 
 /* Sinkronisasi tampilan header dan tabel */
@@ -17,15 +18,71 @@
   padding: 1.5rem;
 }
 
-/* Responsif */
-@media screen and (max-width: 768px) {
+/* ============================================================================
+   TABLET: 641px - 1024px
+   ============================================================================ */
+@media (max-width: 1024px) {
   .leaderboard-page {
-    padding: 1rem;
+    gap: 1.75rem;
+    padding: 1.75rem;
+    padding-bottom: calc(1.75rem + 70px);
+  }
+
+  .leaderboard-header,
+  .leaderboard-table {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+}
+
+/* ============================================================================
+   MID-MOBILE: 481px - 640px
+   ============================================================================ */
+@media (max-width: 640px) {
+  .leaderboard-page {
     gap: 1.5rem;
+    padding: 1.25rem;
+    padding-bottom: calc(1.25rem + 64px);
   }
 
   .leaderboard-header,
   .leaderboard-table {
     padding: 1rem;
+    border-radius: 10px;
+    border-width: 1px;
+  }
+}
+
+/* ============================================================================
+   SMALL MOBILE: ≤480px
+   ============================================================================ */
+@media (max-width: 480px) {
+  .leaderboard-page {
+    gap: 1.25rem;
+    padding: 1rem;
+    padding-bottom: calc(1rem + 60px);
+  }
+
+  .leaderboard-header,
+  .leaderboard-table {
+    padding: 0.875rem;
+    border-radius: 8px;
+  }
+}
+
+/* ============================================================================
+   EXTRA SMALL MOBILE: < 360px
+   ============================================================================ */
+@media (max-width: 359px) {
+  .leaderboard-page {
+    gap: 1rem;
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + 60px);
+  }
+
+  .leaderboard-header,
+  .leaderboard-table {
+    padding: 0.75rem;
+    border-radius: 8px;
   }
 }
