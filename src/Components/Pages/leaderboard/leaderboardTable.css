@@ -314,63 +314,421 @@
 }
 
 /* === RESPONSIF === */
-@media (max-width: 768px) {
+
+/* TABLET: 641px - 1024px */
+@media (max-width: 1024px) {
   .leaderboardContainer {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .leaderboardTitle {
     font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .timePeriodFilters {
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .periodButton {
+    padding: 0.5625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .searchBarContainer {
+    max-width: 100%;
+    margin-bottom: 0.875rem;
+  }
+
+  .searchInput {
+    padding: 0.6875rem 1rem 0.6875rem 2.75rem;
+    font-size: 0.9rem;
+  }
+
+  .searchIcon {
+    left: 0.875rem;
+  }
+
+  .clearSearch {
+    right: 0.875rem;
+  }
+
+  .currentUserBadge {
+    padding: 0.625rem 1.125rem;
+    font-size: 0.9rem;
+  }
+
+  .leaderboardTable :is(th, td) {
+    padding: 0.875rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .rankColumn {
+    font-size: 1.25rem;
+  }
+}
+
+/* MID-MOBILE: 481px - 640px */
+@media (max-width: 640px) {
+  .leaderboardContainer {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .leaderboardHeader {
+    margin-bottom: 1.25rem;
+  }
+
+  .leaderboardTitle {
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
   }
 
   .timePeriodFilters {
     gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
   }
 
   .periodButton {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8rem;
+    flex: 1 1 calc(33.333% - 0.5rem);
+    min-width: 80px;
   }
 
   .periodButton span {
     display: none;
   }
 
+  .periodButton svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .searchBarContainer {
     max-width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  .searchInput {
+    padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+    font-size: 0.85rem;
+  }
+
+  .searchIcon {
+    left: 0.75rem;
+    width: 18px;
+    height: 18px;
+  }
+
+  .clearSearch {
+    right: 0.75rem;
+    font-size: 1rem;
   }
 
   .currentUserBadge {
-    font-size: 0.85rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+    text-align: center;
   }
 
-  .leaderboardTable :is(th, td) {
+  .currentUserBadge strong {
+    font-size: 1rem;
+  }
+
+  .leaderboardTableWrapper {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .leaderboardTable {
+    min-width: 500px;
+  }
+
+  .leaderboardTable th {
     padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .leaderboardTable td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
   }
 
   .rankColumn {
-    font-size: 1.2rem;
+    width: 12%;
+    font-size: 1.1rem;
+    text-align: center;
+    padding: 0.75rem 0.25rem;
   }
 
   .nameColumn {
-    width: 45%;
+    width: 50%;
+    padding: 0.75rem 0.5rem;
   }
 
   .sampahColumn {
-    width: 20%;
-    font-size: 0.8rem;
+    width: 18%;
+    font-size: 0.75rem;
+    text-align: center;
   }
 
   .poinColumn {
     width: 20%;
+    font-size: 0.8rem;
+    text-align: right;
   }
 
   .youBadge {
-    display: block;
-    margin-left: 0;
-    margin-top: 0.25rem;
-    width: fit-content;
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .loadingContainer {
+    padding: 2rem;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.75rem;
+  }
+
+  .errorContainer {
+    padding: 2rem;
+  }
+
+  .errorMessage {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .retryButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .emptyContainer {
+    padding: 2rem;
+  }
+
+  .emptyMessage {
+    font-size: 0.9rem;
+  }
+}
+
+/* SMALL MOBILE: ≤480px */
+@media (max-width: 480px) {
+  .leaderboardContainer {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .leaderboardHeader {
+    margin-bottom: 1rem;
+  }
+
+  .leaderboardTitle {
+    font-size: 1.25rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .timePeriodFilters {
+    gap: 0.375rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .periodButton {
+    padding: 0.4375rem 0.5rem;
+    font-size: 0.75rem;
+    flex: 1 1 calc(33.333% - 0.375rem);
+    min-width: 70px;
+  }
+
+  .periodButton span {
+    display: none;
+  }
+
+  .periodButton svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .searchBarContainer {
+    margin-bottom: 0.625rem;
+  }
+
+  .searchInput {
+    padding: 0.5625rem 0.75rem 0.5625rem 2.25rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+
+  .searchIcon {
+    left: 0.625rem;
+    width: 16px;
+    height: 16px;
+  }
+
+  .clearSearch {
+    right: 0.625rem;
+    font-size: 0.9rem;
+  }
+
+  .currentUserBadge {
+    padding: 0.4375rem 0.75rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.625rem;
+    border-radius: 6px;
+  }
+
+  .currentUserBadge strong {
+    font-size: 0.9rem;
+  }
+
+  .leaderboardTableWrapper {
+    border-radius: 8px;
+    margin-bottom: 0.875rem;
+    border: none;
+  }
+
+  .leaderboardTable {
+    min-width: 420px;
+  }
+
+  .leaderboardTable th {
+    padding: 0.625rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  .leaderboardTable td {
+    padding: 0.625rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  .rankColumn {
+    width: 10%;
+    font-size: 1rem;
+    padding: 0.625rem 0.25rem;
+  }
+
+  .nameColumn {
+    width: 55%;
+    padding: 0.625rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .sampahColumn {
+    width: 15%;
+    font-size: 0.7rem;
+  }
+
+  .poinColumn {
+    width: 20%;
+    font-size: 0.75rem;
+  }
+
+  .youBadge {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.65rem;
+  }
+
+  .loadingContainer {
+    padding: 1.5rem;
+  }
+
+  .loadingContainer p {
+    font-size: 0.9rem;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0.625rem;
+  }
+
+  .errorContainer {
+    padding: 1.5rem;
+  }
+
+  .errorMessage {
+    font-size: 0.85rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .retryButton {
+    padding: 0.5625rem 1.125rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+
+  .emptyContainer {
+    padding: 1.5rem;
+  }
+
+  .emptyMessage {
+    font-size: 0.85rem;
+  }
+}
+
+/* EXTRA SMALL MOBILE: < 360px */
+@media (max-width: 359px) {
+  .leaderboardContainer {
+    padding: 0.625rem;
+  }
+
+  .leaderboardTitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .timePeriodFilters {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .periodButton {
+    padding: 0.375rem 0.4rem;
+    font-size: 0.7rem;
+    min-width: 60px;
+  }
+
+  .searchInput {
+    padding: 0.5rem 0.625rem 0.5rem 2rem;
+    font-size: 0.75rem;
+  }
+
+  .searchIcon {
+    left: 0.5rem;
+    width: 14px;
+    height: 14px;
+  }
+
+  .currentUserBadge {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .leaderboardTable {
+    min-width: 360px;
+  }
+
+  .leaderboardTable th,
+  .leaderboardTable td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  .rankColumn {
+    font-size: 0.9rem;
   }
 }
