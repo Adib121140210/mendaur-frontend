@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Leaf } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
@@ -9,6 +9,7 @@ export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -82,55 +83,98 @@ export default function Login() {
   };
 
   return (
-    <div className="loginContainer">
-      <h2 className="formTitle">Masuk</h2>
+    <div className="loginPageWrapper">
+      {/* Back Button */}
+      <button 
+        className="backButton"
+        onClick={() => navigate("/landing")}
+        aria-label="Kembali"
+      >
+        <ArrowLeft size={24} />
+      </button>
 
-      <form className="loginForm" onSubmit={handleLogin}>
-        <div className="inputWrap">
-          <input
-            type="email"
-            placeholder="Email address"
-            className="inputField"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-            autoComplete="email"
-          />
-          <Mail className="inputIcon" />
+      <div className="loginContainer">
+        {/* Logo & Header */}
+        <div className="loginHeader">
+          <div className="logoIcon">
+            <Leaf size={32} strokeWidth={1.5} />
+          </div>
+          <h1 className="formTitle">Masuk ke Mendaur</h1>
+          <p className="formSubtitle">Lanjutkan perjalanan sustainability Anda</p>
         </div>
 
-        <div className="inputWrap">
-          <input
-            type="password"
-            placeholder="Password"
-            className="inputField"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+        <form className="loginForm" onSubmit={handleLogin}>
+          {/* Email Input */}
+          <div className="formGroup">
+            <label className="inputLabel">Email</label>
+            <div className="inputWrap">
+              <input
+                type="email"
+                placeholder="nama@email.com"
+                className="inputField"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+                autoComplete="email"
+              />
+              <Mail className="inputIcon" size={20} />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div className="formGroup">
+            <label className="inputLabel">Kata Sandi</label>
+            <div className="inputWrap">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Masukkan kata sandi"
+                className="inputField"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                autoComplete="current-password"
+              />
+              <Lock className="inputIcon" size={20} />
+              <button
+                type="button"
+                className="togglePassword"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div className="errorAlert">
+              <p className="errorText">{errorMsg}</p>
+            </div>
+          )}
+
+          {/* Links Row */}
+          <div className="linksRow">
+            <a href="#" className="forgotLink">Ingat saya</a>
+            <a href="/forgot-password" className="forgotLink">Lupa kata sandi?</a>
+          </div>
+
+          {/* Login Button */}
+          <button 
+            type="submit" 
+            className="loginBtn" 
             disabled={loading}
-            autoComplete="current-password"
-          />
-          <Lock className="inputIcon" />
-        </div>
-
-        {errorMsg && <p className="errorText">{errorMsg}</p>}
-
-        <a href="/forgot-password" className="lupaPassword">
-          Lupa Password
-        </a>
-
-        <button type="submit" className="loginBtn" disabled={loading}>
-          {loading ? "Loading..." : "Log In"}
-        </button>
-
-        <p className="signText">
-          Belum punya akun?{" "}
-          <a href="/register" className="signLink">
-            Daftar
-          </a>
-        </p>
-      </form>
+          >
+            {loading ? "Memproses..." : "Masuk"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
