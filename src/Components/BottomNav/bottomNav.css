@@ -7,6 +7,32 @@
 }
 
 /* ============================================================================
+   FLOATING PROFIL BUTTON
+   ============================================================================ */
+
+.floating-profil-btn {
+  display: none; /* Hidden by default on desktop */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  border: none;
+  cursor: pointer;
+  color: white;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================================
    MOBILE & TABLET BREAKPOINTS (Show Bottom Nav)
    ============================================================================ */
 
@@ -46,13 +72,14 @@
     cursor: pointer;
     color: #6b7280;
     transition: all 0.3s ease;
-    padding: 0;
-    gap: 4px;
+    padding: 0 4px;
+    gap: 6px;
     position: relative;
   }
 
   .bottom-nav-item:hover {
     background: rgba(34, 197, 94, 0.05);
+    color: #22c55e;
   }
 
   .bottom-nav-item.active {
@@ -72,8 +99,8 @@
   }
 
   .bottom-nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,12 +115,50 @@
   }
 
   .bottom-nav-label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 60px;
+    max-width: 70px;
+    color: inherit;
+  }
+
+  /* Floating button on tablet */
+  .floating-profil-btn {
+    display: flex;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 16px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .floating-profil-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+  }
+
+  .floating-profil-btn:active {
+    transform: translateY(-2px);
+  }
+
+  .floating-profil-btn.active {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  }
+
+  .floating-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: white;
+  }
+
+  .floating-btn-icon svg {
+    width: 28px;
+    height: 28px;
+    color: inherit;
   }
 }
 
@@ -115,7 +180,7 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 60px;
+    height: 64px;
     padding: 0 4px;
     gap: 0;
     max-width: 100%;
@@ -127,14 +192,14 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-    height: 60px;
+    height: 64px;
     background: none;
     border: none;
     cursor: pointer;
     color: #9ca3af;
     transition: all 0.2s ease;
-    padding: 0;
-    gap: 2px;
+    padding: 0 2px;
+    gap: 4px;
     position: relative;
     outline: none;
     -webkit-tap-highlight-color: transparent;
@@ -142,7 +207,10 @@
 
   .bottom-nav-item:active {
     background: rgba(34, 197, 94, 0.08);
-    transform: scale(0.95);
+  }
+
+  .bottom-nav-item:hover {
+    color: #22c55e;
   }
 
   .bottom-nav-item.active {
@@ -150,12 +218,12 @@
   }
 
   .bottom-nav-item.active .bottom-nav-icon {
-    transform: scale(1.1);
+    transform: scale(1);
   }
 
   .bottom-nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,35 +238,87 @@
   }
 
   .bottom-nav-label {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 50px;
+    max-width: 55px;
+    color: inherit;
+  }
+
+  /* Floating button on mobile */
+  .floating-profil-btn {
+    display: flex;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    right: 12px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .floating-profil-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
+  }
+
+  .floating-profil-btn:active {
+    transform: translateY(-1px);
+  }
+
+  .floating-profil-btn.active {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  }
+
+  .floating-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: white;
+  }
+
+  .floating-btn-icon svg {
+    width: 26px;
+    height: 26px;
+    color: inherit;
   }
 }
 
 /* SMALL MOBILE: < 480px (Even More Compact) */
 @media (max-width: 480px) {
   .bottom-nav-wrapper {
-    height: 56px;
+    height: 60px;
     padding: 0 2px;
   }
 
   .bottom-nav-item {
-    height: 56px;
-    gap: 2px;
+    height: 60px;
+    gap: 3px;
   }
 
   .bottom-nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
   }
 
   .bottom-nav-label {
-    font-size: 10px;
-    max-width: 45px;
+    font-size: 11px;
+    max-width: 50px;
+  }
+
+  /* Floating button on extra small mobile */
+  .floating-leaderboard-btn {
+    display: flex;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    right: 10px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .floating-btn-icon svg {
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -220,9 +340,32 @@
     .bottom-nav-item {
       height: 70px;
     }
+
+    .floating-leaderboard-btn {
+      bottom: calc(80px + env(safe-area-inset-bottom));
+    }
   }
 
   @media (max-width: 640px) {
+    .bottom-nav-container {
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav-wrapper {
+      height: calc(64px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .bottom-nav-item {
+      height: 64px;
+    }
+
+    .floating-leaderboard-btn {
+      bottom: calc(74px + env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (max-width: 480px) {
     .bottom-nav-container {
       padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
@@ -235,20 +378,9 @@
     .bottom-nav-item {
       height: 60px;
     }
-  }
 
-  @media (max-width: 480px) {
-    .bottom-nav-container {
-      padding-bottom: max(0px, env(safe-area-inset-bottom));
-    }
-
-    .bottom-nav-wrapper {
-      height: calc(56px + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .bottom-nav-item {
-      height: 56px;
+    .floating-leaderboard-btn {
+      bottom: calc(70px + env(safe-area-inset-bottom));
     }
   }
 }
@@ -315,12 +447,12 @@
 
 @media (max-width: 640px) {
   body {
-    padding-bottom: 60px;
+    padding-bottom: 64px;
   }
 }
 
 @media (max-width: 480px) {
   body {
-    padding-bottom: 56px;
+    padding-bottom: 60px;
   }
 }
