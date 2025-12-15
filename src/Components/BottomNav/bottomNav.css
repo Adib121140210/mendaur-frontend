@@ -12,24 +12,6 @@
 
 .floating-profil-btn {
   display: none; /* Hidden by default on desktop */
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-  border: none;
-  cursor: pointer;
-  color: white;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-  transition: all 0.3s ease;
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* ============================================================================
@@ -127,10 +109,23 @@
   /* Floating button on tablet */
   .floating-profil-btn {
     display: flex;
+    position: fixed;
     bottom: calc(80px + env(safe-area-inset-bottom));
     right: 16px;
     width: 56px;
     height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+    border: none;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transition: all 0.3s ease;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .floating-profil-btn:hover {
@@ -250,10 +245,23 @@
   /* Floating button on mobile */
   .floating-profil-btn {
     display: flex;
+    position: fixed;
     bottom: calc(74px + env(safe-area-inset-bottom));
     right: 12px;
     width: 54px;
     height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+    border: none;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transition: all 0.2s ease;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .floating-profil-btn:hover {
