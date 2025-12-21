@@ -107,18 +107,25 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Check if user has specific permission
   const hasPermission = (permission) => {
+    // Superadmin has ALL permissions
+    if (role === 'superadmin') return true;
+    // Admin and regular users must have explicit permission
     if (!Array.isArray(permissions)) return false;
     return permissions.includes(permission);
   };
 
   // ✅ Check if user has ANY of the provided permissions
   const hasAnyPermission = (permissionsArray) => {
+    // Superadmin has all permissions
+    if (role === 'superadmin') return true;
     if (!Array.isArray(permissions) || !Array.isArray(permissionsArray)) return false;
     return permissionsArray.some(p => permissions.includes(p));
   };
 
   // ✅ Check if user has ALL of the provided permissions
   const hasAllPermissions = (permissionsArray) => {
+    // Superadmin has all permissions
+    if (role === 'superadmin') return true;
     if (!Array.isArray(permissions) || !Array.isArray(permissionsArray)) return false;
     return permissionsArray.every(p => permissions.includes(p));
   };
