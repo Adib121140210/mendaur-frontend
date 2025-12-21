@@ -84,7 +84,6 @@ export default function RiwayatTransaksi() {
 
           if (wasteResponse.ok) {
             const wasteData = await wasteResponse.json();
-            console.log('Waste deposits response:', wasteData); // Debug log
 
             // Response format: { status: 'success', data: [...] }
             const wasteArray = wasteData.data || [];
@@ -119,11 +118,8 @@ export default function RiwayatTransaksi() {
           },
         });
 
-        console.log('Penukaran produk response status:', productResponse.status);
-
         if (productResponse.ok) {
           const productData = await productResponse.json();
-          console.log('Product redemptions response:', productData); // Debug log
 
           // Handle both array and object with data property
           const redemptionsArray = Array.isArray(productData)

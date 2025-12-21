@@ -71,7 +71,6 @@ const AllRedemptions = () => {
       }
 
       const data = await response.json();
-      console.log('Admin redemption data:', data);
 
       setRedemptions(data.data || []);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));

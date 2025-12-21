@@ -339,7 +339,7 @@ function DepositCard({ deposit, onViewDetail, formatDate, getStatusIcon, getStat
       <div className="cardBody">
         <div className="depositDetail">
           <span className="detailLabel">Berat</span>
-          <span className="detailValue">{deposit.berat || 0} kg</span>
+          <span className="detailValue">{deposit.berat_kg || deposit.berat || 0} kg</span>
         </div>
         <div className="depositDetail">
           <span className="detailLabel">Poin Didapat</span>
@@ -403,7 +403,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
               </div>
               <div className="infoItem">
                 <span className="infoLabel">Berat</span>
-                <span className="infoValue">{deposit.berat || 0} kg</span>
+                <span className="infoValue">{deposit.berat_kg || deposit.berat || 0} kg</span>
               </div>
               <div className="infoItem">
                 <span className="infoLabel">Tanggal Setor</span>

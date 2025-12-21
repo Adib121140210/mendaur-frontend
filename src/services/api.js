@@ -81,3 +81,78 @@ export const fetchRiwayat = async () => {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/riwayat`);
   return res.json();
 };
+
+// ============================================
+// PHASE 1 ENDPOINTS - AVATAR UPLOAD
+// ============================================
+
+/**
+ * Upload user avatar with file validation
+ * POST /api/users/{id}/avatar
+ * @param {number} userId - User ID
+ * @param {File} avatarFile - Avatar image file
+ * @returns {Promise<object>} - Upload response with path and URL
+ */
+export const uploadUserAvatar = async (userId, avatarFile) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(avatarFile.type)) {
+      throw new Error('Invalid file type. Only JPEG, PNG, and GIF are allowed.');
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (avatarFile.size > maxSize) {
+      throw new Error('File size must not exceed 2MB');
+    }
+
+    // Create FormData for multipart file upload
+    const formData = new FormData();
+    formData.append('avatar', avatarFile);
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/avatar`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        ...{} // Don't set Content-Type, let browser set it for FormData
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Upload failed with status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // Response was not JSON
+      }
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    console.info('✅ Avatar uploaded successfully');
+    return {
+      success: true,
+      message: 'Avatar uploaded successfully',
+      data: data.data || data,
+      path: data.data?.path || data.path
+    };
+  } catch (error) {
+    console.error(`Avatar upload failed for user ${userId}:`, error.message);
+    return {
+      success: false,
+      message: error.message,
+      data: null
+    };
+  }
+};

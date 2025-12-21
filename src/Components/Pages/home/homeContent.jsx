@@ -171,6 +171,9 @@ const HomeContent = () => {
         <p className="welcomeSubtitle">Mari kita kelola sampah dan kumpulkan poin hari ini</p>
       </section>
 
+      <section className="bannerSection">
+        <Banner />
+      </section>
       {/* Stats Grid */}
       <section className="statsSection">
         <div className="statsGrid">
@@ -293,9 +296,6 @@ const HomeContent = () => {
       </section>
 
       {/* Banner & Articles */}
-      <section className="bannerSection">
-        <Banner />
-      </section>
 
       <section className="artikelSection">
         <h2 className="artikelTitle">

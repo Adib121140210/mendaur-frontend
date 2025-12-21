@@ -42,28 +42,17 @@ export default function Login() {
         // Extract login response
         const loginData = result.data;
         const userData = loginData.user;
-        
+
         // Get role from backend response (either as string or object)
         const userRole = userData.role?.nama_role || userData.role || 'nasabah';
-        const userPermissions = userData.role?.permissions || [];
-
-        console.log('✅ Login successful!', {
-          userId: userData.id,
-          email: userData.email,
-          role: userRole,
-          permissions: userPermissions.length,
-          isAdmin: userRole === 'admin' || userRole === 'superadmin'
-        });
 
         // Use context login method (passes entire response)
         login(loginData);
 
         // Role-based navigation
         if (userRole === 'admin' || userRole === 'superadmin') {
-          console.log('🔐 Navigating to admin dashboard');
           navigate("/admin/dashboard", { replace: true });
         } else {
-          console.log('👤 Navigating to user dashboard');
           navigate("/dashboard", { replace: true });
         }
       } else {
@@ -71,7 +60,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      
+
       if (error.message.includes("Failed to fetch") || error.message.includes("ERR_CONNECTION_REFUSED")) {
         setErrorMsg("Tidak dapat terhubung ke server. Pastikan backend berjalan di http://127.0.0.1:8000");
       } else {
@@ -85,7 +74,7 @@ export default function Login() {
   return (
     <div className="loginPageWrapper">
       {/* Back Button */}
-      <button 
+      <button
         className="backButton"
         onClick={() => navigate("/landing")}
         aria-label="Kembali"
@@ -108,17 +97,21 @@ export default function Login() {
           <div className="formGroup">
             <label className="inputLabel">Email</label>
             <div className="inputWrap">
-              <input
-                type="email"
-                placeholder="nama@email.com"
-                className="inputField"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="email"
-              />
-              <Mail className="inputIcon" size={20} />
+                <div className="iconWrapper">
+                    <Mail className="inputIcon" size={20} />
+                </div>
+                <div className="inputFieldWrapper">
+                    <input
+                    className="inputField"
+                    type="email"
+                    placeholder="nama@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="email"
+                    />
+                </div>
             </div>
           </div>
 
@@ -126,29 +119,33 @@ export default function Login() {
           <div className="formGroup">
             <label className="inputLabel">Kata Sandi</label>
             <div className="inputWrap">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Masukkan kata sandi"
-                className="inputField"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="current-password"
-              />
-              <Lock className="inputIcon" size={20} />
-              <button
-                type="button"
-                className="togglePassword"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-              >
-                {showPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
-              </button>
+                <div className="iconWrapper">
+                    <Lock className="inputIcon" size={20} />
+                </div>
+                <div className="inputFieldWrapper">
+                    <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Masukkan kata sandi"
+                    className="inputField"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="current-password"
+                    />
+                </div>
+                <button
+                    type="button"
+                    className="togglePassword"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                >
+                    {showPassword ? (
+                    <EyeOff size={20} />
+                    ) : (
+                    <Eye size={20} />
+                    )}
+                </button>
             </div>
           </div>
 
@@ -166,9 +163,9 @@ export default function Login() {
           </div>
 
           {/* Login Button */}
-          <button 
-            type="submit" 
-            className="loginBtn" 
+          <button
+            type="submit"
+            className="loginBtn"
             disabled={loading}
           >
             {loading ? "Memproses..." : "Masuk"}

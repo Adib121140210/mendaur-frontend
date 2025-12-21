@@ -47,7 +47,21 @@ export const AuthProvider = ({ children }) => {
     // Extract role information
     const roleName = userData.role?.nama_role || userData.role || 'nasabah';
     const roleObj = userData.role || null;
-    const userPermissions = userData.role?.permissions || [];
+    // Permissions from backend can be:
+    // 1. userData.role?.permissions (array)
+    // 2. userData.permissions (number representing count)
+    // 3. undefined (default to empty array)
+    const permsData = userData.role?.permissions || userData.permissions;
+    let userPermissions = [];
+    let permissionsCount = 0;
+    
+    if (Array.isArray(permsData)) {
+      userPermissions = permsData;
+      permissionsCount = permsData.length;
+    } else if (typeof permsData === 'number') {
+      permissionsCount = permsData;
+      userPermissions = []; // Keep as empty array for consistency
+    }
 
     // Store in state
     setUser(userData);
@@ -61,12 +75,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', roleName);
     localStorage.setItem('roleData', JSON.stringify(roleObj));
     localStorage.setItem('permissions', JSON.stringify(userPermissions));
+    localStorage.setItem('permissionsCount', permissionsCount.toString()); // Store count separately
     localStorage.setItem('id_user', userData.user_id); // For backward compatibility - now uses user_id from backend
 
     console.log('✅ Login successful:', {
       userId: userData.user_id,
       role: roleName,
-      permissions: userPermissions.length,
+      permissions: permissionsCount,
       isAdmin: roleName === 'admin' || roleName === 'superadmin'
     });
   };
@@ -81,6 +96,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('role');
     localStorage.removeItem('roleData');
     localStorage.removeItem('permissions');
+    localStorage.removeItem('permissionsCount');
     localStorage.removeItem('id_user');
   };
 
@@ -116,6 +132,13 @@ export const AuthProvider = ({ children }) => {
   // ✅ Check if user is regular nasabah
   const isNasabah = role === 'nasabah';
 
+  // ✅ Get permissions count (from backend or array length)
+  const getPermissionsCount = () => {
+    const stored = localStorage.getItem('permissionsCount');
+    if (stored) return parseInt(stored);
+    return Array.isArray(permissions) ? permissions.length : 0;
+  };
+
   const value = {
     // State
     user,
@@ -127,6 +150,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
+    getPermissionsCount,
 
     // Checks
     isAuthenticated: !!user,
