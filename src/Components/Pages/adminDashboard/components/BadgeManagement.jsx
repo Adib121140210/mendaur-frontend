@@ -103,7 +103,16 @@ export default function BadgeManagement() {
         setLoading(true);
         const result = await adminApi.getAllBadges();
         if (result.success) {
-          setBadges(result.data || []);
+          // Handle both array and paginated response formats
+          let badgesData = result.data;
+          if (Array.isArray(badgesData)) {
+            setBadges(badgesData);
+          } else if (badgesData && typeof badgesData === 'object' && Array.isArray(badgesData.data)) {
+            setBadges(badgesData.data);
+          } else {
+            console.warn('Unexpected badges response format, using mock data');
+            setBadges(MOCK_BADGES);
+          }
         } else {
           console.warn('Failed to fetch badges, using fallback');
           setBadges(MOCK_BADGES);
@@ -120,19 +129,19 @@ export default function BadgeManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredBadges = badges.filter((b) => {
+  const filteredBadges = Array.isArray(badges) ? badges.filter((b) => {
     if (filterTier !== 'all' && b.tier !== filterTier) return false;
     if (searchQuery && !b.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
-  });
+  }) : [];
 
   const stats = {
-    totalBadges: badges.length,
+    totalBadges: Array.isArray(badges) ? badges.length : 0,
     totalAssigned: nasabahBadges.length,
-    bronzeCount: badges.find((b) => b.tier === 'bronze')?.assignedCount || 0,
-    silverCount: badges.find((b) => b.tier === 'silver')?.assignedCount || 0,
-    goldCount: badges.find((b) => b.tier === 'gold')?.assignedCount || 0,
-    platinumCount: badges.find((b) => b.tier === 'platinum')?.assignedCount || 0,
+    bronzeCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'bronze')?.assignedCount || 0 : 0,
+    silverCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'silver')?.assignedCount || 0 : 0,
+    goldCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'gold')?.assignedCount || 0 : 0,
+    platinumCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'platinum')?.assignedCount || 0 : 0,
   };
 
   const tiers = ['bronze', 'silver', 'gold', 'platinum'];

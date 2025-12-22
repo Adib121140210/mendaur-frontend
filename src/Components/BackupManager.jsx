@@ -4,7 +4,7 @@ import { backupService } from '../../services/backupService'
 import './BackupManager.css'
 
 const BackupManager = () => {
-  const { hasPermission, isSuperAdmin } = useAuth()
+  const { isSuperAdmin } = useAuth()
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)

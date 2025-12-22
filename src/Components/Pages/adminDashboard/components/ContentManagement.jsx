@@ -52,7 +52,15 @@ export default function ContentManagement() {
         // Fetch badges
         const badgesResult = await adminApi.getAllBadges()
         if (badgesResult.success) {
-          setBadges(badgesResult.data || MOCK_BADGES)
+          // Handle both array and paginated response formats
+          let badgesData = badgesResult.data;
+          if (Array.isArray(badgesData)) {
+            setBadges(badgesData);
+          } else if (badgesData && typeof badgesData === 'object' && Array.isArray(badgesData.data)) {
+            setBadges(badgesData.data);
+          } else {
+            setBadges(MOCK_BADGES);
+          }
         } else {
           setBadges(MOCK_BADGES)
         }
@@ -220,7 +228,7 @@ export default function ContentManagement() {
         </div>
 
         <div className="badges-grid">
-          {badges.map((badge) => (
+          {Array.isArray(badges) && badges.map((badge) => (
             <div key={badge.id} className="badge-card">
               <div className="badge-icon">{badge.icon}</div>
               <div className="badge-content">
