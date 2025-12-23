@@ -943,6 +943,953 @@ export const adminApi = {
     } catch (error) {
       return handleError(error, 'Failed to assign badge')
     }
+  },
+
+  // ============================================
+  // PRODUCT MANAGEMENT (4 endpoints)
+  // ============================================
+
+  /**
+   * Get all products with pagination and filtering
+   * GET /api/admin/produk
+   */
+  getAllProducts: async (page = 1, limit = 10, filters = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      })
+      const response = await fetch(`${API_BASE_URL}/admin/produk?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All products loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch products')
+    }
+  },
+
+  /**
+   * Create new product
+   * POST /api/admin/produk
+   */
+  createProduct: async (productData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/produk`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(productData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Product created successfully')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to create product')
+    }
+  },
+
+  /**
+   * Update product
+   * PUT /api/admin/produk/{produkId}
+   */
+  updateProduct: async (produkId, productData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(productData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Product #${produkId} updated`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update product')
+    }
+  },
+
+  /**
+   * Delete product
+   * DELETE /api/admin/produk/{produkId}
+   */
+  deleteProduct: async (produkId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Product #${produkId} deleted`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete product')
+    }
+  },
+
+  // ============================================
+  // PRODUCT REDEMPTION MANAGEMENT (4 endpoints)
+  // ============================================
+
+  /**
+   * Get all product redemptions
+   * GET /api/admin/penukar-produk
+   */
+  getProductRedemptions: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({ page, limit, ...filters })
+      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Product redemptions loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch product redemptions')
+    }
+  },
+
+  /**
+   * Approve product redemption
+   * PATCH /api/admin/penukar-produk/{id}/approve
+   */
+  approveRedemption: async (redemptionId, approvalData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/approve`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify(approvalData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Redemption #${redemptionId} approved`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to approve redemption')
+    }
+  },
+
+  /**
+   * Reject product redemption
+   * PATCH /api/admin/penukar-produk/{id}/reject
+   */
+  rejectRedemption: async (redemptionId, rejectionData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/reject`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify(rejectionData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Redemption #${redemptionId} rejected`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to reject redemption')
+    }
+  },
+
+  // ============================================
+  // WASTE ITEM & CATEGORY MANAGEMENT (5 endpoints)
+  // ============================================
+
+  /**
+   * Get all waste categories
+   * GET /api/admin/waste-categories
+   */
+  getAllWasteCategories: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/waste-categories`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All waste categories loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch waste categories')
+    }
+  },
+
+  /**
+   * Get all waste items (jenis_sampah)
+   * GET /api/admin/jenis-sampah
+   */
+  getAllWasteItems: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      })
+      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All waste items loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch waste items')
+    }
+  },
+
+  /**
+   * Create waste item
+   * POST /api/admin/jenis-sampah
+   */
+  createWasteItem: async (wasteItemData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(wasteItemData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Waste item created successfully')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to create waste item')
+    }
+  },
+
+  /**
+   * Update waste item
+   * PUT /api/admin/jenis-sampah/{jenisSampahId}
+   */
+  updateWasteItem: async (jenisSampahId, wasteItemData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(wasteItemData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Waste item #${jenisSampahId} updated`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update waste item')
+    }
+  },
+
+  /**
+   * Delete waste item
+   * DELETE /api/admin/jenis-sampah/{jenisSampahId}
+   */
+  deleteWasteItem: async (jenisSampahId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Waste item #${jenisSampahId} deleted`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete waste item')
+    }
+  },
+
+  // ============================================
+  // SCHEDULE MANAGEMENT (6 endpoints)
+  // ============================================
+
+  /**
+   * Get all waste deposit schedules (jadwal_penyetoran)
+   * GET /api/admin/jadwal-penyetoran
+   */
+  getAllSchedules: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      })
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All schedules loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch schedules')
+    }
+  },
+
+  /**
+   * Get schedule details
+   * GET /api/admin/jadwal-penyetoran/{jadwalId}
+   */
+  getScheduleDetail: async (jadwalId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Schedule #${jadwalId} loaded`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch schedule details')
+    }
+  },
+
+  /**
+   * Create new schedule
+   * POST /api/admin/jadwal-penyetoran
+   */
+  createSchedule: async (scheduleData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(scheduleData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Schedule created successfully')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to create schedule')
+    }
+  },
+
+  /**
+   * Update schedule
+   * PUT /api/admin/jadwal-penyetoran/{jadwalId}
+   */
+  updateSchedule: async (jadwalId, scheduleData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(scheduleData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Schedule #${jadwalId} updated`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update schedule')
+    }
+  },
+
+  /**
+   * Delete schedule
+   * DELETE /api/admin/jadwal-penyetoran/{jadwalId}
+   */
+  deleteSchedule: async (jadwalId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Schedule #${jadwalId} deleted`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete schedule')
+    }
+  },
+
+  /**
+   * Register user to schedule
+   * POST /api/admin/jadwal-penyetoran/{jadwalId}/register
+   */
+  registerUserToSchedule: async (jadwalId, userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}/register`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ user_id: userId })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ User registered to schedule #${jadwalId}`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to register user to schedule')
+    }
+  },
+
+  // ============================================
+  // NOTIFICATION MANAGEMENT (4 endpoints)
+  // ============================================
+
+  /**
+   * Get all notifications
+   * GET /api/admin/notifications
+   */
+  getNotifications: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({ page, limit, ...filters })
+      const response = await fetch(`${API_BASE_URL}/admin/notifications?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Notifications loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch notifications')
+    }
+  },
+
+  /**
+   * Get notification templates
+   * GET /api/admin/notifications/templates
+   */
+  getNotificationTemplates: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/notifications/templates`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Notification templates loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch templates')
+    }
+  },
+
+  /**
+   * Create notification
+   * POST /api/admin/notifications
+   */
+  createNotification: async (notificationData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/notifications`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(notificationData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Notification created')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to create notification')
+    }
+  },
+
+  /**
+   * Delete notification
+   * DELETE /api/admin/notifications/{notificationId}
+   */
+  deleteNotification: async (notificationId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Notification #${notificationId} deleted`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete notification')
+    }
+  },
+
+  // ============================================
+  // ARTICLE MANAGEMENT (5 endpoints)
+  // ============================================
+
+  /**
+   * Get all articles
+   * GET /api/admin/artikel
+   */
+  getAllArticles: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      })
+      const response = await fetch(`${API_BASE_URL}/admin/artikel?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All articles loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch articles')
+    }
+  },
+
+  /**
+   * Get article details
+   * GET /api/admin/artikel/{artikelId}
+   */
+  getArticleDetail: async (artikelId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Article #${artikelId} loaded`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch article details')
+    }
+  },
+
+  /**
+   * Create new article
+   * POST /api/admin/artikel
+   */
+  createArticle: async (articleData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(articleData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ Article created successfully')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to create article')
+    }
+  },
+
+  /**
+   * Update article
+   * PUT /api/admin/artikel/{artikelId}
+   */
+  updateArticle: async (artikelId, articleData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(articleData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Article #${artikelId} updated`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update article')
+    }
+  },
+
+  /**
+   * Delete article
+   * DELETE /api/admin/artikel/{artikelId}
+   */
+  deleteArticle: async (artikelId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info(`✅ Article #${artikelId} deleted`)
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete article')
+    }
+  },
+
+  // ============================================
+  // TRANSACTION HISTORY (2 endpoints)
+  // ============================================
+
+  /**
+   * Get all transactions (combined view)
+   * GET /api/admin/transactions
+   */
+  getAllTransactions: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({ page, limit, ...filters })
+      const response = await fetch(`${API_BASE_URL}/admin/transactions?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      console.info('✅ All transactions loaded')
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch transactions')
+    }
+  },
+
+  /**
+   * Export transactions to CSV/Excel
+   * GET /api/admin/transactions/export
+   */
+  exportTransactions: async (format = 'csv', filters = {}) => {
+    try {
+      const params = new URLSearchParams({ format, ...filters })
+      const response = await fetch(`${API_BASE_URL}/admin/transactions/export?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return { success: true, data: response }
+    } catch (error) {
+      return handleError(error, 'Failed to export transactions')
+    }
+  },
+
+  /**
+   * Get cash withdrawals list
+   * GET /api/admin/penarikan-tunai
+   */
+  getCashWithdrawals: async (page = 1, limit = 20, filters = {}) => {
+    try {
+      const params = new URLSearchParams({ page, limit, ...filters })
+      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch cash withdrawals')
+    }
+  },
+
+  /**
+   * Approve cash withdrawal
+   * PATCH /api/admin/penarikan-tunai/{id}/approve
+   */
+  approveCashWithdrawal: async (id, notes = '') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/approve`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ catatan_admin: notes })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to approve cash withdrawal')
+    }
+  },
+
+  /**
+   * Reject cash withdrawal
+   * PATCH /api/admin/penarikan-tunai/{id}/reject
+   */
+  rejectCashWithdrawal: async (id, reason = '', notes = '') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/reject`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ alasan_penolakan: reason, catatan_admin: notes })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to reject cash withdrawal')
+    }
+  },
+
+  // ============ ADDITIONAL USER MANAGEMENT ENDPOINTS ============
+  getAdminUserById: async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch user')
+    }
+  },
+
+  updateAdminUser: async (userId, userData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(userData)
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update user')
+    }
+  },
+
+  updateUserRole: async (userId, roleId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ role_id: roleId })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to update user role')
+    }
+  },
+
+  deleteAdminUser: async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete user')
+    }
+  },
+
+  // ============ WASTE DEPOSITS ADDITIONAL METHODS ============
+  getPenyetoranSampahById: async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch waste deposit')
+    }
+  },
+
+  approvePenyetoranSampah: async (id, catatan = '') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/approve`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ catatan_admin: catatan })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to approve waste deposit')
+    }
+  },
+
+  rejectPenyetoranSampah: async (id, catatan = '') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/reject`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ catatan_admin: catatan })
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to reject waste deposit')
+    }
+  },
+
+  getPenyetoranStats: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch waste deposit stats')
+    }
+  },
+
+  deletePenyetoranSampah: async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to delete waste deposit')
+    }
+  },
+
+  // ============ BADGE ADDITIONAL METHODS ============
+  getBadgeAdminById: async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/badges/${id}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch badge')
+    }
+  },
+
+  getUsersWithBadge: async (badgeId, page = 1, perPage = 50) => {
+    try {
+      const params = new URLSearchParams({ page, per_page: perPage })
+      const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}/users?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch users with badge')
+    }
+  },
+
+  // ============ PRODUCT ADDITIONAL METHODS ============
+  getProdukById: async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/produk/${id}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch product')
+    }
+  },
+
+  // ============ ANALYTICS ADDITIONAL METHODS ============
+  getWasteByUserAnalytics: async (page = 1, perPage = 50) => {
+    try {
+      const params = new URLSearchParams({ page, per_page: perPage })
+      const response = await fetch(`${API_BASE_URL}/admin/analytics/waste-by-user?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch waste by user analytics')
+    }
+  },
+
+  // ============ ACTIVITY LOGS ENDPOINTS ============
+  getAllActivityLogs: async (page = 1, perPage = 50, filters = {}) => {
+    try {
+      const params = new URLSearchParams({ page, per_page: perPage })
+      if (filters.user_id) params.append('user_id', filters.user_id)
+      if (filters.activity_type) params.append('activity_type', filters.activity_type)
+      if (filters.date_from) params.append('date_from', filters.date_from)
+      if (filters.date_to) params.append('date_to', filters.date_to)
+      
+      const response = await fetch(`${API_BASE_URL}/admin/activity-logs?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch activity logs')
+    }
+  },
+
+  getActivityLogsStats: async (dateFrom = null, dateTo = null) => {
+    try {
+      const params = new URLSearchParams()
+      if (dateFrom) params.append('date_from', dateFrom)
+      if (dateTo) params.append('date_to', dateTo)
+      
+      const response = await fetch(`${API_BASE_URL}/admin/activity-logs/stats/overview?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch activity logs stats')
+    }
+  },
+
+  exportActivityLogsCSV: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams()
+      if (filters.user_id) params.append('user_id', filters.user_id)
+      if (filters.date_from) params.append('date_from', filters.date_from)
+      if (filters.date_to) params.append('date_to', filters.date_to)
+      
+      const response = await fetch(`${API_BASE_URL}/admin/activity-logs/export/csv?${params}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      })
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      
+      return { success: true }
+    } catch (error) {
+      return handleError(error, 'Failed to export activity logs')
+    }
+  },
+
+  getUserActivityLogs: async (userId, page = 1, perPage = 50) => {
+    try {
+      const params = new URLSearchParams({ page, per_page: perPage })
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/activity-logs?${params}`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to fetch user activity logs')
+    }
   }
 }
 
