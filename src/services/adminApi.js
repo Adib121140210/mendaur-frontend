@@ -572,12 +572,12 @@ export const adminApi = {
   // ADMIN MANAGEMENT (6 endpoints)
   /**
    * Get all admin users
-   * GET /api/admin/admins
+   * GET /api/superadmin/admins
    */
   getAllAdmins: async (page = 1, limit = 10) => {
     try {
       const params = new URLSearchParams({ page, limit })
-      const response = await fetch(`${API_BASE_URL}/admin/admins?${params}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -592,11 +592,11 @@ export const adminApi = {
 
   /**
    * Get admin user by ID
-   * GET /api/admin/admins/{adminId}
+   * GET /api/superadmin/admins/{adminId}
    */
   getAdminById: async (adminId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/admins/${adminId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -611,11 +611,11 @@ export const adminApi = {
 
   /**
    * Create new admin user
-   * POST /api/admin/admins
+   * POST /api/superadmin/admins
    */
   createAdmin: async (adminData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/admins`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(adminData)
@@ -631,11 +631,11 @@ export const adminApi = {
 
   /**
    * Update admin user
-   * PUT /api/admin/admins/{adminId}
+   * PUT /api/superadmin/admins/{adminId}
    */
   updateAdmin: async (adminId, adminData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/admins/${adminId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(adminData)
@@ -651,11 +651,11 @@ export const adminApi = {
 
   /**
    * Delete admin user
-   * DELETE /api/admin/admins/{adminId}
+   * DELETE /api/superadmin/admins/{adminId}
    */
   deleteAdmin: async (adminId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/admins/${adminId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -670,12 +670,12 @@ export const adminApi = {
 
   /**
    * Get admin activity logs
-   * GET /api/admin/admins/{adminId}/activity-logs
+   * GET /api/superadmin/admins/{adminId}/activity-logs
    */
   getAdminActivityLogs: async (adminId, page = 1, limit = 20) => {
     try {
       const params = new URLSearchParams({ page, limit })
-      const response = await fetch(`${API_BASE_URL}/admin/admins/${adminId}/activity-logs?${params}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}/activity-logs?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -691,11 +691,11 @@ export const adminApi = {
   // ROLE MANAGEMENT (5 endpoints)
   /**
    * Get all roles
-   * GET /api/admin/roles
+   * GET /api/superadmin/roles
    */
   getAllRoles: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -710,11 +710,11 @@ export const adminApi = {
 
   /**
    * Get role by ID
-   * GET /api/admin/roles/{roleId}
+   * GET /api/superadmin/roles/{roleId}
    */
   getRoleById: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles/${roleId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -729,11 +729,11 @@ export const adminApi = {
 
   /**
    * Create new role
-   * POST /api/admin/roles
+   * POST /api/superadmin/roles
    */
   createRole: async (roleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(roleData)
@@ -749,11 +749,11 @@ export const adminApi = {
 
   /**
    * Update role
-   * PUT /api/admin/roles/{roleId}
+   * PUT /api/superadmin/roles/{roleId}
    */
   updateRole: async (roleId, roleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles/${roleId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(roleData)
@@ -769,11 +769,11 @@ export const adminApi = {
 
   /**
    * Delete role
-   * DELETE /api/admin/roles/{roleId}
+   * DELETE /api/superadmin/roles/{roleId}
    */
   deleteRole: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles/${roleId}`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -789,11 +789,11 @@ export const adminApi = {
   // PERMISSION ASSIGNMENT (3 endpoints)
   /**
    * Assign permissions to role
-   * POST /api/admin/roles/{roleId}/permissions
+   * POST /api/superadmin/roles/{roleId}/permissions
    */
   assignPermissionsToRole: async (roleId, permissionIds) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles/${roleId}/permissions`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify({ permission_ids: permissionIds })
@@ -809,11 +809,11 @@ export const adminApi = {
 
   /**
    * Get role permissions
-   * GET /api/admin/roles/{roleId}/permissions
+   * GET /api/superadmin/roles/{roleId}/permissions
    */
   getRolePermissions: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/roles/${roleId}/permissions`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -828,11 +828,11 @@ export const adminApi = {
 
   /**
    * Get all available permissions
-   * GET /api/admin/permissions
+   * GET /api/superadmin/permissions
    */
   getAllPermissions: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/permissions`, {
+      const response = await fetch(`${API_BASE_URL}/superadmin/permissions`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1305,26 +1305,6 @@ export const adminApi = {
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete schedule')
-    }
-  },
-
-  /**
-   * Register user to schedule
-   * POST /api/admin/jadwal-penyetoran/{jadwalId}/register
-   */
-  registerUserToSchedule: async (jadwalId, userId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}/register`, {
-        method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify({ user_id: userId })
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
-      console.info(`✅ User registered to schedule #${jadwalId}`)
-      return { success: true, data: data.data || data }
-    } catch (error) {
-      return handleError(error, 'Failed to register user to schedule')
     }
   },
 
