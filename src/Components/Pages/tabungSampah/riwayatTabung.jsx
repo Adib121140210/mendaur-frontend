@@ -95,6 +95,11 @@ const RiwayatTabung = () => {
           return deposit.user_id === user.user_id;
         });
 
+        // Debug: Check structure of first deposit
+        if (validData.length > 0) {
+          console.log("Sample deposit data:", validData[0]);
+        }
+
         setDeposits(validData);
 
         // Calculate stats from filtered data
@@ -401,9 +406,40 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
                 <span className="infoLabel">Jenis Sampah</span>
                 <span className="infoValue">{deposit.jenis_sampah || "-"}</span>
               </div>
+              
+              {/* Show Berat Awal only if it exists and is different from berat_kg */}
+              {deposit.berat_awal && parseFloat(deposit.berat_awal) > 0 ? (
+                <>
+                  <div className="infoItem">
+                    <span className="infoLabel">Berat Awal</span>
+                    <span className="infoValue">{deposit.berat_awal} kg</span>
+                  </div>
+                  {deposit.status === "approved" && 
+                   parseFloat(deposit.berat_kg || deposit.berat || 0) !== parseFloat(deposit.berat_awal) && (
+                    <div className="infoItem">
+                      <span className="infoLabel">Berat Dikoreksi</span>
+                      <span className="infoValue" style={{ 
+                        color: '#f59e0b', 
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        ⚠️ {deposit.berat_kg || deposit.berat || 0} kg
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="infoItem">
+                  <span className="infoLabel">Berat</span>
+                  <span className="infoValue">{deposit.berat_kg || deposit.berat || 0} kg</span>
+                </div>
+              )}
+              
               <div className="infoItem">
-                <span className="infoLabel">Berat</span>
-                <span className="infoValue">{deposit.berat_kg || deposit.berat || 0} kg</span>
+                <span className="infoLabel">Titik Lokasi</span>
+                <span className="infoValue">{deposit.titik_lokasi || "-"}</span>
               </div>
               <div className="infoItem">
                 <span className="infoLabel">Tanggal Setor</span>

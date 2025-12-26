@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Mail, User, Phone, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, User, Phone, Lock, Eye, EyeOff, ArrowLeft, Leaf, AlertCircle, CheckCircle } from "lucide-react";
 import "./register.css";
 
 export default function Register() {
@@ -120,12 +120,10 @@ export default function Register() {
       const payload = {
         nama: formData.nama.trim(),
         email: formData.email.trim(),
-        no_hp: formData.no_hp.replace(/\s/g, ''), // Remove spaces only
+        no_hp: formData.no_hp.replace(/\s/g, ''),
         password: formData.password,
         password_confirmation: formData.password_confirm,
       };
-
-      console.log("Register payload:", payload);
 
       const response = await fetch("http://127.0.0.1:8000/api/register", {
         method: "POST",
@@ -137,25 +135,68 @@ export default function Register() {
       });
 
       const result = await response.json();
-      console.log("Register response:", result);
+      
+      // Debug logging
+      console.log("Register Response Status:", response.status);
+      console.log("Register Response Data:", result);
 
-      if (!response.ok) {
-        // Handle validation errors from backend
+      // Handle 422 Validation Error
+      if (response.status === 422) {
         if (result.errors) {
           const backendErrors = Object.entries(result.errors).reduce((acc, [key, messages]) => {
             acc[key] = Array.isArray(messages) ? messages[0] : messages;
             return acc;
           }, {});
           setErrors(backendErrors);
-          throw new Error("Validasi gagal. Silakan periksa data Anda.");
+          
+          // Show first error as main message
+          const firstError = Object.values(backendErrors)[0];
+          setErrorMsg(firstError || "Validasi gagal. Silakan periksa data Anda.");
+          return;
         }
-        throw new Error(result.message || "Pendaftaran gagal");
+        setErrorMsg(result.message || "Data tidak valid. Silakan periksa kembali.");
+        return;
+      }
+
+      // Handle specific HTTP status codes
+      if (response.status === 500) {
+        // Database/Server error - check for duplicate entries
+        const errorMessage = result.message || "";
+        
+        if (errorMessage.includes("Duplicate entry") && errorMessage.includes("email")) {
+          setErrors(prev => ({ ...prev, email: "Email sudah terdaftar" }));
+          setErrorMsg("Email sudah digunakan. Silakan gunakan email lain.");
+          return;
+        }
+        
+        if (errorMessage.includes("Duplicate entry") && errorMessage.includes("no_hp")) {
+          setErrors(prev => ({ ...prev, no_hp: "Nomor HP sudah terdaftar" }));
+          setErrorMsg("Nomor HP sudah digunakan. Silakan gunakan nomor lain.");
+          return;
+        }
+        
+        // Generic server error
+        setErrorMsg("Terjadi kesalahan server. Silakan coba lagi nanti.");
+        return;
+      }
+
+      if (!response.ok) {
+        if (result.errors) {
+          const backendErrors = Object.entries(result.errors).reduce((acc, [key, messages]) => {
+            acc[key] = Array.isArray(messages) ? messages[0] : messages;
+            return acc;
+          }, {});
+          setErrors(backendErrors);
+          setErrorMsg("Validasi gagal. Silakan periksa data Anda.");
+          return;
+        }
+        setErrorMsg(result.message || "Pendaftaran gagal");
+        return;
       }
 
       if (result.status === "success") {
-        setSuccessMsg("✅ Pendaftaran berhasil! Silakan login dengan akun Anda.");
+        setSuccessMsg("Pendaftaran berhasil! Mengalihkan ke halaman login...");
         
-        // Reset form
         setFormData({
           nama: "",
           email: "",
@@ -164,7 +205,6 @@ export default function Register() {
           password_confirm: "",
         });
         
-        // Redirect to login after 2 seconds
         setTimeout(() => {
           navigate("/login");
         }, 2000);
@@ -181,7 +221,7 @@ export default function Register() {
 
   // Password strength indicator
   const getPasswordStrength = () => {
-    if (!formData.password) return null;
+    if (!formData.password) return 0;
     
     let strength = 0;
     if (formData.password.length >= 8) strength++;
@@ -194,7 +234,7 @@ export default function Register() {
 
   const passwordStrength = getPasswordStrength();
   const getStrengthLabel = (strength) => {
-    if (!strength) return "";
+    if (strength === 0) return "";
     if (strength === 1) return "Lemah";
     if (strength === 2) return "Sedang";
     if (strength === 3) return "Kuat";
@@ -202,40 +242,58 @@ export default function Register() {
   };
 
   const getStrengthColor = (strength) => {
-    if (!strength) return "";
+    if (strength === 0) return "#e5e7eb";
     if (strength === 1) return "#ef4444";
     if (strength === 2) return "#f59e0b";
-    if (strength === 3) return "#10b981";
+    if (strength === 3) return "#22c55e";
     return "#059669";
   };
 
   return (
-    <div className="registerContainer">
-      <div className="registerWrapper">
-        <h2 className="formTitle">Daftar Akun Baru</h2>
-        <p className="formSubtitle">Bergabunglah dengan Bank Sampah Digital</p>
+    <div className="registerPageWrapper">
+      {/* Back Button */}
+      <button
+        className="backButton"
+        onClick={() => navigate("/landing")}
+        aria-label="Kembali"
+      >
+        <ArrowLeft size={24} />
+      </button>
+
+      <div className="registerContainer">
+        {/* Logo & Header */}
+        <div className="registerHeader">
+          <div className="logoIcon">
+            <Leaf size={32} strokeWidth={1.5} />
+          </div>
+          <h1 className="formTitle">Daftar ke Mendaur</h1>
+          <p className="formSubtitle">Mulai perjalanan sustainability Anda</p>
+        </div>
 
         <form className="registerForm" onSubmit={handleRegister}>
           {/* Nama Lengkap */}
           <div className="formGroup">
-            <label htmlFor="nama">Nama Lengkap*</label>
+            <label className="inputLabel">Nama Lengkap</label>
             <div className="inputWrap">
-              <input
-                type="text"
-                id="nama"
-                name="nama"
-                placeholder="Masukkan nama lengkap Anda"
-                className={`inputField ${errors.nama ? "inputError" : ""}`}
-                value={formData.nama}
-                onChange={handleInputChange}
-                disabled={loading}
-                autoComplete="name"
-              />
-              <User className="inputIcon" />
+              <div className="iconWrapper">
+                <User className="inputIcon" size={20} />
+              </div>
+              <div className="inputFieldWrapper">
+                <input
+                  type="text"
+                  name="nama"
+                  placeholder="Masukkan nama lengkap"
+                  className={`inputField ${errors.nama ? "inputError" : ""}`}
+                  value={formData.nama}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  autoComplete="name"
+                />
+              </div>
             </div>
             {errors.nama && (
-              <span className="errorText">
-                <AlertCircle size={16} />
+              <span className="fieldError">
+                <AlertCircle size={14} />
                 {errors.nama}
               </span>
             )}
@@ -243,24 +301,27 @@ export default function Register() {
 
           {/* Email */}
           <div className="formGroup">
-            <label htmlFor="email">Email*</label>
+            <label className="inputLabel">Email</label>
             <div className="inputWrap">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="nama@email.com"
-                className={`inputField ${errors.email ? "inputError" : ""}`}
-                value={formData.email}
-                onChange={handleInputChange}
-                disabled={loading}
-                autoComplete="email"
-              />
-              <Mail className="inputIcon" />
+              <div className="iconWrapper">
+                <Mail className="inputIcon" size={20} />
+              </div>
+              <div className="inputFieldWrapper">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="nama@email.com"
+                  className={`inputField ${errors.email ? "inputError" : ""}`}
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
             </div>
             {errors.email && (
-              <span className="errorText">
-                <AlertCircle size={16} />
+              <span className="fieldError">
+                <AlertCircle size={14} />
                 {errors.email}
               </span>
             )}
@@ -268,24 +329,27 @@ export default function Register() {
 
           {/* Nomor HP */}
           <div className="formGroup">
-            <label htmlFor="no_hp">Nomor HP*</label>
+            <label className="inputLabel">Nomor HP</label>
             <div className="inputWrap">
-              <input
-                type="tel"
-                id="no_hp"
-                name="no_hp"
-                placeholder="08xx xxxx xxxx atau +62xx"
-                className={`inputField ${errors.no_hp ? "inputError" : ""}`}
-                value={formData.no_hp}
-                onChange={handlePhoneChange}
-                disabled={loading}
-                autoComplete="tel"
-              />
-              <Phone className="inputIcon" />
+              <div className="iconWrapper">
+                <Phone className="inputIcon" size={20} />
+              </div>
+              <div className="inputFieldWrapper">
+                <input
+                  type="tel"
+                  name="no_hp"
+                  placeholder="08xx xxxx xxxx"
+                  className={`inputField ${errors.no_hp ? "inputError" : ""}`}
+                  value={formData.no_hp}
+                  onChange={handlePhoneChange}
+                  disabled={loading}
+                  autoComplete="tel"
+                />
+              </div>
             </div>
             {errors.no_hp && (
-              <span className="errorText">
-                <AlertCircle size={16} />
+              <span className="fieldError">
+                <AlertCircle size={14} />
                 {errors.no_hp}
               </span>
             )}
@@ -293,47 +357,53 @@ export default function Register() {
 
           {/* Password */}
           <div className="formGroup">
-            <label htmlFor="password">Password*</label>
+            <label className="inputLabel">Kata Sandi</label>
             <div className="inputWrap">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                placeholder="Minimal 8 karakter"
-                className={`inputField ${errors.password ? "inputError" : ""}`}
-                value={formData.password}
-                onChange={handleInputChange}
-                disabled={loading}
-                autoComplete="new-password"
-              />
+              <div className="iconWrapper">
+                <Lock className="inputIcon" size={20} />
+              </div>
+              <div className="inputFieldWrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Minimal 8 karakter"
+                  className={`inputField ${errors.password ? "inputError" : ""}`}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
               <button
                 type="button"
                 className="togglePassword"
                 onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {errors.password && (
-              <span className="errorText">
-                <AlertCircle size={16} />
+              <span className="fieldError">
+                <AlertCircle size={14} />
                 {errors.password}
               </span>
             )}
             {formData.password && (
               <div className="passwordStrength">
-                <div className="strengthBar">
-                  <div 
-                    className="strengthFill" 
-                    style={{
-                      width: `${(passwordStrength / 4) * 100}%`,
-                      backgroundColor: getStrengthColor(passwordStrength)
-                    }}
-                  ></div>
+                <div className="strengthBars">
+                  {[1, 2, 3, 4].map((level) => (
+                    <div
+                      key={level}
+                      className="strengthBar"
+                      style={{
+                        backgroundColor: passwordStrength >= level ? getStrengthColor(passwordStrength) : "#e5e7eb"
+                      }}
+                    />
+                  ))}
                 </div>
                 <span className="strengthLabel" style={{ color: getStrengthColor(passwordStrength) }}>
-                  Kekuatan: {getStrengthLabel(passwordStrength)}
+                  {getStrengthLabel(passwordStrength)}
                 </span>
               </div>
             )}
@@ -341,34 +411,38 @@ export default function Register() {
 
           {/* Konfirmasi Password */}
           <div className="formGroup">
-            <label htmlFor="password_confirm">Konfirmasi Password*</label>
+            <label className="inputLabel">Konfirmasi Kata Sandi</label>
             <div className="inputWrap">
-              <input
-                type={showPasswordConfirm ? "text" : "password"}
-                id="password_confirm"
-                name="password_confirm"
-                placeholder="Ulangi password Anda"
-                className={`inputField ${errors.password_confirm ? "inputError" : ""}`}
-                value={formData.password_confirm}
-                onChange={handleInputChange}
-                disabled={loading}
-                autoComplete="new-password"
-              />
+              <div className="iconWrapper">
+                <Lock className="inputIcon" size={20} />
+              </div>
+              <div className="inputFieldWrapper">
+                <input
+                  type={showPasswordConfirm ? "text" : "password"}
+                  name="password_confirm"
+                  placeholder="Ulangi kata sandi"
+                  className={`inputField ${errors.password_confirm ? "inputError" : ""}`}
+                  value={formData.password_confirm}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
               <button
                 type="button"
                 className="togglePassword"
                 onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                tabIndex="-1"
+                aria-label={showPasswordConfirm ? "Sembunyikan password" : "Tampilkan password"}
               >
                 {showPasswordConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
               {formData.password_confirm && formData.password === formData.password_confirm && !errors.password_confirm && (
-                <CheckCircle size={20} className="checkIcon" style={{ color: '#10b981' }} />
+                <CheckCircle size={18} className="matchIcon" />
               )}
             </div>
             {errors.password_confirm && (
-              <span className="errorText">
-                <AlertCircle size={16} />
+              <span className="fieldError">
+                <AlertCircle size={14} />
                 {errors.password_confirm}
               </span>
             )}
@@ -376,44 +450,40 @@ export default function Register() {
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="alertBox alertError">
-              <AlertCircle size={20} />
-              <span>{errorMsg}</span>
+            <div className="errorAlert">
+              <AlertCircle size={18} />
+              <p className="errorText">{errorMsg}</p>
             </div>
           )}
 
           {/* Success Message */}
           {successMsg && (
-            <div className="alertBox alertSuccess">
-              <CheckCircle size={20} />
-              <span>{successMsg}</span>
+            <div className="successAlert">
+              <CheckCircle size={18} />
+              <p className="successText">{successMsg}</p>
             </div>
           )}
 
-          {/* Terms & Conditions */}
-          <div className="termsBox">
-            <p>
-              Dengan mendaftar, Anda setuju dengan{" "}
-              <a href="/terms" className="termsLink">Syarat & Ketentuan</a> dan{" "}
-              <a href="/privacy" className="termsLink">Kebijakan Privasi</a> kami.
-            </p>
-          </div>
+          {/* Terms */}
+          <p className="termsText">
+            Dengan mendaftar, Anda menyetujui{" "}
+            <Link to="/terms" className="termsLink">Syarat & Ketentuan</Link> dan{" "}
+            <Link to="/privacy" className="termsLink">Kebijakan Privasi</Link>
+          </p>
 
           {/* Register Button */}
-          <button 
-            type="submit" 
-            className="registerBtn" 
-            disabled={loading || Object.keys(errors).length > 0}
+          <button
+            type="submit"
+            className="registerBtn"
+            disabled={loading}
           >
-            {loading ? "Mendaftar..." : "Daftar Akun"}
+            {loading ? "Mendaftar..." : "Daftar Sekarang"}
           </button>
 
           {/* Login Link */}
           <p className="loginText">
             Sudah punya akun?{" "}
-            <a href="/login" className="loginLink">
-              Masuk di sini
-            </a>
+            <Link to="/login" className="loginLink">Masuk di sini</Link>
           </p>
         </form>
       </div>

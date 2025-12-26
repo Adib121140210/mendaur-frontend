@@ -12,8 +12,6 @@ import ContentManagement from './components/ContentManagement'
 import WasteDepositsManagement from './components/WasteDepositsManagement'
 import ProductRedemptionManagement from './components/ProductRedemptionManagement'
 import CashWithdrawalManagement from './components/CashWithdrawalManagement'
-import ScheduleManagement from './components/ScheduleManagement'
-import BadgeManagement from './components/BadgeManagement'
 import NotificationManagement from './components/NotificationManagement'
 import './adminDashboard.css'
 import './styles/adminSidebar.css'
@@ -22,8 +20,6 @@ import './styles/contentManagement.css'
 import './styles/wasteDepositsManagement.css'
 import './styles/productRedemptionManagement.css'
 import './styles/cashWithdrawalManagement.css'
-import './styles/scheduleManagement.css'
-import './styles/badgeManagement.css'
 import './styles/notificationManagement.css'
 
 const AdminDashboard = () => {
@@ -32,6 +28,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('users')
+  const [contentTab, setContentTab] = useState('produk')  // Track content management sub-tab
 
   useEffect(() => {
     // Check user role from localStorage
@@ -77,17 +74,37 @@ const AdminDashboard = () => {
     navigate('/login')
   }
 
-  const tabs = [
+  // Handle tab changes, including content management sub-tabs
+  const handleTabChange = (tabId) => {
+    if (tabId === 'content-produk') {
+      setActiveTab('content')
+      setContentTab('produk')
+    } else if (tabId === 'content-artikel') {
+      setActiveTab('content')
+      setContentTab('artikel')
+    } else if (tabId === 'content-badge') {
+      setActiveTab('content')
+      setContentTab('badge')
+    } else if (tabId === 'content-jadwal') {
+      setActiveTab('content')
+      setContentTab('jadwal')
+    } else if (tabId === 'content-harga') {
+      setActiveTab('content')
+      setContentTab('harga-sampah')
+    } else {
+      setActiveTab(tabId)
+    }
+  }
+
+  const _tabs = [
     { id: 'overview', label: 'Dashboard' },
     { id: 'waste-deposits', label: 'Penyetoran Sampah' },
     { id: 'product-redemption', label: 'Penukaran Produk' },
     { id: 'cash-withdrawal', label: 'Penarikan Tunai' },
-    { id: 'schedule', label: 'Jadwal Penyetoran' },
     { id: 'waste', label: 'Waste Analytics' },
     { id: 'points', label: 'Points Distribution' },
     { id: 'waste-by-user', label: 'Waste by User' },
     { id: 'users', label: 'User Management' },
-    { id: 'badge', label: 'Badge Management' },
     { id: 'notification', label: 'Notification Management' },
     { id: 'content', label: 'Content Management' },
     { id: 'reports', label: 'Reports' }
@@ -96,7 +113,7 @@ const AdminDashboard = () => {
   return (
     <>
       {/* Admin Sidebar */}
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} userRole={userRole} />
+      <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} userRole={userRole} />
 
       {/* Main Content */}
       <main className="admin-main-content">
@@ -115,12 +132,12 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Overview Cards - Always Visible */}
-        <div className="admin-dashboard-container overview-section">
-          {activeTab === 'overview' || activeTab === 'users' || activeTab === 'content' || activeTab === 'reports' ? null : (
+        {/* Overview Cards - Only shown in User Management */}
+        {activeTab === 'users' && (
+          <div className="admin-dashboard-container overview-section">
             <OverviewCards />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Tab Content Section */}
         <div className="admin-dashboard-container">
@@ -128,7 +145,10 @@ const AdminDashboard = () => {
             {/* Overview Dashboard Tab */}
             {activeTab === 'overview' && (
               <div className="tab-pane">
-                <OverviewCards />
+                <div className="overview-welcome">
+                  <h2>Selamat Datang di Admin Dashboard</h2>
+                  <p>Pilih menu di samping untuk mengelola sistem Mendaur</p>
+                </div>
               </div>
             )}
 
@@ -160,13 +180,6 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Schedule Management Tab */}
-            {activeTab === 'schedule' && (
-              <div className="tab-pane">
-                <ScheduleManagement />
-              </div>
-            )}
-
             {/* Waste Analytics Tab */}
             {activeTab === 'waste' && (
               <div className="tab-pane">
@@ -188,13 +201,6 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Badge Management Tab */}
-            {activeTab === 'badge' && (
-              <div className="tab-pane">
-                <BadgeManagement />
-              </div>
-            )}
-
             {/* Notification Management Tab */}
             {activeTab === 'notification' && (
               <div className="tab-pane">
@@ -205,7 +211,7 @@ const AdminDashboard = () => {
             {/* Content Management Tab */}
             {activeTab === 'content' && (
               <div className="tab-pane">
-                <ContentManagement />
+                <ContentManagement initialTab={contentTab} />
               </div>
             )}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, Target, Medal } from "lucide-react";
+import { Trophy, Target, Medal, TrendingUp } from "lucide-react";
 import "./leaderboardHeader.css";
 
 const LeaderboardHeader = () => {
@@ -10,6 +10,7 @@ const LeaderboardHeader = () => {
     totalPeserta: 0,
     poinRatio: 0,
     weeklyIncrease: 0,
+    seasonPoin: 0,  // New: season-specific points
   });
   const [loading, setLoading] = useState(true);
 
@@ -34,10 +35,24 @@ const LeaderboardHeader = () => {
             totalPeserta: 0,
             poinRatio: 0,
             weeklyIncrease: 0,
+            seasonPoin: 0,
           });
           setLoading(false);
           return;
         }
+
+        // Calculate current season dates
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const seasonNumber = Math.floor(month / 3) + 1;
+        const seasonStartMonth = (seasonNumber - 1) * 3;
+        const seasonEndMonth = seasonStartMonth + 2;
+        const seasonStart = new Date(year, seasonStartMonth, 1).toISOString().split('T')[0];
+        const seasonEnd = new Date(year, seasonEndMonth + 1, 0).toISOString().split('T')[0];
+
+        // Build leaderboard URL with season filter
+        const leaderboardUrl = `http://127.0.0.1:8000/api/dashboard/leaderboard?period=season&start_date=${seasonStart}&end_date=${seasonEnd}`;
 
         // Fetch user stats and leaderboard in parallel
         const [userStatsResponse, leaderboardResponse] = await Promise.all([
@@ -47,7 +62,7 @@ const LeaderboardHeader = () => {
               'Authorization': `Bearer ${token}`,
             },
           }),
-          fetch('http://127.0.0.1:8000/api/dashboard/leaderboard', {
+          fetch(leaderboardUrl, {
             headers: {
               'Accept': 'application/json',
               'Authorization': `Bearer ${token}`,
@@ -171,6 +186,7 @@ const LeaderboardHeader = () => {
           totalPeserta,
           poinRatio,
           weeklyIncrease: weeklyWaste,
+          seasonPoin: userPoints, // For now, same as total (backend should return season-specific)
         });
       } catch (err) {
         console.error('Error fetching leaderboard stats:', err);
@@ -182,6 +198,7 @@ const LeaderboardHeader = () => {
           totalPeserta: 0,
           poinRatio: 0,
           weeklyIncrease: 0,
+          seasonPoin: 0,
         });
       } finally {
         setLoading(false);
@@ -191,33 +208,47 @@ const LeaderboardHeader = () => {
     fetchStats();
   }, []);
 
+  // Get current season info for display
+  const getSeasonInfo = () => {
+    const now = new Date();
+    const month = now.getMonth();
+    const seasonNumber = Math.floor(month / 3) + 1;
+    return `Season ${seasonNumber} ${now.getFullYear()}`;
+  };
+
   const statsCards = [
     {
-      title: "Poinmu",
+      title: "Poin Season Ini",
       value: loading ? "..." : `${stats.poin.toLocaleString('id-ID')}`,
-      description: loading ? "Memuat..." : `${stats.poinRatio}x dari rata-rata`,
+      description: loading ? "Memuat..." : getSeasonInfo(),
       icon: <Trophy size={20} />,
     },
     {
-      title: "Kapasitas Sampahmu",
+      title: "Total Sampahmu",
       value: loading ? "..." : `${stats.sampah.toLocaleString('id-ID')} Kg`,
       description: loading ? "Memuat..." : stats.weeklyIncrease > 0 
         ? `+${stats.weeklyIncrease} Kg minggu ini` 
-        : 'Belum ada data minggu ini',
+        : 'Terus setor sampahmu!',
       icon: <Target size={20} />,
     },
     {
-      title: "Peringkatmu",
+      title: "Peringkat Season",
       value: loading ? "..." : stats.peringkat,
       description: loading ? "Memuat..." : `dari ${Number.isFinite(stats.totalPeserta) ? stats.totalPeserta.toLocaleString('id-ID') : 0} peserta`,
       icon: <Medal size={20} />,
+    },
+    {
+      title: "Performa",
+      value: loading ? "..." : `${stats.poinRatio}x`,
+      description: loading ? "Memuat..." : "dari rata-rata peserta",
+      icon: <TrendingUp size={20} />,
     },
   ];
 
   return (
     <section className="leaderboard-header">
       <div className="user-info-header">
-        <h2> Leaderboard</h2>
+        <h2>Leaderboard</h2>
         <span>Lihat peringkat dan pencapaian Anda dibandingkan dengan anggota komunitas lainnya</span>
       </div>
       <div className="statsCardRow">

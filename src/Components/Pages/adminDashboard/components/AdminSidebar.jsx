@@ -22,17 +22,20 @@ import '../styles/adminSidebar.css';
 export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRole }) {
   const { hasPermission } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
-  const [expandedMenu, setExpandedMenu] = useState(['tabung-penukaran', 'management', 'content']);
+  const [expandedMenu, setExpandedMenu] = useState(['tabung-penukaran', 'management', 'content', 'overview-group']);
 
   const menuGroups = [
+  
     {
-      id: 'overview',
-      label: 'Overview',
-      icon: <Home size={20} />,
+      id: 'management',
+      label: 'Management',
+      icon: <Users size={20} />,
       items: [
-        { id: 'overview', label: 'Dashboard', icon: <BarChart3 size={18} /> },
+        { id: 'users', label: 'User Management', icon: <Users size={18} /> },
+        { id: 'notification', label: 'Notification Management', icon: <Bell size={18} /> },
       ],
     },
+
     {
       id: 'tabung-penukaran',
       label: 'Tabung & Penukaran',
@@ -41,45 +44,43 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRol
         { id: 'waste-deposits', label: 'Penyetoran Sampah', icon: <BoxesIcon size={18} /> },
         { id: 'product-redemption', label: 'Penukaran Produk', icon: <BoxesIcon size={18} /> },
         { id: 'cash-withdrawal', label: 'Penarikan Tunai', icon: <Wallet size={18} /> },
-        { id: 'schedule', label: 'Jadwal Penyetoran', icon: <Calendar size={18} /> },
       ],
     },
-    {
-      id: 'analytics',
-      label: 'Analytics & Analytics',
-      icon: <BarChart3 size={20} />,
-      items: [
-        { id: 'waste', label: 'Waste Analytics', icon: <BarChart3 size={18} /> },
-        { id: 'points', label: 'Points Distribution', icon: <TrendingUp size={18} /> },
-        { id: 'waste-by-user', label: 'Waste by User', icon: <Users size={18} /> },
-      ],
-    },
-    {
-      id: 'management',
-      label: 'Management',
-      icon: <Users size={20} />,
-      items: [
-        { id: 'users', label: 'User Management', icon: <Users size={18} /> },
-        { id: 'badge', label: 'Badge Management', icon: <Award size={18} /> },
-        { id: 'notification', label: 'Notification Management', icon: <Bell size={18} /> },
-      ],
-    },
+
+
+    // CUT ANALYTICS FOR NOW
+    // {
+    //   id: 'analytics',
+    //   label: 'Analytics',
+    //   icon: <BarChart3 size={20} />,
+    //   items: [
+    //     { id: 'waste', label: 'Waste Analytics', icon: <BarChart3 size={18} /> },
+    //     { id: 'points', label: 'Points Distribution', icon: <TrendingUp size={18} /> },
+    //     { id: 'waste-by-user', label: 'Waste by User', icon: <Users size={18} /> },
+    //   ],
+    // },
     {
       id: 'content',
       label: 'Content Management',
       icon: <FileText size={20} />,
       items: [
-        { id: 'content', label: 'Manage Content', icon: <FileText size={18} /> },
+        { id: 'content-produk', label: 'Produk', icon: <BoxesIcon size={18} /> },
+        { id: 'content-artikel', label: 'Artikel', icon: <FileText size={18} /> },
+        { id: 'content-badge', label: 'Badge', icon: <Award size={18} /> },
+        { id: 'content-jadwal', label: 'Jadwal Penyetoran', icon: <Calendar size={18} /> },
+        { id: 'content-harga', label: 'Daftar Harga Sampah', icon: <TrendingUp size={18} /> },
       ],
-    },
-    {
-      id: 'reports',
-      label: 'Reports & System',
-      icon: <FileText size={20} />,
-      items: [
-        { id: 'reports', label: 'Reports', icon: <FileText size={18} /> },
-      ],
-    },
+    }
+
+    // CUT REPORTS FOR NOW
+    // {
+    //   id: 'reports',
+    //   label: 'Reports & System',
+    //   icon: <FileText size={20} />,
+    //   items: [
+    //     { id: 'reports', label: 'Reports', icon: <FileText size={18} /> },
+    //   ],
+    // },
   ];
 
   const toggleMenu = (groupId) => {
@@ -144,8 +145,6 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRol
                       'cash-withdrawal': 'view_withdrawals',
                       'users': 'view_users',
                       'analytics': 'view_analytics',
-                      'badges': 'manage_badges',
-                      'schedules': 'manage_schedule',
                       'content': 'manage_content',
                       'notifications': 'manage_notifications',
                       'reports': 'export_reports',

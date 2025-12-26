@@ -41,20 +41,33 @@
 .editButton {
   display: inline-flex;
   align-items: center;
-  background-color: transparent;
-  color: var(--color-primary-dark);
-  border: none;
+  background-color: #f3f4f6;
+  color: #023d2d;
+  border: 2px solid #e5e7eb;
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.4s ease;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
 }
 
 .editButton:hover {
-  background-color: var(--color-primary-dark);
-  color: var(--color-gray-light);
-  transition: background-color 0.4s ease;
+  background-color: #023d2d;
+  color: white;
+  border-color: #023d2d;
+}
+
+.editButton.cancelMode {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.editButton.cancelMode:hover {
+  background-color: #dc2626;
+  color: white;
+  border-color: #dc2626;
 }
 
 

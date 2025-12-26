@@ -8,38 +8,33 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api';
  * @returns {Promise<object>} - Parsed JSON response
  */
 export const apiCall = async (endpoint, options = {}) => {
-  try {
-    const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...options.headers,
+  };
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
 
-    if (!response.ok) {
-      let errorMessage = `API Error: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
-      } catch {
-        // Response was not JSON
-      }
-      const error = new Error(errorMessage);
-      error.status = response.status;
-      throw error;
+  if (!response.ok) {
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // Response was not JSON
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error.message);
+    const error = new Error(errorMessage);
+    error.status = response.status;
     throw error;
   }
+
+  return await response.json();
 };
 
 // Helper functions
@@ -66,6 +61,9 @@ export const apiDelete = (endpoint, options = {}) =>
 // Specific API endpoints
 export const getUser = (userId) => apiGet(`/users/${userId}`);
 export const getUserBadges = (userId) => apiGet(`/users/${userId}/badges`);
+export const getUnlockedBadges = (userId) => apiGet(`/users/${userId}/unlocked-badges`);
+export const getBadgeTitle = (userId) => apiGet(`/users/${userId}/badge-title`);
+export const setBadgeTitle = (userId, badgeId) => apiPut(`/users/${userId}/badge-title`, { badge_id: badgeId });
 export const getUserActivity = (userId, limit = 20) => apiGet(`/users/${userId}/aktivitas?limit=${limit}`);
 export const getUserPoints = (userId) => apiGet(`/points/user/${userId}`);
 export const getDashboardStats = (userId) => apiGet(`/dashboard/user-stats/${userId}`);
@@ -83,7 +81,7 @@ export const fetchRiwayat = async () => {
 };
 
 // ============================================
-// PHASE 1 ENDPOINTS - AVATAR UPLOAD
+// AVATAR UPLOAD ENDPOINTS
 // ============================================
 
 /**
@@ -140,7 +138,6 @@ export const uploadUserAvatar = async (userId, avatarFile) => {
     }
 
     const data = await response.json();
-    console.info('✅ Avatar uploaded successfully');
     return {
       success: true,
       message: 'Avatar uploaded successfully',
@@ -148,7 +145,6 @@ export const uploadUserAvatar = async (userId, avatarFile) => {
       path: data.data?.path || data.path
     };
   } catch (error) {
-    console.error(`Avatar upload failed for user ${userId}:`, error.message);
     return {
       success: false,
       message: error.message,

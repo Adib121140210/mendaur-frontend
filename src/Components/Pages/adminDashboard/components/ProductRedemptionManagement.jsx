@@ -22,12 +22,83 @@ import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
 import '../styles/productRedemptionManagement.css';
 
+// Mock data for fallback
+const MOCK_PRODUCT_REDEMPTIONS = [
+  {
+    id: 1,
+    user_id: 1,
+    user_name: 'Budi Santoso',
+    user_email: 'budi@email.com',
+    product_id: 1,
+    product_name: 'Tas Belanja Kain',
+    product_image: 'https://via.placeholder.com/300x200?text=Tas+Belanja',
+    poin_digunakan: 25000,
+    metode_ambil: 'Ambil di Bank Sampah',
+    status: 'pending',
+    created_at: '2025-12-20T10:30:00',
+    catatan: 'Mohon disiapkan untuk diambil Jumat',
+    catatan_admin: null,
+    tanggal_target_ambil: '2025-12-24',
+  },
+  {
+    id: 2,
+    user_id: 2,
+    user_name: 'Siti Nurhaliza',
+    user_email: 'siti@email.com',
+    product_id: 2,
+    product_name: 'Botol Minum Eco',
+    product_image: 'https://via.placeholder.com/300x200?text=Botol+Minum',
+    poin_digunakan: 15000,
+    metode_ambil: 'Ambil di Bank Sampah',
+    status: 'approved',
+    created_at: '2025-12-19T14:15:00',
+    catatan: null,
+    catatan_admin: 'Sudah siap diambil di loket 2',
+    tanggal_verifikasi: '2025-12-19T15:00:00',
+    tanggal_target_ambil: '2025-12-22',
+  },
+  {
+    id: 3,
+    user_id: 3,
+    user_name: 'Ahmad Wijaya',
+    user_email: 'ahmad@email.com',
+    product_id: 3,
+    product_name: 'Sarung Tangan Organik',
+    product_image: 'https://via.placeholder.com/300x200?text=Sarung+Tangan',
+    poin_digunakan: 8000,
+    metode_ambil: 'Ambil di Bank Sampah',
+    status: 'picked_up',
+    created_at: '2025-12-18T09:45:00',
+    catatan: null,
+    catatan_admin: 'Produk sudah diambil pada 2025-12-20 12:30',
+    tanggal_verifikasi: '2025-12-18T11:00:00',
+    tanggal_ambil: '2025-12-20T12:30:00',
+    tanggal_target_ambil: '2025-12-22',
+  },
+  {
+    id: 4,
+    user_id: 4,
+    user_name: 'Dina Kusuma',
+    user_email: 'dina@email.com',
+    product_id: 1,
+    product_name: 'Tas Belanja Kain',
+    product_image: 'https://via.placeholder.com/300x200?text=Tas+Belanja',
+    poin_digunakan: 25000,
+    metode_ambil: 'Ambil di Bank Sampah',
+    status: 'rejected',
+    created_at: '2025-12-17T08:20:00',
+    catatan: null,
+    catatan_admin: 'Stok produk sudah habis saat approval',
+    tanggal_verifikasi: '2025-12-17T10:00:00',
+    tanggal_target_ambil: '2025-12-21',
+  },
+]
+
 export default function ProductRedemptionManagement() {
   const { hasPermission } = useAuth();
   // States
   const [redemptions, setRedemptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [_error, _setError] = useState(null);
   
   // Filter states
   const [statusFilter, setStatusFilter] = useState('all');
@@ -50,99 +121,42 @@ export default function ProductRedemptionManagement() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock data for demonstration
-  const MOCK_REDEMPTIONS = [
-    {
-      id: 1,
-      user_id: 1,
-      user_name: 'Budi Santoso',
-      user_email: 'budi@email.com',
-      product_id: 1,
-      product_name: 'Tas Belanja Kain',
-      product_image: 'https://via.placeholder.com/300x200?text=Tas+Belanja',
-      poin_digunakan: 25000,
-      metode_ambil: 'Ambil di Bank Sampah',
-      status: 'pending',
-      created_at: '2025-12-20T10:30:00',
-      catatan: 'Mohon disiapkan untuk diambil Jumat',
-      catatan_admin: null,
-      tanggal_target_ambil: '2025-12-24',
-    },
-    {
-      id: 2,
-      user_id: 2,
-      user_name: 'Siti Nurhaliza',
-      user_email: 'siti@email.com',
-      product_id: 2,
-      product_name: 'Botol Minum Eco',
-      product_image: 'https://via.placeholder.com/300x200?text=Botol+Minum',
-      poin_digunakan: 15000,
-      metode_ambil: 'Ambil di Bank Sampah',
-      status: 'approved',
-      created_at: '2025-12-19T14:15:00',
-      catatan: null,
-      catatan_admin: 'Sudah siap diambil di loket 2',
-      tanggal_verifikasi: '2025-12-19T15:00:00',
-      tanggal_target_ambil: '2025-12-22',
-    },
-    {
-      id: 3,
-      user_id: 3,
-      user_name: 'Ahmad Wijaya',
-      user_email: 'ahmad@email.com',
-      product_id: 3,
-      product_name: 'Sarung Tangan Organik',
-      product_image: 'https://via.placeholder.com/300x200?text=Sarung+Tangan',
-      poin_digunakan: 8000,
-      metode_ambil: 'Ambil di Bank Sampah',
-      status: 'picked_up',
-      created_at: '2025-12-18T09:45:00',
-      catatan: null,
-      catatan_admin: 'Produk sudah diambil pada 2025-12-20 12:30',
-      tanggal_verifikasi: '2025-12-18T11:00:00',
-      tanggal_ambil: '2025-12-20T12:30:00',
-      tanggal_target_ambil: '2025-12-22',
-    },
-    {
-      id: 4,
-      user_id: 4,
-      user_name: 'Dina Kusuma',
-      user_email: 'dina@email.com',
-      product_id: 1,
-      product_name: 'Tas Belanja Kain',
-      product_image: 'https://via.placeholder.com/300x200?text=Tas+Belanja',
-      poin_digunakan: 25000,
-      metode_ambil: 'Ambil di Bank Sampah',
-      status: 'rejected',
-      created_at: '2025-12-17T08:20:00',
-      catatan: null,
-      catatan_admin: 'Stok produk sudah habis saat approval',
-      tanggal_verifikasi: '2025-12-17T10:00:00',
-      tanggal_target_ambil: '2025-12-21',
-    },
-  ];
+  // Separated fetch function (Session 2 pattern)
+  const loadProductRedemptions = async () => {
+    setLoading(true);
+    try {
+      const result = await adminApi.getProductRedemptions();
+      
+      // Multi-format response handler (supports 3+ formats)
+      let data = MOCK_PRODUCT_REDEMPTIONS;
+      if (Array.isArray(result.data)) data = result.data;
+      else if (result.data?.data) data = result.data.data;
+      else if (result.data?.redemptions) data = result.data.redemptions;
+      
+      // Map API response to expected format (handle nested user/product objects)
+      const mappedData = data.map(r => ({
+        ...r,
+        // Handle nested user object from API
+        user_name: r.user_name || r.user?.name || r.user?.nama_lengkap || '-',
+        user_email: r.user_email || r.user?.email || '-',
+        // Handle nested product object from API
+        product_name: r.product_name || r.produk?.nama || r.produk?.name || '-',
+        product_image: r.product_image || r.produk?.foto || r.produk?.image || null,
+        // Ensure numeric values
+        poin_digunakan: Number(r.poin_digunakan) || Number(r.jumlah_poin) || 0,
+      }));
+      
+      setRedemptions(mappedData);
+    } catch {
+      setRedemptions(MOCK_PRODUCT_REDEMPTIONS);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Load redemptions from API
+  // Load redemptions on component mount
   useEffect(() => {
-    const fetchRedemptions = async () => {
-      try {
-        setLoading(true);
-        const result = await adminApi.getProductRedemptions();
-        if (result.success) {
-          setRedemptions(result.data || []);
-        } else {
-          console.warn('Failed to fetch redemptions, using fallback');
-          setRedemptions(MOCK_REDEMPTIONS);
-        }
-      } catch (err) {
-        console.warn('Redemption fetch error, using mock data:', err);
-        setRedemptions(MOCK_REDEMPTIONS);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRedemptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadProductRedemptions();
   }, []);
 
   // Filter logic
@@ -193,7 +207,7 @@ export default function ProductRedemptionManagement() {
     approved: redemptions.filter((r) => r.status === 'approved').length,
     rejected: redemptions.filter((r) => r.status === 'rejected').length,
     picked_up: redemptions.filter((r) => r.status === 'picked_up').length,
-    totalPoints: redemptions.reduce((sum, r) => sum + r.poin_digunakan, 0),
+    totalPoints: redemptions.reduce((sum, r) => sum + (Number(r.poin_digunakan) || 0), 0),
   };
 
   // Helper functions
@@ -292,17 +306,8 @@ export default function ProductRedemptionManagement() {
         catatan_admin: approvalData.notes,
       });
       if (result.success) {
-        const updatedRedemptions = redemptions.map((r) =>
-          r.id === selectedRedemption.id
-            ? {
-                ...r,
-                status: 'approved',
-                catatan_admin: approvalData.notes,
-                tanggal_verifikasi: new Date().toISOString(),
-              }
-            : r
-        );
-        setRedemptions(updatedRedemptions);
+        // Refresh data from server
+        await loadProductRedemptions();
         setShowApprovalModal(false);
         alert('✅ Penukaran disetujui! Nasabah dapat mengambil produk.');
       } else {
@@ -334,17 +339,8 @@ export default function ProductRedemptionManagement() {
         notes: rejectionData.notes,
       });
       if (result.success) {
-        const updatedRedemptions = redemptions.map((r) =>
-          r.id === selectedRedemption.id
-            ? {
-                ...r,
-                status: 'rejected',
-                catatan_admin: rejectionData.reason + (rejectionData.notes ? '\n' + rejectionData.notes : ''),
-                tanggal_verifikasi: new Date().toISOString(),
-              }
-            : r
-        );
-        setRedemptions(updatedRedemptions);
+        // Refresh data from server
+        await loadProductRedemptions();
         setShowRejectionModal(false);
         alert('❌ Penukaran ditolak. Poin telah dikembalikan ke nasabah.');
       } else {
@@ -358,20 +354,21 @@ export default function ProductRedemptionManagement() {
     }
   };
 
-  const handlePickupClick = (redemption) => {
+  const handlePickupClick = async (redemption) => {
     if (window.confirm('Konfirmasi produk sudah diambil oleh nasabah?')) {
-      const updatedRedemptions = redemptions.map((r) =>
-        r.id === redemption.id
-          ? {
-              ...r,
-              status: 'picked_up',
-              catatan_admin: `Produk diambil pada ${new Date().toLocaleString('id-ID')}`,
-              tanggal_ambil: new Date().toISOString(),
-            }
-          : r
-      );
-      setRedemptions(updatedRedemptions);
-      alert('✅ Status updated: Produk sudah diambil');
+      try {
+        const result = await adminApi.markRedemptionAsPickedUp(redemption.id);
+        if (result.success) {
+          // Refresh data from server
+          await loadProductRedemptions();
+          alert('✅ Status updated: Produk sudah diambil');
+        } else {
+          alert(`❌ ${result.message || 'Gagal update status pickup'}`);
+        }
+      } catch (err) {
+        console.error('Pickup error:', err);
+        alert('Terjadi kesalahan saat update status pickup');
+      }
     }
   };
 
@@ -504,8 +501,8 @@ export default function ProductRedemptionManagement() {
             onChange={(e) => setProductFilter(e.target.value)}
           >
             <option value="all">Semua Produk</option>
-            {products.map((product) => (
-              <option key={product} value={product}>
+            {products.map((product, index) => (
+              <option key={`product-${index}-${product}`} value={product}>
                 {product}
               </option>
             ))}

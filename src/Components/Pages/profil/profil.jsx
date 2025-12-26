@@ -7,12 +7,13 @@ import ProfilHeader from "../profil/profilHeader";
 import ProfilTabs from "../profil/profilTabs";
 import AchievementList from "../profil/achievementList";
 import UserData from "../profil/userData";
-import { SquarePen } from "lucide-react";
+import EditProfilForm from "../profil/editProfilForm";
+import { SquarePen, X } from "lucide-react";
 
 export default function ProfilPage() {
   const [activeTab, setActiveTab] = useState("achievement");
   const [isEditing, setIsEditing] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   // Redirect to login if not authenticated
@@ -21,6 +22,14 @@ export default function ProfilPage() {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
+
+  const handleEditSuccess = () => {
+    setIsEditing(false);
+    // Refresh user data after successful edit
+    if (refreshUser) {
+      refreshUser();
+    }
+  };
 
   if (!user) {
     return (
@@ -34,23 +43,43 @@ export default function ProfilPage() {
     <div className="profilPage">
       <div className="editButtonWrapper">
         <button 
-          className="editButton"
+          className={`editButton ${isEditing ? 'cancelMode' : ''}`}
           onClick={() => setIsEditing(!isEditing)}
         >
-          <SquarePen size={16} style={{ marginRight: "6px" }} />
-          {isEditing ? "Cancel" : "Edit"}
+          {isEditing ? (
+            <>
+              <X size={16} style={{ marginRight: "6px" }} />
+              Batal
+            </>
+          ) : (
+            <>
+              <SquarePen size={16} style={{ marginRight: "6px" }} />
+              Edit Profil
+            </>
+          )}
         </button>
       </div>
 
-      <ProfilHeader />
-      <ProfilTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Show Edit Form when editing */}
+      {isEditing ? (
+        <EditProfilForm 
+          user={user} 
+          onSuccess={handleEditSuccess}
+          onCancel={() => setIsEditing(false)}
+        />
+      ) : (
+        <>
+          <ProfilHeader />
+          <ProfilTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="tabContent">
-        <div className="tabContentWrapper">
-          {activeTab === "achievement" && <AchievementList />}
-          {activeTab === "data" && <UserData />}
-        </div>
-      </div>
+          <div className="tabContent">
+            <div className="tabContentWrapper">
+              {activeTab === "achievement" && <AchievementList />}
+              {activeTab === "data" && <UserData />}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

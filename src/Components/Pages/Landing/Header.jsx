@@ -1,11 +1,15 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import feather from 'feather-icons'
 import './Header.css'
 
 function Navbar () {
-     useEffect(() => {
+    const navigate = useNavigate();
+    
+    useEffect(() => {
         feather.replace();
     }, []);
+    
     return (
         <header className="header" >
             <h1 className="headerTitle">BSI Nusa</h1>
@@ -20,11 +24,12 @@ function Navbar () {
             </div>
             
             <div className="navBtn">
-                <a href="/" className="btnMasuk">Masuk
+                <button className="btnMasuk" onClick={() => navigate('/login')}>
+                    Masuk
                     <i data-feather="user" className="masukIcon"></i>
-                </a>
+                </button>
                 
-                <button className="btnDaftar">Daftar</button>
+                <button className="btnDaftar" onClick={() => navigate('/register')}>Daftar</button>
             </div>
 
         </header>

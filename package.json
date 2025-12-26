@@ -13,10 +13,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "feather-icons": "^4.29.2",
+    "file-saver": "^2.0.5",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.543.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "react-router-dom": "^7.10.1"
+    "react-router-dom": "^7.10.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

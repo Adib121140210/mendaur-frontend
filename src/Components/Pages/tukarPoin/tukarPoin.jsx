@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./tukarPoin.css";
 import Pagination from '../../ui/pagination'
-
-import { Produk as defaultProduk } from "../../lib/dataProduk";
+import productApi from "../../../services/productApi";
 import ProdukCard from "../produk/produkCard";
 
 import {
@@ -15,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function TukarPoin() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   
   // Get user points from authenticated user data
   const total_poin = user?.total_poin || 0;
@@ -46,6 +45,7 @@ export default function TukarPoin() {
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [redeemError, setRedeemError] = useState("");
+  const [redeemQuantity, setRedeemQuantity] = useState(1);
 
 
   // Fetch products from backend
@@ -53,42 +53,22 @@ export default function TukarPoin() {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/produk');
-        
-        if (response.ok) {
-          const result = await response.json();
-          
-          if (result.status === 'success' && result.data) {
-            // Transform backend data to match frontend structure
-            const transformedProducts = result.data
-              .filter(item => item.status === 'tersedia') // Only show available products
-              .map(item => ({
-                id_produk: `produk-${item.produk_id.toString().padStart(4, '0')}`,
-                tipe_produk: "Fisik",
-                nama_produk: item.nama,
-                gambar_produk: item.foto || "/public/assets/lampu.jpg",
-                desc_produk: item.deskripsi,
-                stok: item.stok.toString(),
-                harga_produk: item.harga_poin.toString(),
-                kategori: item.kategori,
-                created_at: item.created_at,
-                updated_at: item.updated_at,
-              }));
-            
-            setProducts(transformedProducts);
-          }
-        } else {
-          throw new Error('Failed to fetch products');
-        }
-      } catch (err) {
-        console.error('Error fetching products:', err);
-        setError(err.message);
-        // Fallback to local data if API fails
-        setProducts(defaultProduk);
-      } finally {
-        setLoading(false);
+      
+      console.log('🔍 Fetching products for TukarPoin...');
+      
+      // Fetch all products (backend returns only available products)
+      const result = await productApi.getAllProducts();
+
+      if (result.success) {
+        console.log('✅ Products fetched for TukarPoin:', result.data);
+        setProducts(result.data);
+      } else {
+        console.error('❌ Failed to fetch products:', result.message);
+        setError(result.message);
+        setProducts([]);
       }
+      
+      setLoading(false);
     };
 
     fetchProducts();
@@ -103,8 +83,8 @@ export default function TukarPoin() {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 4;
   
-  // Use products from API or fallback to default
-  const allProducts = products.length > 0 ? products : defaultProduk;
+  // Use products from API
+  const allProducts = products;
 
   // Get unique categories from products (filter out null/empty values)
   const categories = [
@@ -125,8 +105,8 @@ export default function TukarPoin() {
 
     // Search filter (name or description)
     const matchesSearch = searchQuery
-      ? product.nama_produk.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.desc_produk.toLowerCase().includes(searchQuery.toLowerCase())
+      ? product.nama?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.deskripsi?.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
     return matchesCategory && matchesSearch;
@@ -136,9 +116,9 @@ export default function TukarPoin() {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case "termurah":
-        return parseInt(a.harga_produk) - parseInt(b.harga_produk);
+        return parseInt(a.harga_poin) - parseInt(b.harga_poin);
       case "termahal":
-        return parseInt(b.harga_produk) - parseInt(a.harga_produk);
+        return parseInt(b.harga_poin) - parseInt(a.harga_poin);
       case "terpopuler":
         // Sort by stock (lower stock = more popular)
         return parseInt(a.stok) - parseInt(b.stok);
@@ -245,6 +225,21 @@ export default function TukarPoin() {
     setIsSubmitting(true);
 
     try {
+      const payload = {
+        jumlah_poin: points,
+        nomor_rekening: bankAccount,
+        nama_bank: bankName,
+        nama_penerima: accountName,
+      };
+
+      // DEBUG: Log withdrawal request details
+      console.log('===== CASH WITHDRAWAL DEBUG =====');
+      console.log('Current user:', user);
+      console.log('User ID from localStorage:', localStorage.getItem('id_user'));
+      console.log('Token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+      console.log('Withdrawal payload:', payload);
+      console.log('===== END DEBUG =====');
+
       const response = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
         method: 'POST',
         headers: {
@@ -252,16 +247,17 @@ export default function TukarPoin() {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({
-          // Backend gets user_id from authenticated token
-          jumlah_poin: points,
-          nomor_rekening: bankAccount,
-          nama_bank: bankName,
-          nama_penerima: accountName,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
+      
+      // DEBUG: Log backend response
+      console.log('===== WITHDRAWAL RESPONSE =====');
+      console.log('Status:', response.status);
+      console.log('Response OK:', response.ok);
+      console.log('Result:', result);
+      console.log('===== END RESPONSE =====');
       
       if (!response.ok) {
         // Show detailed error from backend
@@ -285,8 +281,8 @@ export default function TukarPoin() {
       setAccountName("");
       setWithdrawError("");
       
-      // Optionally refresh user data to show updated points
-      // You might want to call a function to update user context here
+      // Refresh user data to update points display
+      await refreshUser();
     } catch (err) {
       console.error('Withdrawal error:', err);
       console.error('Full error details:', err.message);
@@ -311,12 +307,29 @@ export default function TukarPoin() {
     setSelectedProduct(product);
     setShowRedeemModal(true);
     setRedeemError("");
+    setRedeemQuantity(1); // Reset quantity to 1
+  }
+
+  // Handle quantity change
+  function handleQuantityChange(value) {
+    const newQuantity = parseInt(value) || 1;
+    const maxQuantity = parseInt(selectedProduct?.stok) || 1;
+    
+    if (newQuantity < 1) {
+      setRedeemQuantity(1);
+    } else if (newQuantity > maxQuantity) {
+      setRedeemQuantity(maxQuantity);
+      setRedeemError(`Maksimal ${maxQuantity} item`);
+    } else {
+      setRedeemQuantity(newQuantity);
+      setRedeemError("");
+    }
   }
 
   async function handleRedeemSubmit() {
     if (!selectedProduct) return;
 
-    const requiredPoints = parseInt(selectedProduct.harga_produk);
+    const requiredPoints = parseInt(selectedProduct.harga_poin) * redeemQuantity;
 
     // Check authentication
     const token = localStorage.getItem('token');
@@ -336,19 +349,27 @@ export default function TukarPoin() {
       return;
     }
 
+    if (redeemQuantity > parseInt(selectedProduct.stok)) {
+      setRedeemError(`Stok hanya tersedia ${selectedProduct.stok} item`);
+      return;
+    }
+
+    if (redeemQuantity < 1) {
+      setRedeemError("Jumlah minimal adalah 1");
+      return;
+    }
+
     setIsSubmitting(true);
     setRedeemError("");
 
     try {
       const payload = {
-        produk_id: parseInt(selectedProduct.id_produk.replace('produk-', '')), // Product ID
-        nama_produk: selectedProduct.nama_produk, // Product name
-        poin_digunakan: requiredPoints, // Points used
-        jumlah: 1, // Quantity
-        metode_ambil: 'Ambil di Bank Sampah', // Pickup method (NEW field)
+        produk_id: selectedProduct.produk_id, // Product ID
+        jumlah: redeemQuantity, // Quantity
+        poin_digunakan: requiredPoints, // Total points used
+        metode_ambil: 'Ambil di Bank Sampah', // Pickup method
         status: 'pending', // Initial status
-        catatan: '', // Notes (optional)
-        // Removed: alamat_pengiriman, no_resi, tanggal_pengiriman, tanggal_diterima
+        catatan: `Penukaran ${redeemQuantity} ${selectedProduct.nama}`, // Notes
       };
       
       // DEBUG: Log user data and request details
@@ -416,16 +437,17 @@ export default function TukarPoin() {
 
       alert(
         `Penukaran produk berhasil!\n\n` +
-        `Produk: ${selectedProduct.nama_produk}\n` +
-        `Poin: ${requiredPoints}\n\n` +
+        `Produk: ${selectedProduct.nama}\n` +
+        `Jumlah: ${redeemQuantity} item\n` +
+        `Total Poin: ${requiredPoints.toLocaleString('id-ID')}\n\n` +
         `Status: Menunggu persetujuan admin\n\n` +
         `Setelah disetujui, Anda dapat mengambil produk di kantor Bank Sampah.`
       );
       
       closeRedeemModal();
       
-      // Refresh products to update stock
-      // Optionally refresh user data to show updated points
+      // Refresh user data to update points display
+      await refreshUser();
     } catch (err) {
       console.error('Redemption error:', err);
       setRedeemError(err.message || "Terjadi kesalahan. Silakan coba lagi.");
@@ -438,6 +460,7 @@ export default function TukarPoin() {
     setShowRedeemModal(false);
     setSelectedProduct(null);
     setRedeemError("");
+    setRedeemQuantity(1); // Reset quantity
   }
 
   return (
@@ -607,9 +630,9 @@ export default function TukarPoin() {
         <div className="modalOverlay" onClick={closeRedeemModal}>
           <div className="cashModalContent" onClick={(e) => e.stopPropagation()}>
             <div className="cashModalHeader">
-              <h3>Konfirmasi Penukaran</h3>
+              <h3>🛍️ Konfirmasi Penukaran</h3>
               <button className="closeModalBtn" onClick={closeRedeemModal}>
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
 
@@ -617,18 +640,90 @@ export default function TukarPoin() {
               {/* Product Details */}
               <div className="redeemProductInfo">
                 <div className="redeemProductImage">
-                  {selectedProduct.gambar_produk ? (
-                    <img src={selectedProduct.gambar_produk} alt={selectedProduct.nama_produk} />
+                  {selectedProduct.foto ? (
+                    <img 
+                      src={selectedProduct.foto.startsWith('http') 
+                        ? selectedProduct.foto 
+                        : `http://127.0.0.1:8000/${selectedProduct.foto}`}
+                      alt={selectedProduct.nama} 
+                    />
                   ) : (
                     <div className="imagePlaceholder">Gambar tidak tersedia</div>
                   )}
                 </div>
                 <div className="redeemProductDetails">
-                  <h4>{selectedProduct.nama_produk}</h4>
-                  <p className="productDesc">{selectedProduct.desc_produk}</p>
+                  <h4>{selectedProduct.nama}</h4>
+                  <p className="productDesc">{selectedProduct.deskripsi}</p>
                   <div className="productMeta">
                     <span className="productStock">Stok: {selectedProduct.stok}</span>
                     <span className="productCategory">{selectedProduct.kategori}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="withdrawForm" style={{ marginBottom: '1.5rem' }}>
+                <div className="formGroup">
+                  <label htmlFor="redeemQuantity">Jumlah Barang</label>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange(redeemQuantity - 1)}
+                      disabled={redeemQuantity <= 1}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '10px',
+                        background: redeemQuantity <= 1 ? '#f3f4f6' : 'white',
+                        cursor: redeemQuantity <= 1 ? 'not-allowed' : 'pointer',
+                        fontWeight: '700',
+                        fontSize: '1.125rem',
+                        color: redeemQuantity <= 1 ? '#9ca3af' : '#374151',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      id="redeemQuantity"
+                      value={redeemQuantity}
+                      onChange={(e) => handleQuantityChange(e.target.value)}
+                      min="1"
+                      max={selectedProduct.stok}
+                      style={{
+                        flex: 1,
+                        textAlign: 'center',
+                        fontSize: '1.125rem',
+                        fontWeight: '700'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange(redeemQuantity + 1)}
+                      disabled={redeemQuantity >= parseInt(selectedProduct.stok)}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '10px',
+                        background: redeemQuantity >= parseInt(selectedProduct.stok) ? '#f3f4f6' : 'white',
+                        cursor: redeemQuantity >= parseInt(selectedProduct.stok) ? 'not-allowed' : 'pointer',
+                        fontWeight: '700',
+                        fontSize: '1.125rem',
+                        color: redeemQuantity >= parseInt(selectedProduct.stok) ? '#9ca3af' : '#374151',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    color: '#6b7280', 
+                    marginTop: '0.5rem',
+                    textAlign: 'center'
+                  }}>
+                    Tersedia: {selectedProduct.stok} item
                   </div>
                 </div>
               </div>
@@ -642,15 +737,20 @@ export default function TukarPoin() {
                 <div className="infoCard">
                   <span className="infoLabel">Poin yang Diperlukan</span>
                   <span className="infoValue" style={{ color: 'var(--color-primary)' }}>
-                    {parseInt(selectedProduct.harga_produk).toLocaleString('id-ID')} Poin
+                    {redeemQuantity > 1 && (
+                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginRight: '0.5rem' }}>
+                        {redeemQuantity} × {parseInt(selectedProduct.harga_poin).toLocaleString('id-ID')} =
+                      </span>
+                    )}
+                    {(parseInt(selectedProduct.harga_poin) * redeemQuantity).toLocaleString('id-ID')} Poin
                   </span>
                 </div>
                 <div className="infoCard">
                   <span className="infoLabel">Sisa Poin Setelah Penukaran</span>
                   <span className="infoValue" style={{ 
-                    color: (total_poin - parseInt(selectedProduct.harga_produk)) >= 0 ? '#10b981' : '#dc2626' 
+                    color: (total_poin - (parseInt(selectedProduct.harga_poin) * redeemQuantity)) >= 0 ? '#10b981' : '#dc2626' 
                   }}>
-                    {(total_poin - parseInt(selectedProduct.harga_produk)).toLocaleString('id-ID')} Poin
+                    {(total_poin - (parseInt(selectedProduct.harga_poin) * redeemQuantity)).toLocaleString('id-ID')} Poin
                   </span>
                 </div>
               </div>
@@ -689,7 +789,7 @@ export default function TukarPoin() {
                 onClick={handleRedeemSubmit}
                 disabled={
                   isSubmitting || 
-                  parseInt(selectedProduct.harga_produk) > total_poin ||
+                  parseInt(selectedProduct.harga_poin) > total_poin ||
                   parseInt(selectedProduct.stok) <= 0
                 }
               >
@@ -705,9 +805,9 @@ export default function TukarPoin() {
         <div className="modalOverlay" onClick={closeCashModal}>
           <div className="cashModalContent" onClick={(e) => e.stopPropagation()}>
             <div className="cashModalHeader">
-              <h3>Tarik Tunai</h3>
+              <h3>💰 Tarik Tunai</h3>
               <button className="closeModalBtn" onClick={closeCashModal}>
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
 

@@ -7,7 +7,7 @@ import './bottomNav.css';
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
   // Update active tab based on current route
@@ -35,7 +35,8 @@ const BottomNav = () => {
   };
 
   // Hide bottom nav on desktop (only show on mobile/tablet)
-  if (!user) return null;
+  // Also hide for admin users or on admin routes
+  if (!user || isAdmin || location.pathname.includes('/admin')) return null;
 
   return (
     <>

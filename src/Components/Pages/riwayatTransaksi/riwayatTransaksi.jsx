@@ -25,7 +25,7 @@ export default function RiwayatTransaksi() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const statusOptions = ["semua", "pending", "approved", "rejected", "selesai", "diproses", "shipped", "delivered", "cancelled", "claimed"];
+  const statusOptions = ["semua", "pending", "diproses", "selesai", "ditolak"];
 
   // Fetch transactions from API
   useEffect(() => {
@@ -38,6 +38,9 @@ export default function RiwayatTransaksi() {
 
     try {
       const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('id_user');
+
+      console.log('🔍 Fetching transactions for user:', userId);
 
       // Fetch cash withdrawals
       const withdrawalsResponse = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
@@ -50,7 +53,17 @@ export default function RiwayatTransaksi() {
       let withdrawals = [];
       if (withdrawalsResponse.ok) {
         const withdrawalsData = await withdrawalsResponse.json();
-        withdrawals = (withdrawalsData.data?.data || []).map(item => ({
+        console.log('💰 Raw withdrawals response:', withdrawalsData);
+        
+        // Filter only withdrawals for current user
+        const allWithdrawals = withdrawalsData.data?.data || withdrawalsData.data || [];
+        const userWithdrawals = allWithdrawals.filter(item => 
+          item.user_id?.toString() === userId?.toString()
+        );
+        
+        console.log(`✅ Filtered ${userWithdrawals.length} withdrawals from ${allWithdrawals.length} total`);
+        
+        withdrawals = userWithdrawals.map(item => ({
           id: `withdrawal-${item.penarikan_tunai_id}`,
           type: 'tarik_tunai',
           kategori: 'penukaran',
@@ -120,13 +133,21 @@ export default function RiwayatTransaksi() {
 
         if (productResponse.ok) {
           const productData = await productResponse.json();
+          console.log('🛍️ Raw product redemptions response:', productData);
 
           // Handle both array and object with data property
-          const redemptionsArray = Array.isArray(productData)
+          const allRedemptions = Array.isArray(productData)
             ? productData
             : (productData.data?.data || productData.data || []);
 
-          productRedemptions = redemptionsArray.map(item => ({
+          // Filter only redemptions for current user
+          const userRedemptions = allRedemptions.filter(item => 
+            item.user_id?.toString() === userId?.toString()
+          );
+          
+          console.log(`✅ Filtered ${userRedemptions.length} product redemptions from ${allRedemptions.length} total`);
+
+          productRedemptions = userRedemptions.map(item => ({
             id: `product-${item.penukaran_produk_id}`,
             type: 'tukar_produk',
             kategori: 'penukaran',

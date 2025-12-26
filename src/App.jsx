@@ -8,6 +8,7 @@ import Landing from './Components/Pages/Landing/Landing'
 import Login from "./Components/Pages/login/login"
 import Daftar from "./Components/Pages/daftar/daftar"
 import Register from './Components/Pages/register/register'
+import ForgotPassword from './Components/Pages/forgotPassword/forgotPassword'
 
 // User Layout & Pages
 import Layout from "./Components/Pages/home/Layout"
@@ -18,7 +19,7 @@ import Profil from "./Components/Pages/profil/profil"
 import TabungSampah from './Components/Pages/tabungSampah/tabungSampah'
 import RiwayatTabung from './Components/Pages/tabungSampah/riwayatTabung'
 import Produk from "./Components/Pages/produk/produk"
-import ProdukDetail from './Components/Pages/produk/produkDetail/produkDetail'
+import ProdukDetail from './Components/Pages/produk/produkDetail'
 import TukarPoin from "./Components/Pages/tukarPoin/tukarPoin"
 import Leaderboard from "./Components/Pages/leaderboard/leaderboard"
 import RiwayatTransaksi from './Components/Pages/riwayatTransaksi/riwayatTransaksi'
@@ -84,6 +85,7 @@ const App = () => {
       <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/daftar" element={<Daftar />} />
 
       {/* User Dashboard Routes (Protected) */}

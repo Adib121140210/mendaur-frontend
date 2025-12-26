@@ -366,7 +366,30 @@
 
   .filterBar {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .lastUpdatedBanner {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .updateText {
+    font-size: 0.75rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .searchWrapper {
+    min-width: 100%;
+  }
+
+  .searchInput {
+    min-width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 0.875rem;
   }
 
   .actionBarContent {
@@ -387,10 +410,40 @@
     justify-content: center;
   }
 
+  /* Mobile Table Responsive */
+  .daftarSampahWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hargaTable {
+    min-width: 450px;
+  }
+
   .hargaTable th,
   .hargaTable td {
     font-size: 0.75rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  .namaBarang {
+    width: 45%;
+  }
+
+  .satuanBarang {
+    width: 18%;
+  }
+
+  .hargaJual {
+    width: 37%;
+  }
+
+  .kategoriBadge {
+    display: none; /* Hide badge on mobile for space */
+  }
+
+  .hargaTable tbody {
+    max-height: 400px;
   }
 
   .formModal {
@@ -414,5 +467,30 @@
 
   .formActions button {
     width: 100%;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+  .hargaTable {
+    min-width: 350px;
+  }
+
+  .hargaTable th,
+  .hargaTable td {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.3rem;
+  }
+
+  .namaBarang {
+    width: 50%;
+  }
+
+  .satuanBarang {
+    width: 15%;
+  }
+
+  .hargaJual {
+    width: 35%;
   }
 }

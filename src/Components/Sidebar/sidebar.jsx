@@ -1,6 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Sidebarlinks, SidebarBottomlinks } from "../lib/navigation";
 import { useAuth } from "../Pages/context/AuthContext";
+import { useState, useEffect } from "react";
+import { getBadgeTitle } from "../../services/api";
 import "./sidebar.css";
 
 export default function Sidebar() {
@@ -19,6 +21,24 @@ export default function Sidebar() {
 
 function ProfileSection() {
   const { user, isAuthenticated } = useAuth();
+  const [badgeTitle, setBadgeTitleData] = useState(null);
+
+  useEffect(() => {
+    const fetchBadgeTitle = async () => {
+      if (user?.user_id) {
+        try {
+          const result = await getBadgeTitle(user.user_id);
+          if (result.status === 'success' && result.data?.badge_title) {
+            setBadgeTitleData(result.data.badge_title);
+          }
+        } catch {
+          // Silent fail - badge title is optional
+        }
+      }
+    };
+
+    fetchBadgeTitle();
+  }, [user?.user_id]);
 
   // Show login prompt if not authenticated
   if (!isAuthenticated || !user) {
@@ -63,7 +83,13 @@ function ProfileSection() {
       </Link>
       <div className="profileData">
         <span className="profileName">{user.nama || 'User'}</span>
-        <span className="profileBadge">{user.level || 'Member'}</span>
+        {badgeTitle ? (
+          <span className="profileBadge" title={badgeTitle.deskripsi}>
+            {badgeTitle.icon} {badgeTitle.nama}
+          </span>
+        ) : (
+          <span className="profileBadge">{user.level || 'Member'}</span>
+        )}
         <span className="profilePoints">Poin: {user.total_poin || 0}</span>
       </div>
     </div>

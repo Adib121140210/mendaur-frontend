@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import "./produkCard.css";
-import { Produk as defaultProduk } from "../../lib/dataProduk";
 import Pagination from '../../ui/pagination'
 
-import { Coins } from "lucide-react";
+import { Coins, Package, ShoppingCart } from "lucide-react";
 
-// MANAJEMEN KONTEN PRODUK
+// MANAJEMEN KONTEN PRODUK - Sync with Backend Table `produks`
 const ProdukCard = ({ 
-  data = defaultProduk, 
+  data = [], 
   showPagination = true, 
   perPage = 8,
   onRedeem = null,
@@ -30,13 +29,33 @@ const ProdukCard = ({
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+  // Get image URL from backend
+  const getImageUrl = (foto) => {
+    if (!foto) return null;
+    // Backend returns path like "storage/produks/xxx.jpg" or "produks/xxx.jpg"
+    if (foto.startsWith('http')) return foto;
+    
+    // If path doesn't start with storage/, add it
+    const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
+    return `http://127.0.0.1:8000/${cleanPath}`;
+  };
+
+  // Safe parse integer
+  const safeParseInt = (value) => {
+    const parsed = parseInt(value);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
 return (
   <>
     <div className="produkGrid">
       {paginatedProduk.map((item, index) => {
-        // Use id_produk as primary key, fallback to nama_produk + index if id_produk is missing
-        const uniqueKey = item.id_produk || `${item.nama_produk}-${index}`;
+        // Use produk_id from backend table
+        const uniqueKey = item.produk_id || `produk-${index}`;
         const animationIndex = paginatedProduk.indexOf(item);
+        const imageUrl = getImageUrl(item.foto);
+        const hargaPoin = safeParseInt(item.harga_poin);
+        const stok = safeParseInt(item.stok);
         
         return (
           <div
@@ -45,46 +64,86 @@ return (
             style={{ animationDelay: `${animationIndex * 0.05}s` }}
           >
           <div className="produkImageWrapper">
-            {item.gambar_produk ? (
-              <img src={item.gambar_produk} alt={item.nama_produk} />
-            ) : (
-              <div className="produkImagePlaceholder">Gambar belum tersedia</div>
+            {imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={item.nama} 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div 
+              className="produkImagePlaceholder" 
+              style={{ display: imageUrl ? 'none' : 'flex' }}
+            >
+              <Package size={48} />
+              <span>Gambar belum tersedia</span>
+            </div>
+            {item.kategori && (
+              <span className="produkKategori">{item.kategori}</span>
             )}
-            <span className="produkKategori">{item.tipe_produk}</span>
+            {stok <= 0 && (
+              <span className="produkStokHabis">Stok Habis</span>
+            )}
           </div>
           
           {/* DESKRIPSI */}
           <div className="produkContent">
-            <h3>
-              {item.nama_produk}
+            <h3 className="produkNama">
+              {item.nama}
             </h3>
-            <p>{item.desc_produk?.slice(0, 100)}...</p>
-            <p className="produkMeta">Stok {item.stok}</p>
+            <p className="produkDeskripsi">
+              {item.deskripsi 
+                ? (item.deskripsi.length > 100 
+                    ? item.deskripsi.slice(0, 100) + '...' 
+                    : item.deskripsi)
+                : 'Tidak ada deskripsi'}
+            </p>
+            
+            <div className="produkMeta">
+              <span className="metaStok">
+                <Package size={14} />
+                Stok: {stok}
+              </span>
+              <span className="metaStatus" data-status={item.status}>
+                {item.status === 'tersedia' ? '✓ Tersedia' : 
+                 item.status === 'habis' ? '✕ Habis' : 
+                 '⊗ Tidak Aktif'}
+              </span>
+            </div>
 
           {/* POIN & ACTION BUTTON */}
             <div className="produkFooter">
               <span className="produkPoin">
-                <Coins size={16} />
-                {item.harga_produk} Poin
+                <Coins size={18} />
+                <strong>{hargaPoin > 0 ? hargaPoin.toLocaleString('id-ID') : '-'}</strong>
+                <small>Poin</small>
               </span>
               {showRedeemButton && onRedeem ? (
                 <button
-                  className={`redeemBtn ${parseInt(item.harga_produk) > userPoints ? 'disabled' : ''}`}
+                  className={`redeemBtn ${
+                    hargaPoin > userPoints || stok <= 0 
+                      ? 'disabled' 
+                      : ''
+                  }`}
                   onClick={() => onRedeem(item)}
-                  disabled={parseInt(item.harga_produk) > userPoints || parseInt(item.stok) <= 0}
+                  disabled={hargaPoin > userPoints || stok <= 0}
                   title={
-                    parseInt(item.stok) <= 0 
+                    stok <= 0 
                       ? 'Stok habis' 
-                      : parseInt(item.harga_produk) > userPoints 
+                      : hargaPoin > userPoints 
                       ? 'Poin tidak mencukupi' 
                       : 'Tukar produk ini'
                   }
                 >
-                  {parseInt(item.stok) <= 0 ? 'Stok Habis' : 'Tukar Sekarang'}
+                  <ShoppingCart size={16} />
+                  {stok <= 0 ? 'Stok Habis' : 'Tukar Sekarang'}
                 </button>
               ) : (
-                <Link to={`/produk/${item.id_produk}`} className="readMoreBtn">
-                  Lihat Detail
+                <Link to={`/produk/${item.produk_id}`} className="readMoreBtn">
+                  Lihat Detail →
                 </Link>
               )}
             </div>
@@ -94,7 +153,7 @@ return (
       })}
     </div>
 
-      {showPagination && (
+      {showPagination && totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

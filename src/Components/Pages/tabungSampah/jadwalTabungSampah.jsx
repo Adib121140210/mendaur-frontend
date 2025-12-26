@@ -42,25 +42,26 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         const result = await response.json();
         let data = result.data || result || [];
 
-        // Normalization: map known alternative field names to expected shape
+        // Normalization: map new API structure to expected shape
+        // New structure: { hari, waktu_mulai, waktu_selesai, lokasi, status: "Buka"/"Tutup" }
         const normalized = (Array.isArray(data) ? data : []).map((item, index) => {
           return {
-            jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || index, // Use index as fallback
-            status: (item.status || item.keterangan || item.st || "aktif").toString().toLowerCase(), // Default to 'aktif'
-            tanggal: item.tanggal || item.date || item.day || null,
-            jam: item.jam || item.time || item.waktu || null,
+            jadwal_penyetoran_id: item.jadwal_penyetoran_id || item.id || item._id || index,
+            // Status: "Buka" or "Tutup" (capitalize first letter from backend)
+            status: item.status || "Buka",
+            // Hari replaces tanggal
+            hari: item.hari || item.tanggal || item.day || "-",
+            // Time fields
             waktu_mulai: item.waktu_mulai || item.start_time || null,
             waktu_selesai: item.waktu_selesai || item.end_time || null,
+            // Lokasi
             lokasi: item.lokasi || item.alamat || item.location || null,
-            area: item.area || item.areas || null,
-            catatan: item.catatan || item.notes || null,
-            hari: item.hari || null,
           };
         });
 
-        // For selection mode, filter only active schedules (tolerate different status strings)
+        // For selection mode, filter only "Buka" schedules
         if (showSelection) {
-          const activeStatuses = ['aktif', 'active', 'available', 'open'];
+          const activeStatuses = ['buka', 'aktif', 'active', 'available', 'open'];
           data = normalized.filter(s => activeStatuses.includes((s.status || '').toLowerCase()));
         } else {
           data = normalized;
@@ -90,51 +91,6 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
 
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
-  };
-
-  const getStatusIcon = (status) => {
-    const statusLower = status?.toLowerCase();
-    switch (statusLower) {
-      case "selesai":
-      case "approved":
-        return <CheckCircle size={16} className="status-icon success" />;
-      case "pending":
-      case "dijadwalkan":
-        return <Clock size={16} className="status-icon pending" />;
-      case "dibatalkan":
-      case "rejected":
-        return <XCircle size={16} className="status-icon rejected" />;
-      default:
-        return <AlertCircle size={16} className="status-icon default" />;
-    }
-  };
-
-  const getStatusClass = (status) => {
-    const statusLower = status?.toLowerCase();
-    switch (statusLower) {
-      case "selesai":
-      case "approved":
-        return "status-badge success";
-      case "pending":
-      case "dijadwalkan":
-        return "status-badge pending";
-      case "dibatalkan":
-      case "rejected":
-        return "status-badge rejected";
-      default:
-        return "status-badge default";
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   const formatTime = (timeString) => {
@@ -183,23 +139,33 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         <div className="jadwalCardGrid">
           {schedules.map((schedule) => {
             const isActive = showSelection && activeSchedule === schedule.jadwal_penyetoran_id;
+            const isClosed = schedule.status?.toLowerCase() === 'tutup' || schedule.status?.toLowerCase() === 'closed';
             return (
               <div
                 key={schedule.jadwal_penyetoran_id}
-                className={`jadwalCardItem ${isActive ? "active" : ""} ${showSelection ? "selectable" : ""}`}
-                onClick={() => showSelection && handleScheduleSelect(schedule.jadwal_penyetoran_id)}
+                className={`jadwalCardItem ${isActive ? "active" : ""} ${showSelection ? "selectable" : ""} ${isClosed ? "closed" : ""}`}
+                style={isClosed ? { opacity: 0.5, pointerEvents: showSelection ? 'none' : 'auto' } : {}}
+                onClick={() => showSelection && !isClosed && handleScheduleSelect(schedule.jadwal_penyetoran_id)}
               >
                 <div className="jadwalCardTop">
                   <div className="cardTitleSection">
                     <Calendar size={18} />
-                    <h4>{schedule.hari || formatDate(schedule.tanggal || schedule.tanggal)}</h4>
+                    <h4>{schedule.hari || "-"}</h4>
                   </div>
                   {showSelection ? (
-                    isActive && <span className="activeBadge">✓ Dipilih</span>
+                    isClosed ? (
+                      <span className="closedBadge" style={{ color: '#ef4444', fontSize: '12px', fontWeight: '500' }}>Tutup</span>
+                    ) : (
+                      isActive && <span className="activeBadge">✓ Dipilih</span>
+                    )
                   ) : (
-                    <div className={getStatusClass(schedule.status)}>
-                      {getStatusIcon(schedule.status)}
-                      <span>{schedule.status || "Pending"}</span>
+                    <div className={`status-badge ${schedule.status?.toLowerCase() === 'buka' ? 'success' : 'rejected'}`}>
+                      {schedule.status?.toLowerCase() === 'buka' ? (
+                        <CheckCircle size={16} className="status-icon success" />
+                      ) : (
+                        <XCircle size={16} className="status-icon rejected" />
+                      )}
+                      <span>{schedule.status || "Buka"}</span>
                     </div>
                   )}
                 </div>
@@ -208,31 +174,16 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
                   <div className="infoRow">
                     <Clock size={14} />
                     <span>
-                      {schedule.jam ||
-                       (schedule.waktu_mulai && schedule.waktu_selesai
-                         ? `${formatTime(schedule.waktu_mulai)} - ${formatTime(schedule.waktu_selesai)}`
-                         : "-")}
+                      {schedule.waktu_mulai && schedule.waktu_selesai
+                        ? `${formatTime(schedule.waktu_mulai)} - ${formatTime(schedule.waktu_selesai)}`
+                        : "-"}
                     </span>
                   </div>
 
                   <div className="infoRow">
                     <MapPin size={14} />
-                    <span>
-                      {schedule.lokasi ||
-                       schedule.alamat ||
-                       (Array.isArray(schedule.area)
-                         ? schedule.area.join(", ")
-                         : schedule.area) ||
-                       "-"}
-                    </span>
+                    <span>{schedule.lokasi || "-"}</span>
                   </div>
-
-                  {!showSelection && schedule.catatan && (
-                    <div className="infoRow notes">
-                      <AlertCircle size={14} />
-                      <span>{schedule.catatan}</span>
-                    </div>
-                  )}
                 </div>
 
                 {showSelection && (

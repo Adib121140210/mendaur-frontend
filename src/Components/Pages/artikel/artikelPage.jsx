@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Search, BookOpen, TrendingUp, Filter } from "lucide-react";
 import ArtikelCard from "../../lib/artikel";
 import useScrollTop from "../../lib/useScrollTop";
@@ -42,9 +43,9 @@ const ArtikelPage = () => {
       
       const result = await response.json();
       if (result.status === 'success') {
-        // Sort by views and take top 5
+        // Sort by views and take top 5 (use dilihat field)
         const popular = result.data
-          .sort((a, b) => (b.jumlah_views || 0) - (a.jumlah_views || 0))
+          .sort((a, b) => (b.dilihat || 0) - (a.dilihat || 0))
           .slice(0, 5);
         setPopularArticles(popular);
       }
@@ -159,14 +160,14 @@ const ArtikelPage = () => {
             </h3>
             <div className="popularList">
               {popularArticles.map((article) => (
-                <a
+                <Link
                   key={article.artikel_id}
-                  href={`/artikel/${article.slug}`}
+                  to={`/dashboard/artikel/${article.artikel_id}`}
                   className="popularItem"
                 >
-                  <span className="popularTitle">{article.judul_artikel}</span>
-                  <span className="popularViews">{article.jumlah_views || 0} views</span>
-                </a>
+                  <span className="popularTitle">{article.judul}</span>
+                  <span className="popularViews">{article.dilihat || 0} views</span>
+                </Link>
               ))}
             </div>
           </div>

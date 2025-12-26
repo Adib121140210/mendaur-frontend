@@ -1,34 +1,64 @@
 import useScrollTop from "../../lib/useScrollTop";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import ArtikelCard from "../../lib/artikel";
-import { Eye, Calendar, User } from "lucide-react";
+import { Eye, Calendar, User, ArrowLeft, Clock, Share2, BookOpen, TrendingUp } from "lucide-react";
 import "./artikelDetail.css";
 
 const ArtikelDetail = () => {
   useScrollTop();
   
-  const { id: slug } = useParams(); // 'id' in route is actually the slug
+  const { id: artikelId } = useParams(); // Using artikel_id instead of slug
   const navigate = useNavigate();
   const [artikelData, setArtikelData] = useState(null);
+  const [relatedArticles, setRelatedArticles] = useState([]);
+  const [popularArticles, setPopularArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchArtikelDetail();
+    fetchRelatedArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [artikelId]);
 
   const fetchArtikelDetail = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`http://127.0.0.1:8000/api/artikel/${slug}`);
+      // Try fetching single artikel by ID
+      let response = await fetch(`http://127.0.0.1:8000/api/artikel/${artikelId}`);
+      
+      // If 404, try fetching all articles and filter by ID
+      if (!response.ok && response.status === 404) {
+        console.log('Single artikel endpoint not found, fetching all articles...');
+        response = await fetch('http://127.0.0.1:8000/api/artikel');
+        
+        if (!response.ok) {
+          setError('Gagal memuat artikel');
+          return;
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data) {
+          // Find article by ID from the list
+          const article = result.data.find(a => a.artikel_id?.toString() === artikelId?.toString());
+          
+          if (article) {
+            setArtikelData(article);
+          } else {
+            setError('Artikel tidak ditemukan');
+          }
+        } else {
+          setError('Artikel tidak ditemukan');
+        }
+        return;
+      }
       
       if (!response.ok) {
-        if (response.status === 404) {
-          setError('Artikel tidak ditemukan');
+        if (response.status === 403) {
+          setError('Akses ditolak');
         } else {
           setError('Gagal memuat artikel');
         }
@@ -38,17 +68,40 @@ const ArtikelDetail = () => {
       const result = await response.json();
       
       if (result.status === 'success' && result.data) {
-        // Log to see actual API response structure
-        console.log('API Response:', result.data);
         setArtikelData(result.data);
       } else {
         setError('Artikel tidak ditemukan');
       }
-    } catch (error) {
-      console.error('Error fetching artikel detail:', error.message);
+    } catch (err) {
+      console.error('Fetch error:', err);
       setError('Gagal memuat artikel');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRelatedArticles = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/artikel');
+      if (!response.ok) return;
+      
+      const result = await response.json();
+      if (result.status === 'success') {
+        // Filter out current article and get related (use artikel_id)
+        const filtered = result.data
+          .filter(a => a.artikel_id?.toString() !== artikelId?.toString())
+          .slice(0, 4);
+        setRelatedArticles(filtered);
+        
+        // Get popular articles (use dilihat instead of jumlah_views)
+        const popular = result.data
+          .filter(a => a.artikel_id?.toString() !== artikelId?.toString())
+          .sort((a, b) => (b.dilihat || 0) - (a.dilihat || 0))
+          .slice(0, 5);
+        setPopularArticles(popular);
+      }
+    } catch {
+      // Silent fail for related articles
     }
   };
 
@@ -61,11 +114,49 @@ const ArtikelDetail = () => {
     });
   };
 
+  const formatReadingTime = (content) => {
+    if (!content) return '1 menit';
+    const words = content.split(/\s+/).length;
+    const minutes = Math.ceil(words / 200);
+    return `${minutes} menit`;
+  };
+
+  const getImageUrl = (foto) => {
+    if (!foto) return null;
+    
+    // If already a full URL, use as-is
+    if (foto.startsWith('http://') || foto.startsWith('https://')) {
+      return foto;
+    }
+    
+    // Try different path patterns
+    const baseUrl = 'http://127.0.0.1:8000';
+    
+    // Remove leading slashes and 'storage/' prefix if present
+    let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
+    
+    // Try with storage prefix
+    return `${baseUrl}/storage/${cleanPath}`;
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: artikelData?.judul_artikel,
+        url: window.location.href
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link artikel berhasil disalin!');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="artikelDetailWrapper">
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          Loading article...
+      <div className="artikel-detail-page">
+        <div className="artikel-loading">
+          <div className="loading-spinner"></div>
+          <p>Memuat artikel...</p>
         </div>
       </div>
     );
@@ -73,81 +164,161 @@ const ArtikelDetail = () => {
 
   if (error || !artikelData) {
     return (
-      <div className="artikelDetailWrapper">
-        <button className="backButton" onClick={() => navigate("/")}>
-          ← Kembali ke Beranda
-        </button>
-        <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-          <p>{error || 'Artikel tidak ditemukan.'}</p>
+      <div className="artikel-detail-page">
+        <div className="artikel-error">
+          <BookOpen size={48} />
+          <h2>{error || 'Artikel tidak ditemukan'}</h2>
+          <p>Artikel yang Anda cari mungkin telah dihapus atau tidak tersedia.</p>
+          <button onClick={() => navigate('/dashboard/artikel')} className="btn-back-home">
+            <ArrowLeft size={18} />
+            Kembali ke Daftar Artikel
+          </button>
         </div>
       </div>
     );
   }
 
+  const content = artikelData.konten || '';
+
   return (
-    <div className="artikelDetailWrapper">
-      <button className="backButton" onClick={() => navigate("/")}>
-        ← Kembali ke Beranda
-      </button>
+    <div className="artikel-detail-page">
+      {/* Breadcrumb */}
+      <div className="artikel-breadcrumb">
+        <div className="breadcrumb-container">
+          <Link to="/dashboard">Beranda</Link>
+          <span>/</span>
+          <Link to="/dashboard/artikel">Artikel</Link>
+          <span>/</span>
+          <span className="current">{artikelData.kategori}</span>
+        </div>
+      </div>
 
-      <div className="artikelDetailCard">
-        {artikelData.gambar_artikel && (
-          <div className="artikelImage">
-            <img 
-              src={artikelData.gambar_artikel.startsWith('http') 
-                ? artikelData.gambar_artikel 
-                : `http://127.0.0.1:8000${artikelData.gambar_artikel}`
-              } 
-              alt={artikelData.judul_artikel || 'Artikel'} 
-            />
-          </div>
-        )}
-
-        <div className="artikelText">
-          <span className="artikelKategori">{artikelData.kategori || 'Artikel'}</span>
-          <h2>{artikelData.judul_artikel || 'Judul Tidak Tersedia'}</h2>
-          
-          <div className="artikelMeta">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <User size={16} />
-              {artikelData.penulis || 'Anonim'}
-            </span>
-            <span style={{ margin: '0 8px' }}>•</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Calendar size={16} />
-              {artikelData.tanggal_terbit ? formatDate(artikelData.tanggal_terbit) : 'Tanggal tidak tersedia'}
-            </span>
-            {artikelData.jumlah_views > 0 && (
-              <>
-                <span style={{ margin: '0 8px' }}>•</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      <div className="artikel-detail-container">
+        {/* Main Content */}
+        <main className="artikel-main-content">
+          {/* Article Header */}
+          <header className="artikel-header">
+            <span className="artikel-kategori-badge">{artikelData.kategori}</span>
+            <h1 className="artikel-title">{artikelData.judul}</h1>
+            
+            <div className="artikel-meta-info">
+              <div className="meta-item">
+                <User size={16} />
+                <span>Tim Mendaur</span>
+              </div>
+              <div className="meta-item">
+                <Calendar size={16} />
+                <span>{formatDate(artikelData.created_at)}</span>
+              </div>
+              <div className="meta-item">
+                <Clock size={16} />
+                <span>{formatReadingTime(content)} baca</span>
+              </div>
+              {(artikelData.dilihat || 0) > 0 && (
+                <div className="meta-item">
                   <Eye size={16} />
-                  {artikelData.jumlah_views} views
-                </span>
-              </>
-            )}
+                  <span>{artikelData.dilihat} views</span>
+                </div>
+              )}
+            </div>
+
+            <button className="btn-share" onClick={handleShare}>
+              <Share2 size={16} />
+              Bagikan
+            </button>
+          </header>
+
+          {/* Featured Image */}
+          {artikelData.gambar && (
+            <figure className="artikel-featured-image">
+              <img 
+                src={getImageUrl(artikelData.gambar)} 
+                alt={artikelData.judul}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </figure>
+          )}
+
+          {/* Article Content */}
+          <article className="artikel-content">
+            {content.split('\n').map((paragraph, index) => {
+              if (!paragraph.trim()) return null;
+              return <p key={index}>{paragraph}</p>;
+            })}
+          </article>
+
+          {/* Tags */}
+          {artikelData.tags && (
+            <div className="artikel-tags">
+              {artikelData.tags.split(',').map((tag, index) => (
+                <span key={index} className="tag">{tag.trim()}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Related Articles */}
+          {relatedArticles.length > 0 && (
+            <section className="related-articles">
+              <h3>Baca Juga</h3>
+              <div className="related-grid">
+                {relatedArticles.map((article) => (
+                  <Link 
+                    to={`/dashboard/artikel/${article.artikel_id}`} 
+                    key={article.artikel_id}
+                    className="related-card"
+                  >
+                    {article.gambar && (
+                      <img 
+                        src={getImageUrl(article.gambar)} 
+                        alt={article.judul}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    )}
+                    <div className="related-info">
+                      <span className="related-category">{article.kategori}</span>
+                      <h4>{article.judul}</h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </main>
+
+        {/* Sidebar */}
+        <aside className="artikel-sidebar">
+          {/* Popular Articles */}
+          <div className="sidebar-section">
+            <h3>
+              <TrendingUp size={18} />
+              Artikel Populer
+            </h3>
+            <div className="popular-list">
+              {popularArticles.map((article, index) => (
+                <Link 
+                  to={`/dashboard/artikel/${article.artikel_id}`} 
+                  key={article.artikel_id}
+                  className="popular-item"
+                >
+                  <span className="popular-number">{index + 1}</span>
+                  <div className="popular-content">
+                    <h4>{article.judul}</h4>
+                    <span className="popular-meta">
+                      <Eye size={12} />
+                      {article.dilihat || 0} views
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="artikelIsi">
-            {(artikelData.isi_artikel || artikelData.konten) ? (
-              (artikelData.isi_artikel || artikelData.konten).split('\n').map((paragraph, index) => (
-                <p key={`paragraph-${index}`}>{paragraph}</p>
-              ))
-            ) : (
-              <p>Konten artikel tidak tersedia.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="artikelLainnya">
-          <h3>Rekomendasi Artikel</h3>
-          <ArtikelCard
-            fetchFromAPI={true}
-            showPagination={false}
-            perPage={4}
-          />
-        </div>
-
+          {/* Back Button */}
+          <button onClick={() => navigate('/dashboard/artikel')} className="btn-back">
+            <ArrowLeft size={18} />
+            Kembali ke Daftar Artikel
+          </button>
+        </aside>
       </div>
     </div>
   );

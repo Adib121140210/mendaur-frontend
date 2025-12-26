@@ -19,6 +19,7 @@ const ArtikelCard = ({
   useEffect(() => {
     if (fetchFromAPI) {
       fetchArtikel();
+      setCurrentPage(1); // Reset to first page when filters change
     } else if (data) {
       setArtikel(data);
     }
@@ -29,16 +30,13 @@ const ArtikelCard = ({
     try {
       setLoading(true);
 
-      // Build query params
-      const params = new URLSearchParams();
-      if (category) params.append('kategori', category);
-      if (searchQuery) params.append('search', searchQuery);
-
-      const url = `http://127.0.0.1:8000/api/artikel${params.toString() ? '?' + params.toString() : ''}`;
+      // Fetch all articles from API (backend doesn't support query params)
+      const url = `http://127.0.0.1:8000/api/artikel`;
+      
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.warn('Artikel API not available, using empty array');
+        console.error('Failed to fetch artikel:', response.status);
         setArtikel([]);
         return;
       }
@@ -46,10 +44,31 @@ const ArtikelCard = ({
       const result = await response.json();
 
       if (result.status === 'success') {
-        setArtikel(result.data || []);
+        let filteredData = result.data || [];
+
+        // Client-side filtering by category
+        if (category) {
+          filteredData = filteredData.filter(item => 
+            item.kategori && item.kategori.toLowerCase() === category.toLowerCase()
+          );
+        }
+
+        // Client-side filtering by search query
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          filteredData = filteredData.filter(item => 
+            (item.judul && item.judul.toLowerCase().includes(query)) ||
+            (item.konten && item.konten.toLowerCase().includes(query)) ||
+            (item.kategori && item.kategori.toLowerCase().includes(query))
+          );
+        }
+
+        setArtikel(filteredData);
+      } else {
+        setArtikel([]);
       }
-    } catch (error) {
-      console.error('Error fetching artikel:', error.message);
+    } catch (err) {
+      console.error('Error fetching artikel:', err);
       setArtikel([]);
     } finally {
       setLoading(false);
@@ -71,19 +90,44 @@ const ArtikelCard = ({
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return '-';
+    }
+  };
+
+  // Helper function untuk image URL dengan multiple fallback strategies
+  const getImageUrl = (foto) => {
+    if (!foto) return null;
+    
+    // If already a full URL, use as-is
+    if (foto.startsWith('http://') || foto.startsWith('https://')) {
+      return foto;
+    }
+    
+    // Try different path patterns
+    const baseUrl = 'http://127.0.0.1:8000';
+    
+    // Remove leading slashes and 'storage/' prefix if present
+    let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
+    
+    // Try with storage prefix
+    return `${baseUrl}/storage/${cleanPath}`;
   };
 
   if (loading) {
     return (
       <div className="artikelWrapper">
-        <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-          Loading articles...
+        <div className="artikel-loading-state">
+          <div className="artikel-spinner"></div>
+          <p>Memuat artikel...</p>
         </div>
       </div>
     );
@@ -92,10 +136,10 @@ const ArtikelCard = ({
   if (artikel.length === 0) {
     return (
       <div className="artikelWrapper">
-        <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+        <div className="artikel-empty-state">
           <p>Tidak ada artikel ditemukan.</p>
           {(category || searchQuery) && (
-            <p style={{ fontSize: '14px', marginTop: '8px' }}>
+            <p className="artikel-empty-hint">
               Coba ubah filter atau kata kunci pencarian.
             </p>
           )}
@@ -106,43 +150,64 @@ const ArtikelCard = ({
 
   return (
     <div className="artikelWrapper">
-      {paginatedArtikel.map((item) => (
-        <div className="artikelCard" key={item.artikel_id}>
-          {item.gambar_artikel && (
-            <img
-              src={item.gambar_artikel.startsWith('http')
-                ? item.gambar_artikel
-                : `http://127.0.0.1:8000${item.gambar_artikel}`
-              }
-              alt={item.judul_artikel}
-            />
-          )}
-          <div className="artikelContent">
-            <span className="artikelKategori">{item.kategori}</span>
-            <h3>{item.judul_artikel}</h3>
-            <p>{(item.isi_artikel || item.konten)?.slice(0, 150)}...</p>
-            <p className="artikelMeta">
-              Ditulis oleh {item.penulis} pada {formatDate(item.tanggal_terbit)}
-              {item.jumlah_views > 0 && (
-                <span style={{ marginLeft: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Eye size={14} /> {item.jumlah_views}
-                </span>
-              )}
-            </p>
-            <Link to={`/artikel/${item.slug}`} className="readMoreBtn">
-              Baca Selengkapnya
+      {paginatedArtikel.map((item) => {
+        // Use artikel_id since slug doesn't exist in API response
+        const linkPath = `/dashboard/artikel/${item.artikel_id}`;
+        
+        return (
+          <div className="artikelCard" key={item.artikel_id || item.id}>
+            <Link to={linkPath} className="artikelCardImageLink">
+              <div className="artikelCardImage">
+                {item.gambar ? (
+                  <img
+                    src={getImageUrl(item.gambar)}
+                    alt={item.judul || 'Artikel'}
+                    onError={(e) => { 
+                      e.target.style.display = 'none';
+                      if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className="artikelNoImage" style={{ display: item.gambar ? 'none' : 'flex' }}>
+                  <span>📰</span>
+                  <p>Gambar tidak tersedia</p>
+                </div>
+              </div>
             </Link>
+            <div className="artikelContent">
+              <span className="artikelKategori">{item.kategori || 'Artikel'}</span>
+              <Link to={linkPath} className="artikelTitleLink">
+                <h3 className="artikelTitle">{item.judul || 'Judul Tidak Tersedia'}</h3>
+              </Link>
+              <p className="artikelExcerpt">
+                {((item.konten || '').slice(0, 120))}...
+              </p>
+              <div className="artikelMeta">
+                <span className="artikelAuthor">Tim Mendaur</span>
+                <span className="artikelDate">{formatDate(item.created_at)}</span>
+                {(item.dilihat || 0) > 0 && (
+                  <span className="artikelViews">
+                    <Eye size={14} /> {item.dilihat}
+                  </span>
+                )}
+              </div>
+              <Link to={linkPath} className="readMoreBtn">
+                Baca Selengkapnya →
+              </Link>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {showPagination && totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPrev={prevPage}
-          onNext={nextPage}
-        />
+        <div className="artikelPaginationWrapper">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPrev={prevPage}
+            onNext={nextPage}
+          />
+        </div>
       )}
     </div>
   );

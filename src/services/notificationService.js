@@ -15,7 +15,7 @@ const getAuthHeader = () => {
 }
 
 const handleError = (error, defaultMessage = 'An error occurred') => {
-  console.error('🔴 Notification Service Error:', error)
+  
   return {
     success: false,
     message: error.message || defaultMessage,
@@ -40,7 +40,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('📬 Notifications loaded:', data.data?.length || 0)
+      
       return {
         success: true,
         data: data.data || [],
@@ -90,7 +90,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('🔔 Unread notifications:', data.count || 0)
+      
       return {
         success: true,
         data: data.data || [],
@@ -149,7 +149,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('✅ Notification marked as read:', id)
+      
       return {
         success: true,
         data: data.data || data
@@ -175,7 +175,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('✅ All notifications marked as read')
+      
       return {
         success: true,
         message: data.message || 'All notifications marked as read'
@@ -200,7 +200,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('🗑️ Notification deleted:', id)
+      
       return {
         success: true,
         message: data.message || 'Notification deleted'
@@ -249,7 +249,7 @@ export const notificationService = {
       }
 
       const data = await response.json()
-      console.log('✨ Notification created:', data.data?.id)
+      
       return {
         success: true,
         data: data.data || data

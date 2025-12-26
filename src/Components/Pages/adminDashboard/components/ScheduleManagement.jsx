@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Eye,
-  Download,
   Search,
   Calendar,
   Clock,
-  Users,
   Plus,
   Edit,
   Trash2,
@@ -14,7 +12,6 @@ import {
   Loader,
   X,
   MapPin,
-  Phone,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
@@ -28,215 +25,96 @@ export default function ScheduleManagement() {
   const [filterDay, setFilterDay] = useState('all');
   const [filterLocation, setFilterLocation] = useState('all');
   
+  const MOCK_SCHEDULES = [
+    {
+      jadwal_penyetoran_id: 1,
+      hari: 'Senin',
+      waktu_mulai: '08:00:00',
+      waktu_selesai: '12:00:00',
+      lokasi: 'Bank Sampah Pusat - Jl. Sudirman No. 1, Jakarta Pusat',
+      status: 'Buka',
+    },
+    {
+      jadwal_penyetoran_id: 2,
+      hari: 'Rabu',
+      waktu_mulai: '10:00:00',
+      waktu_selesai: '14:00:00',
+      lokasi: 'TPS 3R Kuningan - Jl. Gatot Subroto No. 45, Jakarta Selatan',
+      status: 'Buka',
+    },
+    {
+      jadwal_penyetoran_id: 3,
+      hari: 'Jumat',
+      waktu_mulai: '14:00:00',
+      waktu_selesai: '18:00:00',
+      lokasi: 'Bank Sampah Ancol - Jl. Hayam Wuruk No. 88, Jakarta Barat',
+      status: 'Tutup',
+    },
+  ];
+  
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [formData, setFormData] = useState({
-    day: 'Senin',
-    time: '08:00',
-    location: 'Jakarta Pusat',
-    address: 'Jl. Sudirman No. 1',
-    maxCapacity: 10,
-    pickupPerson: 'Budi Santoso',
-    phoneNumber: '0812345678',
-    notes: '',
+    hari: 'Senin',
+    waktu_mulai: '08:00',
+    waktu_selesai: '12:00',
+    lokasi: '',
+    status: 'Buka',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        setLoading(true);
-        const result = await adminApi.getAllSchedules();
-        if (result.success) {
-          setSchedules(result.data || []);
+  const loadSchedules = async () => {
+    try {
+      setLoading(true)
+      const result = await adminApi.getAllSchedules(1, 50)
+      if (result.success && result.data) {
+        // Handle multiple response formats
+        let schedulesData
+        if (Array.isArray(result.data)) {
+          schedulesData = result.data
+        } else if (result.data && typeof result.data === 'object' && Array.isArray(result.data.schedules)) {
+          schedulesData = result.data.schedules
+        } else if (result.data && typeof result.data === 'object' && Array.isArray(result.data.data)) {
+          schedulesData = result.data.data
         } else {
-          console.warn('Failed to fetch schedules, using fallback');
-          const mockData = [
-            {
-              id: 1,
-              day: 'Senin',
-              date: '2025-12-22',
-              time: '08:00',
-              location: 'Jakarta Pusat',
-              address: 'Jl. Sudirman No. 1, RT 5/RW 2, Menteng, Jakarta Pusat 12190',
-              maxCapacity: 15,
-              registeredCount: 12,
-              pickupPerson: 'Budi Santoso',
-              phoneNumber: '0812345678',
-              notes: 'Area CBD, pastikan tepat waktu',
-              registeredUsers: [
-                { id: 1, name: 'Ahmad Wijaya', phone: '0811111111' },
-                { id: 2, name: 'Siti Nurhaliza', phone: '0812222222' },
-                { id: 3, name: 'Dina Kusuma', phone: '0813333333' },
-                { id: 4, name: 'Eka Putri', phone: '0814444444' },
-                { id: 5, name: 'Farah Husna', phone: '0815555555' },
-                { id: 6, name: 'Gandi Hermawan', phone: '0816666666' },
-                { id: 7, name: 'Hendra Kusuma', phone: '0817777777' },
-                { id: 8, name: 'Indah Sari', phone: '0818888888' },
-                { id: 9, name: 'Joko Wijaya', phone: '0819999999' },
-                { id: 10, name: 'Kiki Amelia', phone: '0821010101' },
-                { id: 11, name: 'Lela Susanti', phone: '0821111111' },
-                { id: 12, name: 'Mitra Nasabah', phone: '0821212121' },
-              ],
-              status: 'active',
-            },
-            {
-              id: 2,
-              day: 'Rabu',
-              date: '2025-12-24',
-              time: '10:00',
-              location: 'Jakarta Selatan',
-              address: 'Jl. Gatot Subroto No. 45, Kuningan, Jakarta Selatan 12950',
-              maxCapacity: 12,
-              registeredCount: 8,
-              pickupPerson: 'Siti Rahma',
-              phoneNumber: '0821234567',
-              notes: 'Dekat mal, parkir di samping',
-              registeredUsers: [
-                { id: 13, name: 'Novi Hartono', phone: '0822222222' },
-                { id: 14, name: 'Oka Pratama', phone: '0823333333' },
-                { id: 15, name: 'Putri Indah', phone: '0824444444' },
-                { id: 16, name: 'Qorri Asiah', phone: '0825555555' },
-                { id: 17, name: 'Riyan Hidayat', phone: '0826666666' },
-                { id: 18, name: 'Sofiya Mustafa', phone: '0827777777' },
-                { id: 19, name: 'Tania Wijaya', phone: '0828888888' },
-                { id: 20, name: 'Uswatun Chasanah', phone: '0829999999' },
-              ],
-              status: 'active',
-            },
-            {
-              id: 3,
-              day: 'Jumat',
-              date: '2025-12-26',
-              time: '14:00',
-              location: 'Jakarta Barat',
-              address: 'Jl. Hayam Wuruk No. 88, Ancol, Jakarta Barat 14430',
-              maxCapacity: 10,
-              registeredCount: 10,
-              pickupPerson: 'Ahmad Maulana',
-              phoneNumber: '0830123456',
-              notes: 'Jadwal penuh, tunggu penjadwalan ulang',
-              registeredUsers: Array.from({ length: 10 }, (_, i) => ({
-                id: 20 + i,
-                name: `Nasabah Terdaftar ${i + 1}`,
-                phone: `0830${String(i).padStart(7, '0')}`,
-              })),
-              status: 'full',
-            },
-          ];
-          setSchedules(mockData);
+          console.warn('Unexpected schedules response format, using mock data')
+          schedulesData = MOCK_SCHEDULES
         }
-      } catch (err) {
-        console.warn('Schedule fetch error, using mock data:', err);
-        const mockData = [
-          {
-            id: 1,
-            day: 'Senin',
-            date: '2025-12-22',
-            time: '08:00',
-            location: 'Jakarta Pusat',
-            address: 'Jl. Sudirman No. 1, RT 5/RW 2, Menteng, Jakarta Pusat 12190',
-            maxCapacity: 15,
-            registeredCount: 12,
-            pickupPerson: 'Budi Santoso',
-            phoneNumber: '0812345678',
-            notes: 'Area CBD, pastikan tepat waktu',
-            registeredUsers: [
-              { id: 1, name: 'Ahmad Wijaya', phone: '0811111111' },
-              { id: 2, name: 'Siti Nurhaliza', phone: '0812222222' },
-              { id: 3, name: 'Dina Kusuma', phone: '0813333333' },
-              { id: 4, name: 'Eka Putri', phone: '0814444444' },
-              { id: 5, name: 'Farah Husna', phone: '0815555555' },
-              { id: 6, name: 'Gandi Hermawan', phone: '0816666666' },
-              { id: 7, name: 'Hendra Kusuma', phone: '0817777777' },
-              { id: 8, name: 'Indah Sari', phone: '0818888888' },
-              { id: 9, name: 'Joko Wijaya', phone: '0819999999' },
-              { id: 10, name: 'Kiki Amelia', phone: '0821010101' },
-              { id: 11, name: 'Lela Susanti', phone: '0821111111' },
-              { id: 12, name: 'Mitra Nasabah', phone: '0821212121' },
-            ],
-            status: 'active',
-          },
-          {
-            id: 2,
-            day: 'Rabu',
-            date: '2025-12-24',
-            time: '10:00',
-            location: 'Jakarta Selatan',
-            address: 'Jl. Gatot Subroto No. 45, Kuningan, Jakarta Selatan 12950',
-            maxCapacity: 12,
-            registeredCount: 8,
-            pickupPerson: 'Siti Rahma',
-            phoneNumber: '0821234567',
-            notes: 'Dekat mal, parkir di samping',
-            registeredUsers: [
-              { id: 13, name: 'Novi Hartono', phone: '0822222222' },
-              { id: 14, name: 'Oka Pratama', phone: '0823333333' },
-              { id: 15, name: 'Putri Indah', phone: '0824444444' },
-              { id: 16, name: 'Qorri Asiah', phone: '0825555555' },
-              { id: 17, name: 'Riyan Hidayat', phone: '0826666666' },
-              { id: 18, name: 'Sofiya Mustafa', phone: '0827777777' },
-              { id: 19, name: 'Tania Wijaya', phone: '0828888888' },
-              { id: 20, name: 'Uswatun Chasanah', phone: '0829999999' },
-            ],
-            status: 'active',
-          },
-          {
-            id: 3,
-            day: 'Jumat',
-            date: '2025-12-26',
-            time: '14:00',
-            location: 'Jakarta Barat',
-            address: 'Jl. Hayam Wuruk No. 88, Ancol, Jakarta Barat 14430',
-            maxCapacity: 10,
-            registeredCount: 10,
-            pickupPerson: 'Ahmad Maulana',
-            phoneNumber: '0830123456',
-            notes: 'Jadwal penuh, tunggu penjadwalan ulang',
-            registeredUsers: Array.from({ length: 10 }, (_, i) => ({
-              id: 20 + i,
-              name: `Nasabah Terdaftar ${i + 1}`,
-              phone: `0830${String(i).padStart(7, '0')}`,
-            })),
-            status: 'full',
-          },
-        ];
-        setSchedules(mockData);
-      } finally {
-        setLoading(false);
+        setSchedules(schedulesData)
+      } else {
+        console.warn('Failed to fetch schedules, using fallback')
+        setSchedules(MOCK_SCHEDULES)
       }
-    };
-    fetchSchedules();
+    } catch (err) {
+      console.warn('Schedule fetch error, using mock data:', err.message)
+      setSchedules(MOCK_SCHEDULES)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSchedules()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const filteredSchedules = schedules.filter((s) => {
-    if (filterDay !== 'all' && s.day !== filterDay) return false;
-    if (filterLocation !== 'all' && s.location !== filterLocation) return false;
-    if (searchQuery && !s.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterDay !== 'all' && s.hari !== filterDay) return false;
+    if (filterLocation !== 'all' && s.lokasi !== filterLocation) return false;
+    if (searchQuery && !s.lokasi.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
   const stats = {
     total: schedules.length,
-    totalCapacity: schedules.reduce((sum, s) => sum + s.maxCapacity, 0),
-    totalRegistered: schedules.reduce((sum, s) => sum + s.registeredCount, 0),
-    avgUtilization: schedules.length > 0 ? Math.round((schedules.reduce((sum, s) => sum + s.registeredCount, 0) / schedules.reduce((sum, s) => sum + s.maxCapacity, 0)) * 100) : 0,
+    jadwalBuka: schedules.filter(s => s.status === 'Buka').length,
+    jadwalTutup: schedules.filter(s => s.status === 'Tutup').length,
   };
 
-  const locations = [...new Set(schedules.map((s) => s.location))];
-  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
+  const locations = [...new Set(schedules.map((s) => s.lokasi))];
+  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
   const handleViewDetail = (schedule) => {
     setSelectedSchedule(schedule);
@@ -250,14 +128,11 @@ export default function ScheduleManagement() {
       return
     }
     setFormData({
-      day: 'Senin',
-      time: '08:00',
-      location: 'Jakarta Pusat',
-      address: 'Jl. Sudirman No. 1',
-      maxCapacity: 10,
-      pickupPerson: 'Budi Santoso',
-      phoneNumber: '0812345678',
-      notes: '',
+      hari: 'Senin',
+      waktu_mulai: '08:00',
+      waktu_selesai: '12:00',
+      lokasi: '',
+      status: 'Buka',
     });
     setShowCreateModal(true);
   };
@@ -269,14 +144,11 @@ export default function ScheduleManagement() {
       return
     }
     setFormData({
-      day: schedule.day,
-      time: schedule.time,
-      location: schedule.location,
-      address: schedule.address,
-      maxCapacity: schedule.maxCapacity,
-      pickupPerson: schedule.pickupPerson,
-      phoneNumber: schedule.phoneNumber,
-      notes: schedule.notes,
+      hari: schedule.hari || 'Senin',
+      waktu_mulai: schedule.waktu_mulai ? schedule.waktu_mulai.substring(0, 5) : '08:00',
+      waktu_selesai: schedule.waktu_selesai ? schedule.waktu_selesai.substring(0, 5) : '12:00',
+      lokasi: schedule.lokasi || '',
+      status: schedule.status || 'Buka',
     });
     setSelectedSchedule(schedule);
     setShowEditModal(true);
@@ -289,72 +161,101 @@ export default function ScheduleManagement() {
       return
     }
     if (window.confirm('Hapus jadwal ini? Nasabah yang terdaftar akan diberitahu.')) {
-      adminApi.deleteSchedule(schedule.id).catch(() => {
-        console.warn('Delete via API failed, updating local state');
-      });
-      const updated = schedules.filter((s) => s.id !== schedule.id);
-      setSchedules(updated);
-      alert('✅ Jadwal berhasil dihapus');
+      (async () => {
+        try {
+          setLoading(true);
+          const response = await adminApi.deleteSchedule(schedule.jadwal_penyetoran_id);
+          if (response.success) {
+            await loadSchedules()
+            alert('✅ Jadwal berhasil dihapus');
+          } else {
+            alert('❌ ' + (response.message || 'Gagal menghapus jadwal'));
+          }
+        } catch (error) {
+          console.error('Delete error:', error);
+          alert('❌ Terjadi kesalahan saat menghapus jadwal');
+        } finally {
+          setLoading(false);
+        }
+      })();
     }
   };
 
   const handleCreateSubmit = async () => {
-    if (!formData.day || !formData.time || !formData.location || !formData.pickupPerson) {
-      alert('Semua field wajib diisi!');
+    // Validate required fields
+    if (!formData.hari || !formData.waktu_mulai || !formData.waktu_selesai || !formData.lokasi) {
+      alert('Hari, waktu mulai, waktu selesai, dan lokasi wajib diisi!');
       return;
     }
+    
+    // Validate time logic
+    if (formData.waktu_mulai >= formData.waktu_selesai) {
+      alert('Waktu mulai harus lebih awal dari waktu selesai!');
+      return;
+    }
+    
     // ✅ Permission check before submission
     if (!hasPermission('manage_schedule')) {
       alert('❌ You do not have permission to create schedules')
       return
     }
+    
     setIsSubmitting(true);
     try {
-      const result = await adminApi.createSchedule({
-        day: formData.day,
-        time: formData.time,
-        location: formData.location,
-        address: formData.address,
-        maxCapacity: parseInt(formData.maxCapacity),
-        pickupPerson: formData.pickupPerson,
-        phoneNumber: formData.phoneNumber,
-        notes: formData.notes,
-      });
+      // Prepare data to send - matching new API structure
+      const scheduleData = {
+        hari: formData.hari,
+        waktu_mulai: formData.waktu_mulai,
+        waktu_selesai: formData.waktu_selesai,
+        lokasi: formData.lokasi.trim(),
+        status: formData.status || 'Buka'
+      }
+      
+      console.log('📤 Creating schedule with data:', scheduleData)
+      
+      const result = await adminApi.createSchedule(scheduleData);
+      
+      console.log('📥 Create schedule result:', result)
+      
       if (result.success) {
-        const newSchedule = {
-          id: schedules.length + 1,
-          day: formData.day,
-          date: new Date().toISOString().split('T')[0],
-          time: formData.time,
-          location: formData.location,
-          address: formData.address,
-          maxCapacity: parseInt(formData.maxCapacity),
-          registeredCount: 0,
-          pickupPerson: formData.pickupPerson,
-          phoneNumber: formData.phoneNumber,
-          notes: formData.notes,
-          registeredUsers: [],
-          status: 'active',
-        };
-        setSchedules([...schedules, newSchedule]);
+        // Refresh schedules list
+        await loadSchedules()
         setShowCreateModal(false);
         alert('✅ Jadwal baru berhasil dibuat');
       } else {
-        alert(`❌ ${result.message || 'Gagal membuat jadwal'}`);
+        console.error('❌ Create schedule failed:', result)
+        let errorMessage = 'Gagal membuat jadwal'
+        
+        if (result.message) {
+          errorMessage = result.message
+        } else if (result.error) {
+          errorMessage = result.error
+        } else if (result.details && result.details.message) {
+          errorMessage = result.details.message
+        }
+        
+        alert(`❌ ${errorMessage}`);
       }
     } catch (err) {
-      console.error('Create error:', err);
-      alert('Terjadi kesalahan saat membuat jadwal');
+      console.error('❌ Create error details:', err);
+      alert(`❌ ${err.message || 'Terjadi kesalahan saat membuat jadwal'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleEditSubmit = async () => {
-    if (!formData.day || !formData.time || !formData.location || !formData.pickupPerson) {
-      alert('Semua field wajib diisi!');
+    if (!formData.hari || !formData.waktu_mulai || !formData.waktu_selesai || !formData.lokasi) {
+      alert('Hari, waktu mulai, waktu selesai, dan lokasi wajib diisi!');
       return;
     }
+    
+    // Validate time logic
+    if (formData.waktu_mulai >= formData.waktu_selesai) {
+      alert('Waktu mulai harus lebih awal dari waktu selesai!');
+      return;
+    }
+    
     // ✅ Permission check before submission
     if (!hasPermission('manage_schedule')) {
       alert('❌ You do not have permission to edit schedules')
@@ -362,41 +263,29 @@ export default function ScheduleManagement() {
     }
     setIsSubmitting(true);
     try {
-      const result = await adminApi.updateSchedule(selectedSchedule.id, {
-        day: formData.day,
-        time: formData.time,
-        location: formData.location,
-        address: formData.address,
-        maxCapacity: parseInt(formData.maxCapacity),
-        pickupPerson: formData.pickupPerson,
-        phoneNumber: formData.phoneNumber,
-        notes: formData.notes,
-      });
+      const scheduleData = {
+        hari: formData.hari,
+        waktu_mulai: formData.waktu_mulai,
+        waktu_selesai: formData.waktu_selesai,
+        lokasi: formData.lokasi.trim(),
+        status: formData.status || 'Buka'
+      }
+      
+      console.log('📤 Updating schedule with data:', scheduleData)
+      
+      const result = await adminApi.updateSchedule(selectedSchedule.jadwal_penyetoran_id, scheduleData);
+      
       if (result.success) {
-        const updated = schedules.map((s) =>
-          s.id === selectedSchedule.id
-            ? {
-                ...s,
-                day: formData.day,
-                time: formData.time,
-                location: formData.location,
-                address: formData.address,
-                maxCapacity: parseInt(formData.maxCapacity),
-                pickupPerson: formData.pickupPerson,
-                phoneNumber: formData.phoneNumber,
-                notes: formData.notes,
-              }
-            : s
-        );
-        setSchedules(updated);
+        // Refresh schedules list
+        await loadSchedules()
         setShowEditModal(false);
         alert('✅ Jadwal berhasil diperbarui');
       } else {
-        alert(`❌ ${result.message || 'Gagal memperbarui jadwal'}`);
+        alert('❌ ' + (result.message || result.error || 'Gagal memperbarui jadwal'));
       }
     } catch (err) {
       console.error('Edit error:', err);
-      alert('Terjadi kesalahan saat memperbarui jadwal');
+      alert('❌ Terjadi kesalahan saat memperbarui jadwal');
     } finally {
       setIsSubmitting(false);
     }
@@ -422,18 +311,8 @@ export default function ScheduleManagement() {
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Total Kapasitas</span>
-            <span className="stat-value">{stats.totalCapacity}</span>
-          </div>
-          <div className="stat-icon" style={{ background: '#e0e7ff' }}>
-            <Users size={24} color="#4f46e5" />
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-content">
-            <span className="stat-label">Terdaftar</span>
-            <span className="stat-value">{stats.totalRegistered}</span>
+            <span className="stat-label">Jadwal Buka</span>
+            <span className="stat-value">{stats.jadwalBuka}</span>
           </div>
           <div className="stat-icon" style={{ background: '#d1fae5' }}>
             <CheckCircle size={24} color="#10b981" />
@@ -442,11 +321,11 @@ export default function ScheduleManagement() {
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Utilitas Rata-rata</span>
-            <span className="stat-value">{stats.avgUtilization}%</span>
+            <span className="stat-label">Jadwal Tutup</span>
+            <span className="stat-value">{stats.jadwalTutup}</span>
           </div>
-          <div className="stat-icon" style={{ background: '#fef3c7' }}>
-            <AlertCircle size={24} color="#d97706" />
+          <div className="stat-icon" style={{ background: '#fee2e2' }}>
+            <AlertCircle size={24} color="#ef4444" />
           </div>
         </div>
       </div>
@@ -509,72 +388,37 @@ export default function ScheduleManagement() {
       ) : (
         <div className="schedules-container">
           {filteredSchedules.map((schedule) => (
-            <div key={schedule.id} className="schedule-card">
+            <div key={schedule.jadwal_penyetoran_id || schedule.id} className="schedule-card">
               <div className="schedule-card-header">
                 <div className="schedule-main-info">
                   <div className="schedule-day-time">
                     <Calendar size={20} />
                     <div>
-                      <h3>{schedule.day} {schedule.time}</h3>
-                      <p>{formatDate(schedule.date)}</p>
+                      <h3>{schedule.hari}</h3>
+                      <p className="time-range">
+                        <Clock size={14} /> {schedule.waktu_mulai?.substring(0, 5)} - {schedule.waktu_selesai?.substring(0, 5)}
+                      </p>
                     </div>
                   </div>
                   <div className="schedule-location">
                     <MapPin size={18} />
                     <div>
-                      <p className="location-name">{schedule.location}</p>
-                      <p className="location-address">{schedule.address}</p>
+                      <p className="location-name">{schedule.lokasi}</p>
                     </div>
                   </div>
                 </div>
-                <span className={`status-badge ${schedule.status}`}>
-                  {schedule.status === 'full' ? '❌ Penuh' : '✅ Aktif'}
+                <span className={`status-badge ${schedule.status === 'Buka' ? 'Buka' : 'Tutup'}`}>
+                  {schedule.status}
                 </span>
-              </div>
-
-              <div className="schedule-card-body">
-                <div className="info-row">
-                  <span className="label">Kapasitas:</span>
-                  <span className="value">
-                    {schedule.registeredCount}/{schedule.maxCapacity} nasabah
-                  </span>
-                  <div className="capacity-bar">
-                    <div
-                      className="capacity-filled"
-                      style={{
-                        width: `${(schedule.registeredCount / schedule.maxCapacity) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="info-row">
-                  <span className="label">Pickup Person:</span>
-                  <span className="value">{schedule.pickupPerson}</span>
-                </div>
-
-                <div className="info-row">
-                  <span className="label">No. Telepon:</span>
-                  <span className="value">
-                    <Phone size={14} /> {schedule.phoneNumber}
-                  </span>
-                </div>
-
-                {schedule.notes && (
-                  <div className="info-row">
-                    <span className="label">Catatan:</span>
-                    <span className="value">{schedule.notes}</span>
-                  </div>
-                )}
               </div>
 
               <div className="schedule-card-footer">
                 <button
                   className="action-btn view-btn"
                   onClick={() => handleViewDetail(schedule)}
-                  title="Lihat Rincian"
+                  title="Lihat Detail"
                 >
-                  <Eye size={16} /> Lihat ({schedule.registeredCount})
+                  <Eye size={16} /> Detail
                 </button>
                 <button
                   className="action-btn edit-btn"
@@ -612,58 +456,25 @@ export default function ScheduleManagement() {
                 <h4>Informasi Jadwal</h4>
                 <div className="info-grid">
                   <div className="info-item">
-                    <span className="label">Hari & Waktu</span>
-                    <span className="value">
-                      {selectedSchedule.day} {selectedSchedule.time}
-                    </span>
+                    <span className="label">Hari</span>
+                    <span className="value">{selectedSchedule.hari}</span>
                   </div>
                   <div className="info-item">
-                    <span className="label">Tanggal</span>
-                    <span className="value">{formatDate(selectedSchedule.date)}</span>
+                    <span className="label">Waktu</span>
+                    <span className="value">
+                      {selectedSchedule.waktu_mulai?.substring(0, 5)} - {selectedSchedule.waktu_selesai?.substring(0, 5)}
+                    </span>
                   </div>
                   <div className="info-item" style={{ gridColumn: '1 / -1' }}>
                     <span className="label">Lokasi</span>
-                    <span className="value">{selectedSchedule.location}</span>
-                  </div>
-                  <div className="info-item" style={{ gridColumn: '1 / -1' }}>
-                    <span className="label">Alamat</span>
-                    <span className="value">{selectedSchedule.address}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="info-section">
-                <h4>Informasi Pickup</h4>
-                <div className="info-grid">
-                  <div className="info-item">
-                    <span className="label">Nama Pickup Person</span>
-                    <span className="value">{selectedSchedule.pickupPerson}</span>
+                    <span className="value">{selectedSchedule.lokasi}</span>
                   </div>
                   <div className="info-item">
-                    <span className="label">No. Telepon</span>
-                    <span className="value">{selectedSchedule.phoneNumber}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">Kapasitas</span>
-                    <span className="value">
-                      {selectedSchedule.registeredCount}/{selectedSchedule.maxCapacity}
+                    <span className="label">Status</span>
+                    <span className={`status-badge ${selectedSchedule.status === 'Buka' ? 'Buka' : 'Tutup'}`}>
+                      {selectedSchedule.status}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              <div className="info-section">
-                <h4>Nasabah Terdaftar ({selectedSchedule.registeredCount})</h4>
-                <div className="users-list">
-                  {selectedSchedule.registeredUsers.map((user, idx) => (
-                    <div key={user.id} className="user-item">
-                      <span className="user-no">{idx + 1}.</span>
-                      <div className="user-info">
-                        <p className="user-name">{user.name}</p>
-                        <p className="user-phone">{user.phone}</p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -693,30 +504,41 @@ export default function ScheduleManagement() {
 
             <div className="modal-body">
               <div className="form-group">
-                <label htmlFor="day">Hari <span className="required">*</span></label>
+                <label htmlFor="hari">Hari <span className="required">*</span></label>
                 <select
-                  id="day"
-                  value={formData.day}
-                  onChange={(e) => setFormData({ ...formData, day: e.target.value })}
+                  id="hari"
+                  value={formData.hari}
+                  onChange={(e) => setFormData({ ...formData, hari: e.target.value })}
                   className="form-input"
                 >
                   {days.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
+                    <option key={day} value={day}>{day}</option>
                   ))}
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="time">Waktu <span className="required">*</span></label>
+                <label htmlFor="time">Waktu Mulai <span className="required">*</span></label>
                 <input
                   id="time"
                   type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  value={formData.waktu_mulai}
+                  onChange={(e) => setFormData({ ...formData, waktu_mulai: e.target.value })}
                   className="form-input"
                 />
+                <small className="form-hint">Format: HH:mm (contoh: 08:00)</small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="time-end">Waktu Selesai <span className="required">*</span></label>
+                <input
+                  id="time-end"
+                  type="time"
+                  value={formData.waktu_selesai}
+                  onChange={(e) => setFormData({ ...formData, waktu_selesai: e.target.value })}
+                  className="form-input"
+                />
+                <small className="form-hint">Format: HH:mm (contoh: 12:00)</small>
               </div>
 
               <div className="form-group">
@@ -724,71 +546,25 @@ export default function ScheduleManagement() {
                 <input
                   id="location"
                   type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Contoh: Jakarta Pusat"
+                  value={formData.lokasi}
+                  onChange={(e) => setFormData({ ...formData, lokasi: e.target.value })}
+                  placeholder="Contoh: Bank Sampah Pusat - Jl. Sudirman No. 1"
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="address">Alamat Lengkap <span className="required">*</span></label>
-                <textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Jl. ... No. ..."
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="form-input"
-                  rows="3"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="capacity">Kapasitas Maksimal <span className="required">*</span></label>
-                <input
-                  id="capacity"
-                  type="number"
-                  value={formData.maxCapacity}
-                  onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
-                  min="1"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="pickupPerson">Nama Pickup Person <span className="required">*</span></label>
-                <input
-                  id="pickupPerson"
-                  type="text"
-                  value={formData.pickupPerson}
-                  onChange={(e) => setFormData({ ...formData, pickupPerson: e.target.value })}
-                  placeholder="Nama lengkap"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="phone">No. Telepon <span className="required">*</span></label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="08xxxxxxxxx"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="notes">Catatan</label>
-                <textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Catatan tambahan (opsional)"
-                  className="form-input"
-                  rows="3"
-                />
+                >
+                  <option value="Buka">Buka</option>
+                  <option value="Tutup">Tutup</option>
+                </select>
+                <small className="form-hint">Jadwal Tutup akan terlihat tidak aktif di sisi pengguna</small>
               </div>
             </div>
 
@@ -817,102 +593,67 @@ export default function ScheduleManagement() {
 
             <div className="modal-body">
               <div className="form-group">
-                <label htmlFor="day">Hari <span className="required">*</span></label>
+                <label htmlFor="edit-hari">Hari <span className="required">*</span></label>
                 <select
-                  id="day"
-                  value={formData.day}
-                  onChange={(e) => setFormData({ ...formData, day: e.target.value })}
+                  id="edit-hari"
+                  value={formData.hari}
+                  onChange={(e) => setFormData({ ...formData, hari: e.target.value })}
                   className="form-input"
                 >
                   {days.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
+                    <option key={day} value={day}>{day}</option>
                   ))}
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="time">Waktu <span className="required">*</span></label>
+                <label htmlFor="edit-time">Waktu Mulai <span className="required">*</span></label>
                 <input
-                  id="time"
+                  id="edit-time"
                   type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  value={formData.waktu_mulai}
+                  onChange={(e) => setFormData({ ...formData, waktu_mulai: e.target.value })}
                   className="form-input"
                 />
+                <small className="form-hint">Format: HH:mm (contoh: 08:00)</small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="location">Lokasi <span className="required">*</span></label>
+                <label htmlFor="edit-time-end">Waktu Selesai <span className="required">*</span></label>
                 <input
-                  id="location"
+                  id="edit-time-end"
+                  type="time"
+                  value={formData.waktu_selesai}
+                  onChange={(e) => setFormData({ ...formData, waktu_selesai: e.target.value })}
+                  className="form-input"
+                />
+                <small className="form-hint">Format: HH:mm (contoh: 12:00)</small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-location">Lokasi <span className="required">*</span></label>
+                <input
+                  id="edit-location"
                   type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Contoh: Jakarta Pusat"
+                  value={formData.lokasi}
+                  onChange={(e) => setFormData({ ...formData, lokasi: e.target.value })}
+                  placeholder="Contoh: Bank Sampah Pusat - Jl. Sudirman No. 1"
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="address">Alamat Lengkap <span className="required">*</span></label>
-                <textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Jl. ... No. ..."
+                <label htmlFor="edit-status">Status</label>
+                <select
+                  id="edit-status"
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="form-input"
-                  rows="3"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="capacity">Kapasitas Maksimal <span className="required">*</span></label>
-                <input
-                  id="capacity"
-                  type="number"
-                  value={formData.maxCapacity}
-                  onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
-                  min="1"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="pickupPerson">Nama Pickup Person <span className="required">*</span></label>
-                <input
-                  id="pickupPerson"
-                  type="text"
-                  value={formData.pickupPerson}
-                  onChange={(e) => setFormData({ ...formData, pickupPerson: e.target.value })}
-                  placeholder="Nama lengkap"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="phone">No. Telepon <span className="required">*</span></label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="08xxxxxxxxx"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="notes">Catatan</label>
-                <textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Catatan tambahan (opsional)"
-                  className="form-input"
-                  rows="3"
-                />
+                >
+                  <option value="Buka">Buka</option>
+                  <option value="Tutup">Tutup</option>
+                </select>
+                <small className="form-hint">Jadwal Tutup akan terlihat tidak aktif di sisi pengguna</small>
               </div>
             </div>
 

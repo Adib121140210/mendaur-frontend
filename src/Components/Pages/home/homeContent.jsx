@@ -202,7 +202,7 @@ const HomeContent = () => {
             key="stat-rank"
             icon={<TrendingUp />}
             title="Peringkat"
-            value={`#${userStats?.rank || '-'}`}
+            value={`#${userStats?.rank || userStats?.peringkat || (leaderboard.findIndex(l => l.user_id == user?.user_id) + 1) || '-'}`}
             color="#2196F3"
           />
         </div>
@@ -241,15 +241,36 @@ const HomeContent = () => {
           </h2>
           {userBadges.length > 0 ? (
             <div className="badgesList">
-              {userBadges.map((badge) => (
-                <div key={badge.badge_id} className="badgeItem">
-                  <span className="badgeIcon"></span>
-                  <div className="badgeInfo">
-                    <p className="badgeName">{badge.nama_badge}</p>
-                    <p className="badgeReward">+{badge.reward_poin} poin</p>
+              {userBadges.map((badge) => {
+                // Get badge icon URL from API
+                const getBadgeIconUrl = (icon) => {
+                  if (!icon) return null;
+                  if (icon.startsWith('http')) return icon;
+                  const cleanPath = icon.startsWith('storage/') ? icon : `storage/${icon}`;
+                  return `http://127.0.0.1:8000/${cleanPath}`;
+                };
+                const iconUrl = getBadgeIconUrl(badge.icon || badge.gambar || badge.icon_url);
+                
+                return (
+                  <div key={badge.badge_id || badge.id} className="badgeItem">
+                    <span className="badgeIcon">
+                      {iconUrl ? (
+                        <img 
+                          src={iconUrl} 
+                          alt={badge.nama_badge || 'Badge'} 
+                          className="badgeIconImg"
+                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+                        />
+                      ) : null}
+                      <span style={{ display: iconUrl ? 'none' : 'block' }}>🏅</span>
+                    </span>
+                    <div className="badgeInfo">
+                      <p className="badgeName">{badge.nama_badge || badge.nama || 'Badge'}</p>
+                      <p className="badgeReward">+{badge.reward_poin || badge.poin || 0} poin</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="emptyState">Belum ada badge. Setor sampah untuk mendapatkan badge!</p>
@@ -269,13 +290,16 @@ const HomeContent = () => {
               <div key={activity.log_user_activity_id || `activity-${index}`} className="activityItem">
                 <div className="activityIcon">
                   {activity.tipe_aktivitas === 'badge_unlock' ? '🏆' :
-                   activity.tipe_aktivitas === 'setor_sampah' ? '♻️' :
-                   activity.tipe_aktivitas === 'tukar_poin' ? '🎁' : '📊'}
+                   activity.tipe_aktivitas === 'setor_sampah' || activity.tipe_aktivitas === 'tabung_sampah' ? '♻️' :
+                   activity.tipe_aktivitas === 'tukar_poin' || activity.tipe_aktivitas === 'penukaran_produk' ? '🛍️' :
+                   activity.tipe_aktivitas === 'penarikan_tunai' || activity.tipe_aktivitas === 'tarik_tunai' ? '💰' :
+                   activity.tipe_aktivitas === 'login' ? '🔑' :
+                   activity.tipe_aktivitas === 'register' ? '👤' : '📊'}
                 </div>
                 <div className="activityContent">
                   <p className="activityDesc">{activity.deskripsi}</p>
                   <p className="activityDate">
-                    {new Date(activity.tanggal).toLocaleDateString('id-ID', {
+                    {new Date(activity.tanggal || activity.created_at).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric'

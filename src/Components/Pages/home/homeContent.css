@@ -126,6 +126,27 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 320px; /* ~5 items */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.leaderboardList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaderboardList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.leaderboardList::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.leaderboardList::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
 .leaderboardItem {
@@ -176,10 +197,30 @@
 
 /* Badges Section */
 .badgesList {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  max-height: 400px;
+  max-height: 320px; /* ~5 items */
   overflow-y: auto;
+  padding-right: 4px;
+}
+
+.badgesList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.badgesList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.badgesList::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.badgesList::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
 .badgeItem {
@@ -198,6 +239,18 @@
 
 .badgeIcon {
   font-size: 1.75rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badgeIconImg {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 .badgeInfo {
@@ -230,6 +283,27 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-height: 400px; /* ~5 items */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.activityList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activityList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.activityList::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.activityList::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
 .activityItem {

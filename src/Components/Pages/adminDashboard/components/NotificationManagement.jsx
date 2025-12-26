@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Bell,
-  Send,
   Search,
   CheckCircle,
   Clock,
@@ -11,7 +10,6 @@ import {
   Plus,
   Eye,
   Trash2,
-  Calendar,
   Users,
   MessageSquare,
 } from 'lucide-react';
@@ -19,10 +17,31 @@ import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
 import '../styles/notificationManagement.css';
 
+// Mock data - sesuai struktur tabel notifikasi
+const MOCK_NOTIFICATIONS = [
+  {
+    notifikasi_id: 1,
+    user_id: 5,
+    judul: 'Approval Success',
+    pesan: 'Your withdrawal has been approved',
+    tipe: 'success',
+    is_read: false,
+    created_at: '2025-12-22T11:30:00Z',
+  },
+  {
+    notifikasi_id: 2,
+    user_id: 3,
+    judul: 'Scheduled Maintenance',
+    pesan: 'System maintenance scheduled for tonight',
+    tipe: 'info',
+    is_read: true,
+    created_at: '2025-12-21T15:00:00Z',
+  },
+];
+
 export default function NotificationManagement() {
   const { hasPermission } = useAuth();
   const [notifications, setNotifications] = useState([]);
-  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -30,61 +49,84 @@ export default function NotificationManagement() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [formData, setFormData] = useState({
-    title: '',
-    message: '',
-    type: 'info',
+    user_id: '',
+    judul: '',
+    pesan: '',
+    tipe: 'info',
     recipientType: 'all',
     recipients: [],
-    scheduleTime: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      try {
-        const result = await adminApi.getNotifications?.();
-        if (result?.success) {
-          setNotifications(result.data || []);
-        } else {
-          setNotifications([]);
-        }
-      } catch (err) {
-        console.warn('Notifications fetch error:', err);
-        setNotifications([]);
+  // Fetch notifications from API
+  const loadNotifications = async () => {
+    setLoading(true);
+    try {
+      console.log('📡 Fetching notifications...');
+      const result = await adminApi.getNotifications();
+      console.log('📥 Notifications API response:', result);
+      
+      // Handle authentication error
+      if (!result.success && result.error === 'HTTP 401') {
+        console.error('🔒 Authentication failed - please login again');
       }
-
-      try {
-        const templatesResult = await adminApi.getNotificationTemplates?.();
-        if (templatesResult?.success) {
-          setTemplates(templatesResult.data || []);
-        } else {
-          setTemplates([]);
+      
+      // Multi-format response handler
+      // API returns: {success: true, data: {current_page, data: [...], ...}}
+      // or: {status: 'success', data: {current_page, data: [...], ...}}
+      let data = [];
+      
+      if (result.success && result.data) {
+        // Direct array
+        if (Array.isArray(result.data)) {
+          data = result.data;
+        } 
+        // Paginated response: {data: {data: [...]}}
+        else if (result.data?.data && Array.isArray(result.data.data)) {
+          data = result.data.data;
         }
-      } catch (err) {
-        console.warn('Templates fetch error:', err);
-        setTemplates([]);
+        // Nested in notifications key
+        else if (result.data?.notifications && Array.isArray(result.data.notifications)) {
+          data = result.data.notifications;
+        }
+        
+        console.log('✅ Notifications loaded from API:', data.length, 'items');
+        
+        // If API returns empty array, use mock for demo
+        if (data.length === 0) {
+          console.log('ℹ️ No notifications in database, showing mock data for demo');
+          data = MOCK_NOTIFICATIONS;
+        }
+      } else {
+        console.warn('⚠️ API returned no data or error, using mock');
+        data = MOCK_NOTIFICATIONS;
       }
-
+      
+      setNotifications(data);
+    } catch (err) {
+      console.error('❌ Notifications fetch error:', err.message);
+      setNotifications(MOCK_NOTIFICATIONS);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchNotifications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Load notifications on component mount
+  useEffect(() => {
+    loadNotifications();
   }, []);
 
   const filteredNotifications = notifications.filter((n) => {
-    if (filterStatus !== 'all' && n.status !== filterStatus) return false;
-    if (searchQuery && !n.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterStatus === 'read' && !n.is_read) return false;
+    if (filterStatus === 'unread' && n.is_read) return false;
+    if (searchQuery && !((n.judul || '').toLowerCase().includes(searchQuery.toLowerCase()))) return false;
     return true;
   });
 
   const stats = {
     total: notifications.length,
-    delivered: notifications.filter((n) => n.status === 'delivered').length,
-    scheduled: notifications.filter((n) => n.status === 'scheduled').length,
-    failed: notifications.reduce((sum, n) => sum + n.failedCount, 0),
-    totalSent: notifications.reduce((sum, n) => sum + n.deliveredCount, 0),
+    read: notifications.filter((n) => n.is_read).length,
+    unread: notifications.filter((n) => !n.is_read).length,
   };
 
   const handleCreateClick = () => {
@@ -94,12 +136,12 @@ export default function NotificationManagement() {
       return
     }
     setFormData({
-      title: '',
-      message: '',
-      type: 'info',
+      user_id: '',
+      judul: '',
+      pesan: '',
+      tipe: 'info',
       recipientType: 'all',
       recipients: [],
-      scheduleTime: '',
     });
     setShowCreateModal(true);
   };
@@ -110,7 +152,7 @@ export default function NotificationManagement() {
   };
 
   const handleCreateSubmit = async () => {
-    if (!formData.title || !formData.message) {
+    if (!formData.judul || !formData.pesan) {
       alert('Judul dan pesan notifikasi wajib diisi!');
       return;
     }
@@ -121,31 +163,26 @@ export default function NotificationManagement() {
     }
     setIsSubmitting(true);
     try {
-      const result = await adminApi.createNotification({
-        title: formData.title,
-        message: formData.message,
-        type: formData.type,
-        recipientType: formData.recipientType,
-        recipients: formData.recipients,
-        scheduleTime: formData.scheduleTime,
-      });
+      // Build payload matching backend API structure
+      const payload = {
+        judul: formData.judul,
+        pesan: formData.pesan,
+        tipe: formData.tipe || 'info',
+      };
+
+      // If specific user selected, add user_id
+      if (formData.recipientType === 'specific' && formData.user_id) {
+        payload.user_id = parseInt(formData.user_id);
+      } else {
+        // For broadcast to all, we need to handle differently
+        // This may require a different endpoint or backend logic
+        payload.user_id = 1; // Default or handle broadcast
+      }
+
+      const result = await adminApi.createNotification(payload);
       if (result.success) {
-        const newNotification = {
-          id: notifications.length + 1,
-          title: formData.title,
-          message: formData.message,
-          type: formData.type,
-          status: formData.scheduleTime ? 'scheduled' : 'delivered',
-          sentAt: formData.scheduleTime ? null : new Date().toISOString(),
-          scheduleTime: formData.scheduleTime ? formData.scheduleTime : null,
-          recipientType: formData.recipientType,
-          recipientCount: formData.recipientType === 'all' ? 156 : Math.floor(Math.random() * 50) + 10,
-          deliveredCount: formData.scheduleTime ? 0 : Math.floor(Math.random() * 100) + 50,
-          readCount: formData.scheduleTime ? 0 : Math.floor(Math.random() * 80) + 10,
-          failedCount: Math.floor(Math.random() * 5),
-          createdBy: 'Admin',
-        };
-        setNotifications([newNotification, ...notifications]);
+        // Refresh notifications from server
+        await loadNotifications();
         setShowCreateModal(false);
         alert('✅ Notifikasi berhasil dibuat dan dikirim');
       } else {
@@ -159,46 +196,35 @@ export default function NotificationManagement() {
     }
   };
 
-  const handleDeleteNotification = (id) => {
+  const handleDeleteNotification = async (notifikasiId) => {
     // ✅ Permission check
     if (!hasPermission('manage_notifications')) {
       alert('❌ You do not have permission to delete notifications')
       return
     }
     if (window.confirm('Hapus notifikasi ini?')) {
-      adminApi.deleteNotification?.(id).catch(() => {
-        console.warn('Delete via API failed, updating local state');
-      });
-      setNotifications(notifications.filter((n) => n.id !== id));
-      alert('✅ Notifikasi berhasil dihapus');
+      try {
+        const result = await adminApi.deleteNotification(notifikasiId);
+        if (result.success) {
+          // Refresh notifications from server
+          await loadNotifications();
+          alert('✅ Notifikasi berhasil dihapus');
+        } else {
+          alert(`❌ ${result.message || 'Gagal menghapus notifikasi'}`);
+        }
+      } catch (err) {
+        console.warn('Delete error:', err.message);
+      }
     }
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      delivered: '#10b981',
-      scheduled: '#f59e0b',
-      failed: '#ef4444',
-    };
-    return colors[status] || '#6b7280';
-  };
-
-  const getStatusText = (status) => {
-    const texts = {
-      delivered: 'Terkirim',
-      scheduled: 'Terjadwal',
-      failed: 'Gagal',
-    };
-    return texts[status] || 'Unknown';
-  };
-
-  const getTypeIcon = (type) => {
+  const getTypeIcon = (tipe) => {
     const icons = {
       info: <AlertCircle size={16} />,
       success: <CheckCircle size={16} />,
       warning: <AlertCircle size={16} />,
     };
-    return icons[type] || <Bell size={16} />;
+    return icons[tipe] || <Bell size={16} />;
   };
 
   return (
@@ -222,8 +248,8 @@ export default function NotificationManagement() {
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Terkirim</span>
-            <span className="stat-value" style={{ color: '#10b981' }}>{stats.delivered}</span>
+            <span className="stat-label">Sudah Dibaca</span>
+            <span className="stat-value" style={{ color: '#10b981' }}>{stats.read}</span>
           </div>
           <div className="stat-icon" style={{ background: '#d1fae5' }}>
             <CheckCircle size={24} color="#10b981" />
@@ -232,41 +258,11 @@ export default function NotificationManagement() {
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Terjadwal</span>
-            <span className="stat-value" style={{ color: '#f59e0b' }}>{stats.scheduled}</span>
+            <span className="stat-label">Belum Dibaca</span>
+            <span className="stat-value" style={{ color: '#f59e0b' }}>{stats.unread}</span>
           </div>
           <div className="stat-icon" style={{ background: '#fef3c7' }}>
-            <Calendar size={24} color="#f59e0b" />
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-content">
-            <span className="stat-label">Total Dikirim</span>
-            <span className="stat-value">{stats.totalSent}</span>
-          </div>
-          <div className="stat-icon" style={{ background: '#e0e7ff' }}>
-            <Send size={24} color="#4f46e5" />
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-content">
-            <span className="stat-label">Gagal</span>
-            <span className="stat-value" style={{ color: '#ef4444' }}>{stats.failed}</span>
-          </div>
-          <div className="stat-icon" style={{ background: '#fee2e2' }}>
-            <AlertCircle size={24} color="#ef4444" />
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-content">
-            <span className="stat-label">Template</span>
-            <span className="stat-value">{templates.length}</span>
-          </div>
-          <div className="stat-icon" style={{ background: '#f3e8ff' }}>
-            <MessageSquare size={24} color="#a855f7" />
+            <Clock size={24} color="#f59e0b" />
           </div>
         </div>
       </div>
@@ -289,9 +285,8 @@ export default function NotificationManagement() {
           onChange={(e) => setFilterStatus(e.target.value)}
         >
           <option value="all">Semua Status</option>
-          <option value="delivered">Terkirim</option>
-          <option value="scheduled">Terjadwal</option>
-          <option value="failed">Gagal</option>
+          <option value="read">Sudah Dibaca</option>
+          <option value="unread">Belum Dibaca</option>
         </select>
 
         <button className="create-btn" onClick={handleCreateClick}>
@@ -314,56 +309,51 @@ export default function NotificationManagement() {
       ) : (
         <div className="notifications-list">
           {filteredNotifications.map((notif) => (
-            <div key={notif.id} className="notification-item">
-              <div className="notif-icon" style={{ color: getStatusColor(notif.status) }}>
-                {getTypeIcon(notif.type)}
+            <div key={notif.notifikasi_id} className="notification-item">
+              <div className="notif-icon" style={{ color: notif.is_read ? '#10b981' : '#f59e0b' }}>
+                {getTypeIcon(notif.tipe)}
               </div>
 
               <div className="notif-content">
                 <div className="notif-header">
                   <div>
-                    <h3>{notif.title}</h3>
-                    <p className="notif-message">{notif.message.substring(0, 80)}...</p>
+                    <h3>{notif.judul}</h3>
+                    <p className="notif-message">{(notif.pesan || '').substring(0, 80)}...</p>
                   </div>
-                  <span className="status-badge" style={{ color: getStatusColor(notif.status), borderColor: getStatusColor(notif.status) }}>
-                    {getStatusText(notif.status)}
+                  <span className="status-badge" style={{ 
+                    color: notif.is_read ? '#10b981' : '#f59e0b', 
+                    borderColor: notif.is_read ? '#10b981' : '#f59e0b' 
+                  }}>
+                    {notif.is_read ? 'Dibaca' : 'Belum Dibaca'}
                   </span>
                 </div>
 
                 <div className="notif-stats">
                   <div className="stat">
                     <Users size={14} />
-                    <span>{notif.recipientCount} penerima</span>
+                    <span>User ID: {notif.user_id}</span>
                   </div>
                   <div className="stat">
-                    <CheckCircle size={14} />
-                    <span>{notif.deliveredCount} terkirim</span>
+                    <MessageSquare size={14} />
+                    <span>Tipe: {notif.tipe || 'info'}</span>
                   </div>
-                  {notif.status === 'delivered' && (
-                    <div className="stat">
-                      <Eye size={14} />
-                      <span>{notif.readCount} dibaca</span>
-                    </div>
-                  )}
-                  {notif.failedCount > 0 && (
-                    <div className="stat error">
-                      <AlertCircle size={14} />
-                      <span>{notif.failedCount} gagal</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="notif-footer">
                   <span className="date">
-                    {notif.status === 'scheduled'
-                      ? `Dijadwalkan: ${new Date(notif.scheduleTime).toLocaleDateString('id-ID')}`
-                      : `Dikirim: ${new Date(notif.sentAt).toLocaleDateString('id-ID')}`}
+                    Dibuat: {new Date(notif.created_at).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </span>
                   <div className="actions">
                     <button className="action-btn view-btn" onClick={() => handlePreview(notif)}>
                       <Eye size={14} /> Lihat
                     </button>
-                    <button className="action-btn delete-btn" onClick={() => handleDeleteNotification(notif.id)}>
+                    <button className="action-btn delete-btn" onClick={() => handleDeleteNotification(notif.notifikasi_id)}>
                       <Trash2 size={14} /> Hapus
                     </button>
                   </div>
@@ -387,23 +377,23 @@ export default function NotificationManagement() {
 
             <div className="modal-body">
               <div className="form-group">
-                <label htmlFor="title">Judul <span className="required">*</span></label>
+                <label htmlFor="judul">Judul <span className="required">*</span></label>
                 <input
-                  id="title"
+                  id="judul"
                   type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  value={formData.judul}
+                  onChange={(e) => setFormData({ ...formData, judul: e.target.value })}
                   placeholder="Contoh: Jadwal Penyetoran Diperbarui"
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="message">Pesan <span className="required">*</span></label>
+                <label htmlFor="pesan">Pesan <span className="required">*</span></label>
                 <textarea
-                  id="message"
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  id="pesan"
+                  value={formData.pesan}
+                  onChange={(e) => setFormData({ ...formData, pesan: e.target.value })}
                   placeholder="Tulis pesan notifikasi di sini..."
                   className="form-input"
                   rows="4"
@@ -412,11 +402,11 @@ export default function NotificationManagement() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="type">Tipe <span className="required">*</span></label>
+                  <label htmlFor="tipe">Tipe <span className="required">*</span></label>
                   <select
-                    id="type"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    id="tipe"
+                    value={formData.tipe}
+                    onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
                     className="form-input"
                   >
                     <option value="info">Informasi</option>
@@ -435,25 +425,28 @@ export default function NotificationManagement() {
                   >
                     <option value="all">Semua Nasabah</option>
                     <option value="specific">Nasabah Tertentu</option>
-                    <option value="group">Kelompok</option>
                   </select>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="schedule">Jadwalkan Pengiriman (Opsional)</label>
-                <input
-                  id="schedule"
-                  type="datetime-local"
-                  value={formData.scheduleTime}
-                  onChange={(e) => setFormData({ ...formData, scheduleTime: e.target.value })}
-                  className="form-input"
-                />
-              </div>
+              {formData.recipientType === 'specific' && (
+                <div className="form-group">
+                  <label htmlFor="user_id">User ID <span className="required">*</span></label>
+                  <input
+                    id="user_id"
+                    type="number"
+                    value={formData.user_id}
+                    onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                    placeholder="Masukkan User ID"
+                    className="form-input"
+                    min="1"
+                  />
+                </div>
+              )}
 
               <div className="info-box">
                 <AlertCircle size={16} />
-                <p>Notifikasi akan dikirim langsung atau sesuai jadwal yang ditentukan.</p>
+                <p>Notifikasi akan dikirim langsung ke user yang dipilih.</p>
               </div>
             </div>
 
@@ -491,39 +484,34 @@ export default function NotificationManagement() {
             <div className="modal-body">
               <div className="notification-preview">
                 <div className="preview-header">
-                  <div className="preview-icon">{getTypeIcon(selectedNotif.type)}</div>
+                  <div className="preview-icon">{getTypeIcon(selectedNotif.tipe)}</div>
                   <div className="preview-content">
-                    <h4>{selectedNotif.title}</h4>
-                    <span className="preview-type">{selectedNotif.type.toUpperCase()}</span>
+                    <h4>{selectedNotif.judul}</h4>
+                    <span className="preview-type">{(selectedNotif.tipe || 'info').toUpperCase()}</span>
                   </div>
                 </div>
 
                 <div className="preview-message">
-                  <p>{selectedNotif.message}</p>
+                  <p>{selectedNotif.pesan}</p>
                 </div>
 
                 <div className="preview-stats">
                   <div className="stat-item">
-                    <span className="label">Penerima:</span>
-                    <span className="value">{selectedNotif.recipientCount} nasabah</span>
+                    <span className="label">User ID:</span>
+                    <span className="value">{selectedNotif.user_id}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="label">Terkirim:</span>
-                    <span className="value">{selectedNotif.deliveredCount}</span>
+                    <span className="label">Tipe:</span>
+                    <span className="value">{selectedNotif.tipe || 'info'}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="label">Dibaca:</span>
-                    <span className="value">{selectedNotif.readCount}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="label">Gagal:</span>
-                    <span className="value error">{selectedNotif.failedCount}</span>
+                    <span className="label">Status Baca:</span>
+                    <span className="value">{selectedNotif.is_read ? 'Sudah Dibaca' : 'Belum Dibaca'}</span>
                   </div>
                 </div>
 
                 <div className="preview-footer">
-                  <span>Status: <strong>{getStatusText(selectedNotif.status)}</strong></span>
-                  <span>Oleh: <strong>{selectedNotif.createdBy}</strong></span>
+                  <span>Dibuat: <strong>{new Date(selectedNotif.created_at).toLocaleString('id-ID')}</strong></span>
                 </div>
               </div>
             </div>

@@ -170,6 +170,12 @@ export default function Login() {
           >
             {loading ? "Memproses..." : "Masuk"}
           </button>
+
+          {/* Register Link */}
+          <div className="registerLinkContainer">
+            <span className="registerText">Belum punya akun?</span>
+            <a href="/register" className="registerLink">Daftar di sini</a>
+          </div>
         </form>
       </div>
     </div>

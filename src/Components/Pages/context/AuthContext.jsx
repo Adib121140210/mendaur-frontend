@@ -105,6 +105,33 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(updatedUserData));
   };
 
+  // ✅ Refresh user data from backend
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://127.0.0.1:8000/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const userData = result.data?.user || result.user || result.data;
+        
+        if (userData) {
+          updateUser(userData);
+          console.log('✅ User data refreshed:', userData.total_poin);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   // ✅ Check if user has specific permission
   const hasPermission = (permission) => {
     // Superadmin has ALL permissions
@@ -157,6 +184,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
+    refreshUser,
     getPermissionsCount,
 
     // Checks

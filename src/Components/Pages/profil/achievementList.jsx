@@ -16,18 +16,18 @@ import {
 
 // Icon mapping by badge type
 const iconMapByType = {
-  "setor_sampah": <Recycle size={48} className="badgeIcon" />,
-  "poin": <Star size={48} className="badgeIcon" />,
-  "leaderboard": <Trophy size={48} className="badgeIcon" />,
-  "konsistensi": <Target size={48} className="badgeIcon" />,
-  "general": <Medal size={48} className="badgeIcon" />,
+  "setor_sampah": <Recycle size={40} className="badgeIcon" />,
+  "poin": <Star size={40} className="badgeIcon" />,
+  "leaderboard": <Trophy size={40} className="badgeIcon" />,
+  "konsistensi": <Target size={40} className="badgeIcon" />,
+  "general": <Medal size={40} className="badgeIcon" />,
 };
 
 // Icon mapping by badge ID (fallback)
 const iconMap = {
-  "badge-001": <Medal size={48} className="badgeIcon" />,
-  "badge-002": <Star size={48} className="badgeIcon" />,
-  "badge-003": <Users size={48} className="badgeIcon" />,
+  "badge-001": <Medal size={40} className="badgeIcon" />,
+  "badge-002": <Star size={40} className="badgeIcon" />,
+  "badge-003": <Users size={40} className="badgeIcon" />,
 };
 
 // Badge card
@@ -41,7 +41,7 @@ function BadgeCard({ badge }) {
   // Choose icon based on badge type, ID, or default
   const getIcon = () => {
     if (isUnlocked) {
-      return <CheckCircle size={48} className="badgeIcon complete" />;
+      return <CheckCircle size={40} className="badgeIcon complete" />;
     }
     // Try badge type first
     if (badge.tipe && iconMapByType[badge.tipe]) {
@@ -52,7 +52,7 @@ function BadgeCard({ badge }) {
       return iconMap[badge.id_badge];
     }
     // Default locked icon
-    return <Lock size={48} className="badgeIcon" />;
+    return <Lock size={40} className="badgeIcon" />;
   };
 
   const icon = getIcon();
@@ -61,7 +61,7 @@ function BadgeCard({ badge }) {
     <div className={`achievementCard ${isUnlocked ? "unlocked" : "locked"}`}>
       <div className="achievementThumbnail">
         {badge.icon ? (
-          <img src={badge.icon} alt={badge.nama_badge} style={{ width: '48px', height: '48px' }} />
+          <span className="badgeEmojiIcon">{badge.icon}</span>
         ) : (
           <div className="thumbnailIcon">{icon}</div>
         )}
@@ -74,7 +74,7 @@ function BadgeCard({ badge }) {
         {/* Reward Points Display */}
         <div className="badgeRewardSection">
           <span className="rewardLabel">
-            <Star size={14} style={{ marginRight: '4px' }} />
+            <Star size={12} style={{ marginRight: '4px' }} />
             Reward:
           </span>
           <span className="rewardPoints">+{badge.reward_poin || 0} Poin</span>
@@ -158,8 +158,8 @@ export default function AchievementList() {
         setTotalRewardsEarned(earned);
         setTotalPossibleRewards(possible);
       }
-    } catch (error) {
-      console.error('Error fetching total rewards:', error.message);
+    } catch {
+      // Silent fail - rewards calculation is optional
     }
   };
 
@@ -188,6 +188,7 @@ export default function AchievementList() {
           ...badge,
           badge_id: badge.badge_id || badge.id,
           nama_badge: badge.nama,
+          icon: badge.icon || null, // Include icon from database
           isUnlocked: badge.is_unlocked,
           unlocked_at: badge.unlocked_at,
           progress: badge.current_value || 0,
@@ -201,8 +202,7 @@ export default function AchievementList() {
         setAllBadges(badgesWithStatus);
         setUserBadges(badges.filter(b => b.is_unlocked));
       }
-    } catch (error) {
-      console.error('Error fetching badges:', error.message);
+    } catch {
       setAllBadges([]);
     } finally {
       setLoading(false);

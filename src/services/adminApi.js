@@ -8,18 +8,15 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
 /**
  * Get authorization header dengan token
  */
-const getAuthHeader = () => {
+const getAuthHeader = (isFormData = false) => {
   const token = localStorage.getItem('token')
   
-  if (!token) {
-    console.warn('⚠️ No token found in localStorage')
-    console.warn('Available localStorage keys:', Object.keys(localStorage))
-  } else {
-    console.log('🔐 Token found in localStorage:', {
-      length: token.length,
-      preview: token.substring(0, 30) + '...' + token.substring(token.length - 20),
-      type: typeof token
-    })
+  // For FormData, don't set Content-Type (browser will set it with boundary)
+  if (isFormData) {
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    }
   }
   
   return {
@@ -30,10 +27,34 @@ const getAuthHeader = () => {
 }
 
 /**
+ * Build FormData from object (for file uploads)
+ * @param {Object} data - Object containing field values
+ * @param {Array} fileFields - Array of field names that are files
+ */
+const buildFormData = (data, fileFields = []) => {
+  const formData = new FormData()
+  
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === null || value === undefined) return
+    
+    if (fileFields.includes(key) && value instanceof File) {
+      formData.append(key, value)
+    } else if (typeof value === 'boolean') {
+      formData.append(key, value ? '1' : '0')
+    } else if (typeof value === 'number') {
+      formData.append(key, String(value))
+    } else if (value !== '') {
+      formData.append(key, value)
+    }
+  })
+  
+  return formData
+}
+
+/**
  * Handle API response error
  */
 const handleError = (error, defaultMessage = 'An error occurred') => {
-  console.error('API Error:', error)
   return {
     success: false,
     message: error.message || defaultMessage,
@@ -50,7 +71,6 @@ export const adminApi = {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        console.warn('⚠️ No authentication token available')
         return {
           success: false,
           message: 'Not authenticated. Please login again.',
@@ -64,7 +84,6 @@ export const adminApi = {
       })
 
       if (response.status === 401) {
-        console.warn('⚠️ Authentication failed (401). Token may be expired.')
         return {
           success: false,
           message: 'Authentication failed. Please login again.',
@@ -77,7 +96,6 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info('✅ Overview data loaded successfully')
       return {
         success: true,
         data: data.data || data
@@ -157,6 +175,38 @@ export const adminApi = {
     }
   },
 
+  /**
+   * Create a new user
+   * POST /api/admin/users
+   * Note: Backend may not support this endpoint yet (returns 405)
+   */
+  createUser: async (userData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(userData)
+      })
+
+      if (!response.ok) {
+        // Special handling for 405 Method Not Allowed
+        if (response.status === 405) {
+          throw new Error('Backend does not support user creation yet. Please contact the backend team to implement POST /api/admin/users endpoint.')
+        }
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data.data || data,
+        message: 'User created successfully'
+      }
+    } catch (error) {
+      return handleError(error, 'Failed to create user')
+    }
+  },
+
   // Analytics - Waste
   getWasteAnalytics: async (period = 'monthly', filters = {}) => {
     try {
@@ -186,19 +236,32 @@ export const adminApi = {
 
   getWasteByUser: async (page = 1, limit = 10, filters = {}) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        
+        return { success: false, message: 'Not authenticated', data: null }
+      }
+      
       const params = new URLSearchParams({
         page,
         limit,
         ...filters
       })
 
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/waste-by-user?${params}`, {
+      const url = `${API_BASE_URL}/admin/analytics/waste-by-user?${params}`
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeader()
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        return { 
+          success: false, 
+          error: `HTTP ${response.status}`, 
+          message: response.statusText,
+          data: null 
+        }
       }
 
       const data = await response.json()
@@ -374,6 +437,7 @@ export const adminApi = {
   /**
    * List all waste deposits with filtering and pagination
    * GET /api/admin/penyetoran-sampah
+   * Alias: getAllPenyetoranSampah
    */
   listWasteDeposits: async (page = 1, limit = 10, filters = {}) => {
     try {
@@ -407,7 +471,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info('✅ Waste deposits loaded successfully')
+      
       return {
         success: true,
         data: data.data || data
@@ -446,15 +510,28 @@ export const adminApi = {
   /**
    * Approve a waste deposit and assign poin
    * PATCH /api/admin/penyetoran-sampah/{id}/approve
+   * Optional: poin_didapat (will be calculated automatically if not provided)
    */
-  approveWasteDeposit: async (depositId, poinDiberikan) => {
+  approveWasteDeposit: async (depositId, poinDiberikan, beratKg = null, catatanAdmin = null) => {
     try {
+      const payload = {
+        poin_diberikan: parseInt(poinDiberikan)
+      }
+      
+      // Include berat_kg if admin wants to edit weight
+      if (beratKg !== null && beratKg !== undefined) {
+        payload.berat_kg = parseFloat(beratKg)
+      }
+      
+      // Include catatan_admin if provided
+      if (catatanAdmin && catatanAdmin.trim()) {
+        payload.catatan_admin = catatanAdmin.trim()
+      }
+      
       const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/approve`, {
         method: 'PATCH',
         headers: getAuthHeader(),
-        body: JSON.stringify({
-          poin_diberikan: parseInt(poinDiberikan)
-        })
+        body: JSON.stringify(payload)
       })
 
       if (!response.ok) {
@@ -463,7 +540,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info(`✅ Deposit #${depositId} approved with ${poinDiberikan} poin`)
+      console.info(`✅ Deposit #${depositId} approved`)
       return {
         success: true,
         message: 'Deposit approved successfully',
@@ -477,6 +554,7 @@ export const adminApi = {
   /**
    * Reject a waste deposit with reason
    * PATCH /api/admin/penyetoran-sampah/{id}/reject
+   * Field: alasan (optional)
    */
   rejectWasteDeposit: async (depositId, alasanPenolakan) => {
     try {
@@ -484,7 +562,7 @@ export const adminApi = {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({
-          alasan_penolakan: alasanPenolakan
+          alasan: alasanPenolakan || ''
         })
       })
 
@@ -555,7 +633,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info('✅ Waste statistics loaded successfully')
+      
       return {
         success: true,
         data: data.data || data
@@ -583,7 +661,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All admins loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch admins')
@@ -622,7 +700,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Admin created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create admin')
@@ -701,7 +779,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All roles loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch roles')
@@ -740,7 +818,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Role created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create role')
@@ -838,7 +916,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All permissions loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch permissions')
@@ -859,7 +937,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All badges loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch badges')
@@ -869,17 +947,30 @@ export const adminApi = {
   /**
    * Create badge
    * POST /api/admin/badges
+   * Fields: nama, tipe (setor/poin/ranking), deskripsi, syarat_setor, syarat_poin, reward_poin, icon (emoji string)
+   * Note: icon is an EMOJI STRING like '🌱', NOT a file upload
    */
   createBadge: async (badgeData) => {
     try {
+      // Build payload with correct field names matching backend
+      const payload = {
+        nama: badgeData.nama,
+        tipe: badgeData.tipe,
+        deskripsi: badgeData.deskripsi || '',
+        syarat_setor: badgeData.syarat_setor || 0,
+        syarat_poin: badgeData.syarat_poin || 0,
+        reward_poin: badgeData.reward_poin || 0,
+        icon: badgeData.icon || '🌱' // Emoji string, not file
+      }
+      
       const response = await fetch(`${API_BASE_URL}/admin/badges`, {
         method: 'POST',
         headers: getAuthHeader(),
-        body: JSON.stringify(badgeData)
+        body: JSON.stringify(payload)
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Badge created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create badge')
@@ -889,13 +980,26 @@ export const adminApi = {
   /**
    * Update badge
    * PUT /api/admin/badges/{badgeId}
+   * Fields: nama, tipe (setor/poin/ranking), deskripsi, syarat_setor, syarat_poin, reward_poin, icon (emoji string)
+   * Note: icon is an EMOJI STRING like '🌱', NOT a file upload
    */
   updateBadge: async (badgeId, badgeData) => {
     try {
+      // Build payload with correct field names matching backend
+      const payload = {
+        nama: badgeData.nama,
+        tipe: badgeData.tipe,
+        deskripsi: badgeData.deskripsi || '',
+        syarat_setor: badgeData.syarat_setor || 0,
+        syarat_poin: badgeData.syarat_poin || 0,
+        reward_poin: badgeData.reward_poin || 0,
+        icon: badgeData.icon || '🌱' // Emoji string, not file
+      }
+      
       const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
-        body: JSON.stringify(badgeData)
+        body: JSON.stringify(payload)
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -966,7 +1070,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All products loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch products')
@@ -976,17 +1080,29 @@ export const adminApi = {
   /**
    * Create new product
    * POST /api/admin/produk
+   * Supports file upload for foto field
    */
   createProduct: async (productData) => {
     try {
+      // Build FormData for file upload support
+      const formData = buildFormData({
+        nama: productData.nama,
+        harga_poin: productData.harga_poin,
+        stok: productData.stok,
+        kategori: productData.kategori,
+        deskripsi: productData.deskripsi,
+        status: productData.status,
+        foto: productData.foto
+      }, ['foto'])
+      
       const response = await fetch(`${API_BASE_URL}/admin/produk`, {
         method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify(productData)
+        headers: getAuthHeader(true),
+        body: formData
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Product created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create product')
@@ -996,13 +1112,28 @@ export const adminApi = {
   /**
    * Update product
    * PUT /api/admin/produk/{produkId}
+   * Supports file upload for foto field
    */
   updateProduct: async (produkId, productData) => {
     try {
+      // Build FormData for file upload support
+      const formData = buildFormData({
+        nama: productData.nama,
+        harga_poin: productData.harga_poin,
+        stok: productData.stok,
+        kategori: productData.kategori,
+        deskripsi: productData.deskripsi,
+        status: productData.status,
+        foto: productData.foto
+      }, ['foto'])
+      
+      // Add _method field for Laravel to handle PUT via POST
+      formData.append('_method', 'PUT')
+      
       const response = await fetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
-        method: 'PUT',
-        headers: getAuthHeader(),
-        body: JSON.stringify(productData)
+        method: 'POST',
+        headers: getAuthHeader(true),
+        body: formData
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -1049,7 +1180,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Product redemptions loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch product redemptions')
@@ -1079,15 +1210,24 @@ export const adminApi = {
   /**
    * Reject product redemption
    * PATCH /api/admin/penukar-produk/{id}/reject
+   * Field: alasan (optional)
    */
   rejectRedemption: async (redemptionId, rejectionData) => {
     try {
+      // Support both object format and string for backward compatibility
+      const alasan = typeof rejectionData === 'object'
+        ? (rejectionData.reason || rejectionData.alasan || '')
+        : (rejectionData || '')
+      
       const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
-        body: JSON.stringify(rejectionData)
+        body: JSON.stringify({ alasan })
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP ${response.status}`)
+      }
       const data = await response.json()
       console.info(`✅ Redemption #${redemptionId} rejected`)
       return { success: true, data: data.data || data }
@@ -1112,7 +1252,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All waste categories loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch waste categories')
@@ -1136,7 +1276,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All waste items loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch waste items')
@@ -1156,7 +1296,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Waste item created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create waste item')
@@ -1223,7 +1363,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All schedules loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch schedules')
@@ -1252,19 +1392,60 @@ export const adminApi = {
   /**
    * Create new schedule
    * POST /api/admin/jadwal-penyetoran
+   * Required fields: hari (enum: Senin-Minggu), waktu_mulai (HH:mm), waktu_selesai (HH:mm), lokasi
+   * Optional fields: status (Buka/Tutup - default: Buka)
    */
   createSchedule: async (scheduleData) => {
     try {
+      // Ensure time format is HH:mm (not HH:mm:ss)
+      const formatTime = (time) => {
+        if (!time) return time
+        return time.substring(0, 5)
+      }
+      
+      const payload = {
+        hari: scheduleData.hari,
+        waktu_mulai: formatTime(scheduleData.waktu_mulai),
+        waktu_selesai: formatTime(scheduleData.waktu_selesai),
+        lokasi: scheduleData.lokasi,
+        status: scheduleData.status || 'Buka'
+      }
+      
+      
+      
       const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran`, {
         method: 'POST',
         headers: getAuthHeader(),
-        body: JSON.stringify(scheduleData)
+        body: JSON.stringify(payload)
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
+      
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        
+        try {
+          const errorData = JSON.parse(errorText)
+          
+          return { 
+            success: false, 
+            error: errorData.message || errorData.error || `HTTP ${response.status}`,
+            details: errorData
+          }
+        } catch {
+          return { 
+            success: false, 
+            error: `HTTP ${response.status}: ${errorText || 'Server error'}`,
+            details: { status: response.status, body: errorText }
+          }
+        }
+      }
+      
       const data = await response.json()
-      console.info('✅ Schedule created successfully')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
+      
       return handleError(error, 'Failed to create schedule')
     }
   },
@@ -1272,13 +1453,30 @@ export const adminApi = {
   /**
    * Update schedule
    * PUT /api/admin/jadwal-penyetoran/{jadwalId}
+   * Optional fields: hari (enum: Senin-Minggu), waktu_mulai (HH:mm), waktu_selesai (HH:mm), lokasi, status (Buka/Tutup)
    */
   updateSchedule: async (jadwalId, scheduleData) => {
     try {
+      // Ensure time format is HH:mm (not HH:mm:ss)
+      const formatTime = (time) => {
+        if (!time) return time
+        return time.substring(0, 5)
+      }
+      
+      const payload = {
+        hari: scheduleData.hari,
+        waktu_mulai: formatTime(scheduleData.waktu_mulai),
+        waktu_selesai: formatTime(scheduleData.waktu_selesai),
+        lokasi: scheduleData.lokasi,
+        status: scheduleData.status || 'Buka'
+      }
+      
+      
+      
       const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
-        body: JSON.stringify(scheduleData)
+        body: JSON.stringify(payload)
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -1318,36 +1516,39 @@ export const adminApi = {
    */
   getNotifications: async (page = 1, limit = 20, filters = {}) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        
+        return { success: false, message: 'Not authenticated', data: null }
+      }
+      
       const params = new URLSearchParams({ page, limit, ...filters })
-      const response = await fetch(`${API_BASE_URL}/admin/notifications?${params}`, {
+      const url = `${API_BASE_URL}/admin/notifications?${params}`
+      
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeader()
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
+      
+      
+      if (!response.ok) {
+        console.error(`❌ HTTP Error ${response.status}: ${response.statusText}`)
+        return { 
+          success: false, 
+          error: `HTTP ${response.status}`, 
+          message: response.statusText,
+          data: null 
+        }
+      }
+      
       const data = await response.json()
-      console.info('✅ Notifications loaded')
+      console.info('✅ Notifications loaded:', data)
       return { success: true, data: data.data || data }
     } catch (error) {
+      
       return handleError(error, 'Failed to fetch notifications')
-    }
-  },
-
-  /**
-   * Get notification templates
-   * GET /api/admin/notifications/templates
-   */
-  getNotificationTemplates: async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/notifications/templates`, {
-        method: 'GET',
-        headers: getAuthHeader()
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
-      console.info('✅ Notification templates loaded')
-      return { success: true, data: data.data || data }
-    } catch (error) {
-      return handleError(error, 'Failed to fetch templates')
     }
   },
 
@@ -1364,7 +1565,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ Notification created')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to create notification')
@@ -1411,7 +1612,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All articles loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch articles')
@@ -1419,18 +1620,18 @@ export const adminApi = {
   },
 
   /**
-   * Get article details
-   * GET /api/admin/artikel/{artikelId}
+   * Get article details by slug
+   * GET /api/admin/artikel/{slug}
    */
-  getArticleDetail: async (artikelId) => {
+  getArticleDetail: async (slug) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Article #${artikelId} loaded`)
+      console.info(`✅ Article "${slug}" loaded`)
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch article details')
@@ -1440,56 +1641,121 @@ export const adminApi = {
   /**
    * Create new article
    * POST /api/admin/artikel
+   * Fields: judul, konten, penulis, kategori, tanggal_publikasi (required), foto_cover (optional file)
    */
   createArticle: async (articleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
-        method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify(articleData)
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
-      console.info('✅ Article created successfully')
-      return { success: true, data: data.data || data }
+      const hasFile = articleData.foto_cover instanceof File
+      
+      if (hasFile) {
+        // Use FormData for file upload
+        const formData = buildFormData({
+          judul: articleData.judul,
+          konten: articleData.konten,
+          penulis: articleData.penulis,
+          kategori: articleData.kategori,
+          tanggal_publikasi: articleData.tanggal_publikasi,
+          foto_cover: articleData.foto_cover
+        }, ['foto_cover'])
+        
+        const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
+          method: 'POST',
+          headers: getAuthHeader(true),
+          body: formData
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        
+        return { success: true, data: data.data || data }
+      } else {
+        // Use JSON for non-file data
+        const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            judul: articleData.judul,
+            konten: articleData.konten,
+            penulis: articleData.penulis,
+            kategori: articleData.kategori,
+            tanggal_publikasi: articleData.tanggal_publikasi
+          })
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        
+        return { success: true, data: data.data || data }
+      }
     } catch (error) {
       return handleError(error, 'Failed to create article')
     }
   },
 
   /**
-   * Update article
-   * PUT /api/admin/artikel/{artikelId}
+   * Update article by slug
+   * PUT /api/admin/artikel/{slug}
+   * Fields: judul, konten, penulis, kategori, tanggal_publikasi, foto_cover (optional file)
    */
-  updateArticle: async (artikelId, articleData) => {
+  updateArticle: async (slug, articleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
-        method: 'PUT',
-        headers: getAuthHeader(),
-        body: JSON.stringify(articleData)
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
-      console.info(`✅ Article #${artikelId} updated`)
-      return { success: true, data: data.data || data }
+      const hasFile = articleData.foto_cover instanceof File
+      
+      if (hasFile) {
+        // Use FormData for file upload
+        const formData = buildFormData({
+          judul: articleData.judul,
+          konten: articleData.konten,
+          penulis: articleData.penulis,
+          kategori: articleData.kategori,
+          tanggal_publikasi: articleData.tanggal_publikasi,
+          foto_cover: articleData.foto_cover
+        }, ['foto_cover'])
+        formData.append('_method', 'PUT')
+        
+        const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+          method: 'POST',
+          headers: getAuthHeader(true),
+          body: formData
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        console.info(`✅ Article "${slug}" updated`)
+        return { success: true, data: data.data || data }
+      } else {
+        // Use JSON for non-file updates
+        const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+          method: 'PUT',
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            judul: articleData.judul,
+            konten: articleData.konten,
+            penulis: articleData.penulis,
+            kategori: articleData.kategori,
+            tanggal_publikasi: articleData.tanggal_publikasi
+          })
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        console.info(`✅ Article "${slug}" updated`)
+        return { success: true, data: data.data || data }
+      }
     } catch (error) {
       return handleError(error, 'Failed to update article')
     }
   },
 
   /**
-   * Delete article
-   * DELETE /api/admin/artikel/{artikelId}
+   * Delete article by slug
+   * DELETE /api/admin/artikel/{slug}
    */
-  deleteArticle: async (artikelId) => {
+  deleteArticle: async (slug) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel/${artikelId}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Article #${artikelId} deleted`)
+      console.info(`✅ Article "${slug}" deleted`)
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete article')
@@ -1513,7 +1779,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info('✅ All transactions loaded')
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch transactions')
@@ -1579,15 +1845,24 @@ export const adminApi = {
   /**
    * Reject cash withdrawal
    * PATCH /api/admin/penarikan-tunai/{id}/reject
+   * Field: catatan_admin (required - alasan penolakan)
    */
-  rejectCashWithdrawal: async (id, reason = '', notes = '') => {
+  rejectCashWithdrawal: async (id, rejectionData) => {
     try {
+      // Support both object format and string for backward compatibility
+      const catatan_admin = typeof rejectionData === 'object'
+        ? (rejectionData.reason || rejectionData.catatan_admin || rejectionData.notes || '')
+        : (rejectionData || '')
+      
       const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
-        body: JSON.stringify({ alasan_penolakan: reason, catatan_admin: notes })
+        body: JSON.stringify({ catatan_admin })
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP ${response.status}`)
+      }
       const data = await response.json()
       return { success: true, data: data.data || data }
     } catch (error) {
@@ -1612,15 +1887,32 @@ export const adminApi = {
 
   updateAdminUser: async (userId, userData) => {
     try {
+      
+      
+      
+      
+      
       const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(userData)
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
+      
+      
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        throw new Error(`HTTP ${response.status}: ${errorData.message || 'Unknown error'}`)
+      }
+      
       const data = await response.json()
+      
+      
       return { success: true, data: data.data || data }
     } catch (error) {
+      
       return handleError(error, 'Failed to update user')
     }
   },
@@ -1872,5 +2164,10 @@ export const adminApi = {
     }
   }
 }
+
+// Add function aliases for backward compatibility
+adminApi.getAllPenyetoranSampah = adminApi.listWasteDeposits
+adminApi.approvePenyetoranSampah = adminApi.approveWasteDeposit
+adminApi.rejectPenyetoranSampah = adminApi.rejectWasteDeposit
 
 export default adminApi

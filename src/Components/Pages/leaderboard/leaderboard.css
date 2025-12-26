@@ -1,21 +1,29 @@
 .leaderboard-page {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 2rem;
-  background-color: var(--background);
-  font-family: var(--font-base);
-  min-height: 100vh;
+  gap: 0;
+  padding: 0;
+  background-color: #f9fafb;
+  font-family: 'Inter', sans-serif;
+  min-height: auto;
 }
 
-/* Sinkronisasi tampilan header dan tabel */
-.leaderboard-header,
+/* Header sudah include padding sendiri */
+.leaderboard-header {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2rem 2rem 0 2rem;
+}
+
+/* Table sudah include padding sendiri */
 .leaderboard-table {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 1.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
 /* ============================================================================
@@ -23,15 +31,13 @@
    ============================================================================ */
 @media (max-width: 1024px) {
   .leaderboard-page {
-    gap: 1.75rem;
-    padding: 1.75rem;
-    padding-bottom: calc(1.75rem + 70px);
+    gap: 0;
+    padding: 0;
+    padding-bottom: 70px;
   }
 
-  .leaderboard-header,
-  .leaderboard-table {
-    padding: 1.25rem;
-    border-radius: 12px;
+  .leaderboard-header {
+    padding: 1.5rem 1.5rem 0 1.5rem;
   }
 }
 
@@ -40,16 +46,13 @@
    ============================================================================ */
 @media (max-width: 640px) {
   .leaderboard-page {
-    gap: 1.5rem;
-    padding: 1.25rem;
-    padding-bottom: calc(1.25rem + 64px);
+    gap: 0;
+    padding: 0;
+    padding-bottom: 64px;
   }
 
-  .leaderboard-header,
-  .leaderboard-table {
-    padding: 1rem;
-    border-radius: 10px;
-    border-width: 1px;
+  .leaderboard-header {
+    padding: 1rem 1rem 0 1rem;
   }
 }
 
@@ -58,31 +61,27 @@
    ============================================================================ */
 @media (max-width: 480px) {
   .leaderboard-page {
-    gap: 1.25rem;
-    padding: 1rem;
-    padding-bottom: calc(1rem + 60px);
+    gap: 0;
+    padding: 0;
+    padding-bottom: 60px;
   }
 
-  .leaderboard-header,
-  .leaderboard-table {
-    padding: 0.875rem;
-    border-radius: 8px;
+  .leaderboard-header {
+    padding: 0.75rem 0.75rem 0 0.75rem;
   }
 }
 
 /* ============================================================================
    EXTRA SMALL MOBILE: < 360px
    ============================================================================ */
-@media (max-width: 359px) {
+@media (max-width: 360px) {
   .leaderboard-page {
-    gap: 1rem;
-    padding: 0.75rem;
-    padding-bottom: calc(0.75rem + 60px);
+    gap: 0;
+    padding: 0;
+    padding-bottom: 60px;
   }
 
-  .leaderboard-header,
-  .leaderboard-table {
-    padding: 0.75rem;
-    border-radius: 8px;
+  .leaderboard-header {
+    padding: 0.625rem 0.625rem 0 0.625rem;
   }
 }

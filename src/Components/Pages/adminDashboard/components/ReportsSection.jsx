@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { FileText, Loader, AlertCircle } from 'lucide-react'
+import { FileText, Loader, AlertCircle, Download, FileSpreadsheet, Printer } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import adminApi from '../../../../services/adminApi'
+import { exportToPDF, exportToExcel } from '../../../../utils/exportUtils'
 
 // Mock report data for development
 const MOCK_REPORT = {
@@ -40,71 +42,113 @@ const ReportsSection = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleGenerateReport = async () => {
+  // Separated fetch function (Session 2 pattern)
+  const loadReport = async () => {
     try {
-      // ✅ Permission check
+      // ✅ Permission check for export_reports
       if (!hasPermission('export_reports')) {
         alert('❌ You do not have permission to generate reports')
         return
       }
       
       setLoading(true)
-      const token = localStorage.getItem('token')
-      const params = new URLSearchParams({
-        type: reportType,
-        year,
-        month,
-        ...(reportType === 'daily' && { day })
-      })
+      setError(null)
 
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/admin/dashboard/report?${params}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        )
+      // Build date strings
+      const startDate = `${year}-${String(month).padStart(2, '0')}-${reportType === 'daily' ? String(day).padStart(2, '0') : '01'}`
+      const endDate = reportType === 'daily' 
+        ? startDate 
+        : `${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
+      // Call API
+      const result = await adminApi.generateReport(
+        reportType,
+        reportType === 'daily' ? `${year}-${month}-${day}` : `${year}-${month}`,
+        startDate,
+        endDate
+      )
 
-        const data = await response.json()
-        setReport(data.data)
-        setError(null)
-      } catch (err) {
-        console.warn('Backend unreachable, using mock report data:', err.message)
-        // Use mock data as fallback
-        setReport(MOCK_REPORT)
-        setError(null)
+      // Multi-format response handler (supports 3+ formats)
+      let reportData = MOCK_REPORT
+      if (result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
+        // Already an object with report data
+        reportData = result.data
+      } else if (result.data?.data && typeof result.data.data === 'object') {
+        // Wrapped in data key
+        reportData = result.data.data
+      } else if (result.data?.report && typeof result.data.report === 'object') {
+        // Wrapped in report key
+        reportData = result.data.report
       }
+      
+      setReport(reportData)
     } catch (err) {
-      console.error('Error generating report:', err)
-      setError(err.message)
+      console.warn('Report fetch error, using mock data:', err.message)
+      setReport(MOCK_REPORT)
+      setError(null)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleExportPDF = () => {
-    // ✅ Permission check
-    if (!hasPermission('export_reports')) {
-      alert('❌ You do not have permission to export reports')
-      return
-    }
-    alert('PDF export functionality coming soon!')
+  const handleGenerateReport = async () => {
+    await loadReport()
   }
 
-  const handleExportExcel = () => {
+  const handleExportPDF = async () => {
     // ✅ Permission check
     if (!hasPermission('export_reports')) {
       alert('❌ You do not have permission to export reports')
       return
     }
-    alert('Excel export functionality coming soon!')
+    
+    if (!report) {
+      alert('⚠️ Please generate a report first')
+      return
+    }
+    
+    try {
+      setLoading(true)
+      const result = exportToPDF(report, reportType, { year, month, day })
+      
+      if (result.success) {
+        console.log('PDF exported successfully:', result.filename)
+        alert(`✅ Report exported as PDF: ${result.filename}`)
+      }
+    } catch (err) {
+      console.error('PDF export error:', err)
+      alert('❌ Error exporting PDF: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleExportExcel = async () => {
+    // ✅ Permission check
+    if (!hasPermission('export_reports')) {
+      alert('❌ You do not have permission to export reports')
+      return
+    }
+    
+    if (!report) {
+      alert('⚠️ Please generate a report first')
+      return
+    }
+    
+    try {
+      setLoading(true)
+      const result = exportToExcel(report, reportType, { year, month, day })
+      
+      if (result.success) {
+        console.log('Excel exported successfully:', result.filename)
+        alert(`✅ Report exported as Excel: ${result.filename}`)
+      }
+    } catch (err) {
+      console.error('Excel export error:', err)
+      alert('❌ Error exporting Excel: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handlePrint = () => {
@@ -305,13 +349,16 @@ const ReportsSection = () => {
 
           {/* Export Buttons */}
           <div className="report-actions">
-            <button onClick={handleExportPDF} className="btn-export btn-pdf">
+            <button onClick={handleExportPDF} className="btn-export btn-pdf" disabled={loading}>
+              <Download size={18} />
               Export PDF
             </button>
-            <button onClick={handleExportExcel} className="btn-export btn-excel">
+            <button onClick={handleExportExcel} className="btn-export btn-excel" disabled={loading}>
+              <FileSpreadsheet size={18} />
               Export Excel
             </button>
             <button onClick={handlePrint} className="btn-export btn-print">
+              <Printer size={18} />
               Print
             </button>
           </div>

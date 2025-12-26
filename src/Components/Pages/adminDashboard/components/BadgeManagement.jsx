@@ -29,105 +29,120 @@ export default function BadgeManagement() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    tier: 'silver',
-    minPoints: 1000,
-    description: '',
-    icon: '⭐',
+    nama: '',
+    tipe: 'setor',
+    deskripsi: '',
+    syarat_setor: 1,
+    syarat_poin: 0,
+    reward_poin: 50,
+    icon: '🌱',
   });
   const [assignData, setAssignData] = useState({
-    nasabahId: '',
-    nasabahName: '',
+    nasabah_id: '',
+    nasabah_name: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const MOCK_BADGES = [
     {
-      id: 1,
-      name: 'Pemula',
-      tier: 'bronze',
-      minPoints: 0,
-      maxPoints: 500,
-      description: 'Nasabah baru yang baru memulai perjalanan mereka',
-      icon: '🥉',
-      color: '#cd7f32',
-      assignedCount: 45,
+      badge_id: 1,
+      nama: 'Pemula Peduli',
+      deskripsi: 'Setor sampah pertama kali',
+      icon: '🌱',
+      syarat_poin: 0,
+      syarat_setor: 1,
+      reward_poin: 50,
+      tipe: 'setor',
+      assigned_count: 45,
     },
     {
-      id: 2,
-      name: 'Aktif',
-      tier: 'silver',
-      minPoints: 500,
-      maxPoints: 2000,
-      description: 'Nasabah yang rutin melakukan penyetoran sampah',
-      icon: '⭐',
-      color: '#c0c0c0',
-      assignedCount: 32,
+      badge_id: 2,
+      nama: 'Green Hero',
+      deskripsi: 'Telah melakukan 10 kali penyetoran',
+      icon: '🦸',
+      syarat_poin: 0,
+      syarat_setor: 10,
+      reward_poin: 200,
+      tipe: 'setor',
+      assigned_count: 32,
     },
     {
-      id: 3,
-      name: 'Loyal',
-      tier: 'gold',
-      minPoints: 2000,
-      maxPoints: 5000,
-      description: 'Nasabah dengan loyalitas tinggi dan konsisten',
+      badge_id: 3,
+      nama: 'Gold Collector',
+      deskripsi: 'Kumpulkan 600 poin reward',
       icon: '🏆',
-      color: '#ffd700',
-      assignedCount: 18,
+      syarat_poin: 600,
+      syarat_setor: 0,
+      reward_poin: 100,
+      tipe: 'poin',
+      assigned_count: 18,
     },
     {
-      id: 4,
-      name: 'VIP',
-      tier: 'platinum',
-      minPoints: 5000,
-      maxPoints: null,
-      description: 'Nasabah paling berharga dengan kontribusi luar biasa',
+      badge_id: 4,
+      nama: 'Top Contributor',
+      deskripsi: 'Berada di peringkat teratas',
       icon: '👑',
-      color: '#e5e4e2',
-      assignedCount: 5,
+      syarat_poin: 0,
+      syarat_setor: 0,
+      reward_poin: 500,
+      tipe: 'ranking',
+      assigned_count: 5,
     },
   ];
 
   const MOCK_NASABAH_BADGES = [
-    { id: 1, nasabahId: 1, nasabahName: 'Ahmad Wijaya', badgeId: 2, badgeName: 'Aktif', badgeIcon: '⭐', tier: 'silver', assignedDate: '2025-12-10' },
-    { id: 2, nasabahId: 2, nasabahName: 'Siti Nurhaliza', badgeId: 3, badgeName: 'Loyal', badgeIcon: '🏆', tier: 'gold', assignedDate: '2025-11-15' },
-    { id: 3, nasabahId: 3, nasabahName: 'Dina Kusuma', badgeId: 1, badgeName: 'Pemula', badgeIcon: '🥉', tier: 'bronze', assignedDate: '2025-12-01' },
-    { id: 4, nasabahId: 4, nasabahName: 'Eka Putri', badgeId: 2, badgeName: 'Aktif', badgeIcon: '⭐', tier: 'silver', assignedDate: '2025-10-20' },
-    { id: 5, nasabahId: 5, nasabahName: 'Farah Husna', badgeId: 3, badgeName: 'Loyal', badgeIcon: '🏆', tier: 'gold', assignedDate: '2025-09-10' },
+    { id: 1, nasabah_id: 1, nasabah_name: 'Ahmad Wijaya', badge_id: 2, badge_name: 'Green Hero', badge_icon: '🦸', tipe: 'setor', assigned_date: '2025-12-10' },
+    { id: 2, nasabah_id: 2, nasabah_name: 'Siti Nurhaliza', badge_id: 3, badge_name: 'Gold Collector', badge_icon: '🏆', tipe: 'poin', assigned_date: '2025-11-15' },
+    { id: 3, nasabah_id: 3, nasabah_name: 'Dina Kusuma', badge_id: 1, badge_name: 'Pemula Peduli', badge_icon: '🌱', tipe: 'setor', assigned_date: '2025-12-01' },
+    { id: 4, nasabah_id: 4, nasabah_name: 'Eka Putri', badge_id: 2, badge_name: 'Green Hero', badge_icon: '🦸', tipe: 'setor', assigned_date: '2025-10-20' },
+    { id: 5, nasabah_id: 5, nasabah_name: 'Farah Husna', badge_id: 3, badge_name: 'Gold Collector', badge_icon: '🏆', tipe: 'poin', assigned_date: '2025-09-10' },
   ];
 
   useEffect(() => {
-    // ✅ Replace mock data with real API calls
-    const fetchBadges = async () => {
-      try {
-        setLoading(true);
-        const result = await adminApi.getAllBadges();
-        if (result.success) {
-          // Handle both array and paginated response formats
-          let badgesData = result.data;
-          if (Array.isArray(badgesData)) {
-            setBadges(badgesData);
-          } else if (badgesData && typeof badgesData === 'object' && Array.isArray(badgesData.data)) {
-            setBadges(badgesData.data);
-          } else {
-            console.warn('Unexpected badges response format, using mock data');
-            setBadges(MOCK_BADGES);
-          }
-        } else {
-          console.warn('Failed to fetch badges, using fallback');
-          setBadges(MOCK_BADGES);
-        }
-      } catch (err) {
-        console.warn('Badge fetch error, using mock data:', err);
-        setBadges(MOCK_BADGES);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBadges();
+    loadBadges();
+    loadNasabahBadges();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadBadges = async () => {
+    try {
+      setLoading(true);
+      const result = await adminApi.getAllBadges(1, 50);
+      if (result.success && result.data) {
+        let badgesData = result.data;
+        // Handle different response formats
+        if (Array.isArray(badgesData)) {
+          setBadges(badgesData);
+        } else if (badgesData && typeof badgesData === 'object' && Array.isArray(badgesData.badges)) {
+          setBadges(badgesData.badges);
+        } else if (badgesData && typeof badgesData === 'object' && Array.isArray(badgesData.data)) {
+          setBadges(badgesData.data);
+        } else {
+          console.warn('Unexpected badges response format, using mock data');
+          setBadges(MOCK_BADGES);
+        }
+      } else {
+        console.warn('Failed to fetch badges:', result.message);
+        setBadges(MOCK_BADGES);
+      }
+    } catch (err) {
+      console.warn('Badge fetch error, using mock data:', err.message);
+      setBadges(MOCK_BADGES);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadNasabahBadges = async () => {
+    try {
+      // Load nasabah badges mock data
+      setNasabahBadges(MOCK_NASABAH_BADGES);
+      // Future: Replace with API call to getUsersWithBadge or similar
+    } catch (err) {
+      console.warn('Error loading nasabah badges:', err.message);
+      setNasabahBadges(MOCK_NASABAH_BADGES);
+    }
+  };
 
   const filteredBadges = Array.isArray(badges) ? badges.filter((b) => {
     if (filterTier !== 'all' && b.tier !== filterTier) return false;
@@ -138,168 +153,217 @@ export default function BadgeManagement() {
   const stats = {
     totalBadges: Array.isArray(badges) ? badges.length : 0,
     totalAssigned: nasabahBadges.length,
-    bronzeCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'bronze')?.assignedCount || 0 : 0,
-    silverCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'silver')?.assignedCount || 0 : 0,
-    goldCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'gold')?.assignedCount || 0 : 0,
-    platinumCount: Array.isArray(badges) ? badges.find((b) => b.tier === 'platinum')?.assignedCount || 0 : 0,
+    setorCount: Array.isArray(badges) ? badges.filter(b => b.tipe === 'setor').reduce((sum, b) => sum + (b.assigned_count || 0), 0) : 0,
+    poinCount: Array.isArray(badges) ? badges.filter(b => b.tipe === 'poin').reduce((sum, b) => sum + (b.assigned_count || 0), 0) : 0,
+    rankingCount: Array.isArray(badges) ? badges.filter(b => b.tipe === 'ranking').reduce((sum, b) => sum + (b.assigned_count || 0), 0) : 0,
   };
 
-  const tiers = ['bronze', 'silver', 'gold', 'platinum'];
-  const tierLabels = {
-    bronze: 'Bronze',
-    silver: 'Silver',
-    gold: 'Gold',
-    platinum: 'Platinum',
+  const types = ['setor', 'poin', 'ranking'];
+  const typeLabels = {
+    setor: 'Pencapaian Setor',
+    poin: 'Pencapaian Poin',
+    ranking: 'Pencapaian Ranking',
   };
 
-  const getTierColor = (tier) => {
+  const getTypeColor = (type) => {
     const colors = {
-      bronze: '#cd7f32',
-      silver: '#c0c0c0',
-      gold: '#ffd700',
-      platinum: '#e5e4e2',
+      setor: '#10b981',
+      poin: '#3b82f6',
+      ranking: '#f59e0b',
     };
-    return colors[tier] || '#6b7280';
+    return colors[type] || '#6b7280';
   };
 
   const handleCreateClick = () => {
-    // ✅ Permission check
     if (!hasPermission('manage_badges')) {
       alert('❌ You do not have permission to create badges')
       return
     }
+    setSelectedBadge(null); // Reset untuk mode create
     setFormData({
-      name: '',
-      tier: 'silver',
-      minPoints: 1000,
-      description: '',
-      icon: '⭐',
+      nama: '',
+      tipe: 'setor',
+      deskripsi: '',
+      syarat_setor: 1,
+      syarat_poin: 0,
+      reward_poin: 50,
+      icon: '🌱',
     });
     setShowCreateModal(true);
   };
 
   const handleCreateSubmit = async () => {
-    if (!formData.name || !formData.description) {
-      alert('Nama dan deskripsi badge wajib diisi!');
+    if (!formData.nama) {
+      alert('Nama badge wajib diisi!');
       return;
     }
-    // ✅ Permission check before submission
     if (!hasPermission('manage_badges')) {
-      alert('❌ You do not have permission to create badges')
+      alert('❌ You do not have permission to manage badges')
       return
     }
     setIsSubmitting(true);
     try {
-      // ✅ Use real API call instead of mock setTimeout
-      const result = await adminApi.createBadge({
-        name: formData.name,
-        tier: formData.tier,
-        min_points: parseInt(formData.minPoints),
-        description: formData.description,
-        icon: formData.icon,
-      });
+      // Build payload matching backend API structure
+      const payload = {
+        nama: formData.nama,
+        tipe: formData.tipe,
+        deskripsi: formData.deskripsi || '',
+        syarat_setor: formData.tipe === 'setor' ? parseInt(formData.syarat_setor) || 1 : 0,
+        syarat_poin: formData.tipe === 'poin' ? parseInt(formData.syarat_poin) || 0 : 0,
+        reward_poin: parseInt(formData.reward_poin) || 0,
+        icon: formData.icon || '🌱',
+      };
+
+      let result;
+      if (selectedBadge) {
+        // Edit mode - update existing badge
+        result = await adminApi.updateBadge(selectedBadge.badge_id, payload);
+      } else {
+        // Create mode - create new badge
+        result = await adminApi.createBadge(payload);
+      }
 
       if (result.success) {
-        const newBadge = result.data || {
-          id: badges.length + 1,
-          name: formData.name,
-          tier: formData.tier,
-          minPoints: parseInt(formData.minPoints),
-          maxPoints: null,
-          description: formData.description,
-          icon: formData.icon,
-          color: getTierColor(formData.tier),
-          assignedCount: 0,
-        };
-        setBadges([...badges, newBadge]);
+        // Refresh badges list
+        await loadBadges();
         setShowCreateModal(false);
-        alert('✅ Badge berhasil dibuat');
+        setSelectedBadge(null);
+        alert(selectedBadge ? '✅ Badge berhasil diperbarui' : '✅ Badge berhasil dibuat');
       } else {
-        alert('❌ Gagal membuat badge: ' + (result.message || 'Unknown error'));
+        alert('❌ ' + (result.message || (selectedBadge ? 'Gagal memperbarui badge' : 'Gagal membuat badge')));
       }
     } catch (err) {
-      console.error('Create badge error:', err);
-      alert('Error creating badge: ' + err.message);
+      console.error(selectedBadge ? 'Update badge error:' : 'Create badge error:', err);
+      alert('❌ Error: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleAssignClick = (badge) => {
-    // ✅ Permission check
     if (!hasPermission('manage_badges')) {
       alert('❌ You do not have permission to assign badges')
       return
     }
     setSelectedBadge(badge);
-    setAssignData({ nasabahId: '', nasabahName: '' });
+    setAssignData({ nasabah_id: '', nasabah_name: '' });
     setShowAssignModal(true);
   };
 
+  const handleEditClick = (badge) => {
+    if (!hasPermission('manage_badges')) {
+      alert('❌ You do not have permission to edit badges')
+      return
+    }
+    setSelectedBadge(badge);
+    setFormData({
+      nama: badge.nama || '',
+      tipe: badge.tipe || 'setor',
+      deskripsi: badge.deskripsi || '',
+      syarat_setor: badge.syarat_setor || 1,
+      syarat_poin: badge.syarat_poin || 0,
+      reward_poin: badge.reward_poin || 50,
+      icon: badge.icon || '🌱',
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteBadge = async (badgeId) => {
+    if (!hasPermission('manage_badges')) {
+      alert('❌ You do not have permission to delete badges')
+      return
+    }
+    if (!window.confirm('Apakah Anda yakin ingin menghapus badge ini? Tindakan ini tidak dapat dibatalkan.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const result = await adminApi.deleteBadge(badgeId);
+      
+      if (result.success) {
+        // Remove from local state
+        setBadges(badges.filter(b => b.badge_id !== badgeId));
+        // Also remove any assignments for this badge
+        setNasabahBadges(nasabahBadges.filter(a => a.badge_id !== badgeId));
+        alert('✅ Badge berhasil dihapus');
+      } else {
+        alert('❌ ' + (result.message || 'Gagal menghapus badge'));
+      }
+    } catch (err) {
+      console.error('Delete badge error:', err);
+      alert('❌ Error deleting badge: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAssignSubmit = async () => {
-    if (!assignData.nasabahName) {
+    if (!assignData.nasabah_name) {
       alert('Pilih nasabah untuk ditugaskan badge!');
       return;
     }
-    // ✅ Permission check before submission
     if (!hasPermission('manage_badges')) {
       alert('❌ You do not have permission to assign badges')
       return
     }
     setIsSubmitting(true);
     try {
-      // ✅ Use real API call to assign badge
-      const userId = parseInt(assignData.nasabahId) || nasabahBadges.length + 1;
-      const result = await adminApi.assignBadgeToUser(selectedBadge.id, userId);
+      const userId = parseInt(assignData.nasabah_id) || nasabahBadges.length + 1;
+      const result = await adminApi.assignBadgeToUser(selectedBadge.badge_id, userId);
 
       if (result.success) {
         const newAssignment = {
           id: nasabahBadges.length + 1,
-          nasabahId: userId,
-          nasabahName: assignData.nasabahName,
-          badgeId: selectedBadge.id,
-          badgeName: selectedBadge.name,
-          badgeIcon: selectedBadge.icon,
-          tier: selectedBadge.tier,
-          assignedDate: new Date().toISOString().split('T')[0],
+          nasabah_id: userId,
+          nasabah_name: assignData.nasabah_name,
+          badge_id: selectedBadge.badge_id,
+          badge_name: selectedBadge.nama,
+          badge_icon: selectedBadge.icon,
+          tipe: selectedBadge.tipe,
+          assigned_date: new Date().toISOString().split('T')[0],
         };
         setNasabahBadges([...nasabahBadges, newAssignment]);
         const updatedBadges = badges.map((b) =>
-          b.id === selectedBadge.id ? { ...b, assignedCount: b.assignedCount + 1 } : b
+          b.badge_id === selectedBadge.badge_id ? { ...b, assigned_count: (b.assigned_count || 0) + 1 } : b
         );
         setBadges(updatedBadges);
         setShowAssignModal(false);
         alert('✅ Badge berhasil ditugaskan kepada nasabah');
       } else {
-        alert('❌ Gagal menugaskan badge: ' + (result.message || 'Unknown error'));
+        alert('❌ ' + (result.message || 'Gagal menugaskan badge'));
       }
     } catch (err) {
       console.error('Assign badge error:', err);
-      alert('Error assigning badge: ' + err.message);
+      alert('❌ Error assigning badge: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteAssignment = (assignmentId) => {
-    // ✅ Permission check
+  const handleDeleteAssignment = async (assignmentId) => {
     if (!hasPermission('manage_badges')) {
       alert('❌ You do not have permission to delete badge assignments')
       return
     }
     if (window.confirm('Hapus badge ini dari nasabah?')) {
-      const assignment = nasabahBadges.find((a) => a.id === assignmentId);
-      // ✅ Make API call to delete assignment
-      adminApi.deleteBadge(assignment.badgeId).catch(err => {
-        console.warn('Failed to delete via API, removing from local state:', err);
-      });
-      
-      setNasabahBadges(nasabahBadges.filter((a) => a.id !== assignmentId));
-      const updatedBadges = badges.map((b) =>
-        b.id === assignment.badgeId ? { ...b, assignedCount: Math.max(0, b.assignedCount - 1) } : b
-      );
-      setBadges(updatedBadges);
-      alert('✅ Badge berhasil dihapus dari nasabah');
+      try {
+        setLoading(true);
+        const assignment = nasabahBadges.find((a) => a.id === assignmentId);
+        
+        // Remove from local state
+        setNasabahBadges(nasabahBadges.filter((a) => a.id !== assignmentId));
+        const updatedBadges = badges.map((b) =>
+          b.badge_id === assignment.badge_id ? { ...b, assigned_count: Math.max(0, (b.assigned_count || 0) - 1) } : b
+        );
+        setBadges(updatedBadges);
+        alert('✅ Badge berhasil dihapus dari nasabah');
+      } catch (err) {
+        console.error('Delete assignment error:', err);
+        alert('❌ Error deleting badge assignment: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -334,41 +398,31 @@ export default function BadgeManagement() {
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Bronze</span>
-            <span className="stat-value">{stats.bronzeCount}</span>
+            <span className="stat-label">Setor Sampah</span>
+            <span className="stat-value">{stats.setorCount}</span>
           </div>
-          <div className="stat-icon" style={{ background: 'rgba(205, 127, 50, 0.1)' }}>
-            <TrendingUp size={24} color="#cd7f32" />
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-content">
-            <span className="stat-label">Silver</span>
-            <span className="stat-value">{stats.silverCount}</span>
-          </div>
-          <div className="stat-icon" style={{ background: 'rgba(192, 192, 192, 0.1)' }}>
-            <Star size={24} color="#c0c0c0" />
+          <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
+            <TrendingUp size={24} color="#10b981" />
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Gold</span>
-            <span className="stat-value">{stats.goldCount}</span>
+            <span className="stat-label">Poin</span>
+            <span className="stat-value">{stats.poinCount}</span>
           </div>
-          <div className="stat-icon" style={{ background: 'rgba(255, 215, 0, 0.1)' }}>
-            <Award size={24} color="#ffd700" />
+          <div className="stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
+            <Star size={24} color="#3b82f6" />
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-content">
-            <span className="stat-label">Platinum</span>
-            <span className="stat-value">{stats.platinumCount}</span>
+            <span className="stat-label">Ranking</span>
+            <span className="stat-value">{stats.rankingCount}</span>
           </div>
-          <div className="stat-icon" style={{ background: 'rgba(229, 228, 226, 0.3)' }}>
-            <Award size={24} color="#e5e4e2" />
+          <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
+            <Award size={24} color="#f59e0b" />
           </div>
         </div>
       </div>
@@ -396,10 +450,10 @@ export default function BadgeManagement() {
           value={filterTier}
           onChange={(e) => setFilterTier(e.target.value)}
         >
-          <option value="all">Semua Tier</option>
-          {tiers.map((tier) => (
-            <option key={tier} value={tier}>
-              {tierLabels[tier]}
+          <option value="all">Semua Tipe</option>
+          {types.map((type) => (
+            <option key={type} value={type}>
+              {typeLabels[type]}
             </option>
           ))}
         </select>
@@ -417,29 +471,59 @@ export default function BadgeManagement() {
       ) : (
         <div className="badges-grid">
           {filteredBadges.map((badge) => (
-            <div key={badge.id} className="badge-card">
+            <div key={badge.badge_id} className="badge-card">
               <div className="badge-icon-large">{badge.icon}</div>
-              <h3>{badge.name}</h3>
-              <p className="tier-label" style={{ borderColor: badge.color, color: badge.color }}>
-                {tierLabels[badge.tier]}
+              <h3>{badge.nama}</h3>
+              <p className="tier-label" style={{ borderColor: getTypeColor(badge.tipe), color: getTypeColor(badge.tipe) }}>
+                {typeLabels[badge.tipe]}
               </p>
-              <p className="badge-description">{badge.description}</p>
+              <p className="badge-description">{badge.deskripsi}</p>
               <div className="badge-stats">
+                {badge.tipe === 'setor' && (
+                  <div className="stat">
+                    <span className="label">Syarat Setor:</span>
+                    <span className="value">{badge.syarat_setor}x</span>
+                  </div>
+                )}
+                {badge.tipe === 'poin' && (
+                  <div className="stat">
+                    <span className="label">Syarat Poin:</span>
+                    <span className="value">{badge.syarat_poin}</span>
+                  </div>
+                )}
+                {badge.tipe === 'ranking' && (
+                  <div className="stat">
+                    <span className="label">Tipe:</span>
+                    <span className="value">Ranking</span>
+                  </div>
+                )}
                 <div className="stat">
-                  <span className="label">Min Poin:</span>
-                  <span className="value">{badge.minPoints}</span>
-                </div>
-                <div className="stat">
-                  <span className="label">Ditugaskan:</span>
-                  <span className="value">{badge.assignedCount}</span>
+                  <span className="label">Claim:</span>
+                  <span className="value">{badge.assigned_count || 0}</span>
                 </div>
               </div>
-              <button
-                className="assign-btn"
-                onClick={() => handleAssignClick(badge)}
-              >
-                <Check size={16} /> Tugaskan ke Nasabah
-              </button>
+              <div className="badge-actions">
+                <button
+                  className="assign-btn"
+                  onClick={() => handleAssignClick(badge)}
+                >
+                  <Check size={16} /> Tugaskan
+                </button>
+                <button
+                  className="edit-btn"
+                  onClick={() => handleEditClick(badge)}
+                  title="Edit Badge"
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  className="delete-badge-btn"
+                  onClick={() => handleDeleteBadge(badge.badge_id)}
+                  title="Hapus Badge"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -464,18 +548,18 @@ export default function BadgeManagement() {
               {nasabahBadges.map((assignment, idx) => (
                 <tr key={assignment.id}>
                   <td>{idx + 1}</td>
-                  <td className="nasabah-name">{assignment.nasabahName}</td>
+                  <td className="nasabah-name">{assignment.nasabah_name}</td>
                   <td>
                     <span className="badge-pill">
-                      {assignment.badgeIcon} {assignment.badgeName}
+                      {assignment.badge_icon} {assignment.badge_name}
                     </span>
                   </td>
                   <td>
-                    <span className="tier-badge" style={{ color: getTierColor(assignment.tier) }}>
-                      {tierLabels[assignment.tier]}
+                    <span className="tier-badge" style={{ color: getTypeColor(assignment.tipe) }}>
+                      {typeLabels[assignment.tipe]}
                     </span>
                   </td>
-                  <td className="date">{new Date(assignment.assignedDate).toLocaleDateString('id-ID')}</td>
+                  <td className="date">{new Date(assignment.assigned_date).toLocaleDateString('id-ID')}</td>
                   <td>
                     <button
                       className="delete-btn"
@@ -491,24 +575,25 @@ export default function BadgeManagement() {
         </div>
       </div>
 
-      {/* Create Modal */}
+      {/* Create/Edit Modal */}
       {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowCreateModal(false); setSelectedBadge(null); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Buat Badge Baru</h3>
-              <button className="close-btn" onClick={() => setShowCreateModal(false)}>
+              <h3>{selectedBadge ? 'Edit Badge' : 'Buat Badge Baru'}</h3>
+              <button className="close-btn" onClick={() => { setShowCreateModal(false); setSelectedBadge(null); }}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="modal-body">
               <div className="form-group">
-                <label htmlFor="icon">Ikon <span className="required">*</span></label>
+                <label htmlFor="icon">Ikon Badge <span className="required">*</span></label>
                 <div className="emoji-picker">
-                  {['⭐', '🏆', '👑', '🥇', '🎯', '💎', '🌟', '✨'].map((emoji) => (
+                  {['🌱', '🦸', '🏆', '👑', '🎯', '💎', '🌟', '✨', '🔥', '💪', '🥇', '🥈', '🥉', '🏅', '🎖️', '⭐'].map((emoji) => (
                     <button
                       key={emoji}
+                      type="button"
                       className={`emoji-btn ${formData.icon === emoji ? 'selected' : ''}`}
                       onClick={() => setFormData({ ...formData, icon: emoji })}
                     >
@@ -519,51 +604,87 @@ export default function BadgeManagement() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="name">Nama Badge <span className="required">*</span></label>
+                <label htmlFor="nama">Nama Badge <span className="required">*</span></label>
                 <input
-                  id="name"
+                  id="nama"
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Contoh: VIP, Loyal, dll"
+                  value={formData.nama}
+                  onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                  placeholder="Contoh: Green Hero, Gold Collector"
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="tier">Tier <span className="required">*</span></label>
+                <label htmlFor="tipe">Tipe Badge <span className="required">*</span></label>
                 <select
-                  id="tier"
-                  value={formData.tier}
-                  onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
+                  id="tipe"
+                  value={formData.tipe}
+                  onChange={(e) => {
+                    const newTipe = e.target.value;
+                    setFormData({ 
+                      ...formData, 
+                      tipe: newTipe,
+                      syarat_setor: newTipe === 'setor' ? formData.syarat_setor : 0,
+                      syarat_poin: newTipe === 'poin' ? formData.syarat_poin : 0
+                    });
+                  }}
                   className="form-input"
                 >
-                  {tiers.map((tier) => (
-                    <option key={tier} value={tier}>
-                      {tierLabels[tier]}
+                  {types.map((type) => (
+                    <option key={type} value={type}>
+                      {typeLabels[type]}
                     </option>
                   ))}
                 </select>
               </div>
 
+              {formData.tipe === 'setor' && (
+                <div className="form-group">
+                  <label htmlFor="syarat_setor">Syarat Penyetoran (jumlah) <span className="required">*</span></label>
+                  <input
+                    id="syarat_setor"
+                    type="number"
+                    value={formData.syarat_setor}
+                    onChange={(e) => setFormData({ ...formData, syarat_setor: parseInt(e.target.value) || 1 })}
+                    min="1"
+                    className="form-input"
+                  />
+                </div>
+              )}
+
+              {formData.tipe === 'poin' && (
+                <div className="form-group">
+                  <label htmlFor="syarat_poin">Syarat Poin <span className="required">*</span></label>
+                  <input
+                    id="syarat_poin"
+                    type="number"
+                    value={formData.syarat_poin}
+                    onChange={(e) => setFormData({ ...formData, syarat_poin: parseInt(e.target.value) || 0 })}
+                    min="0"
+                    className="form-input"
+                  />
+                </div>
+              )}
+
               <div className="form-group">
-                <label htmlFor="minPoints">Poin Minimum <span className="required">*</span></label>
+                <label htmlFor="reward_poin">Reward Poin <span className="required">*</span></label>
                 <input
-                  id="minPoints"
+                  id="reward_poin"
                   type="number"
-                  value={formData.minPoints}
-                  onChange={(e) => setFormData({ ...formData, minPoints: e.target.value })}
+                  value={formData.reward_poin}
+                  onChange={(e) => setFormData({ ...formData, reward_poin: parseInt(e.target.value) || 50 })}
                   min="0"
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="description">Deskripsi <span className="required">*</span></label>
+                <label htmlFor="deskripsi">Deskripsi <span className="required">*</span></label>
                 <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  id="deskripsi"
+                  value={formData.deskripsi}
+                  onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
                   placeholder="Jelaskan apa yang mewakili badge ini"
                   className="form-input"
                   rows="4"
@@ -574,7 +695,7 @@ export default function BadgeManagement() {
             <div className="modal-footer">
               <button
                 className="btn-secondary"
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => { setShowCreateModal(false); setSelectedBadge(null); }}
                 disabled={isSubmitting}
               >
                 Batal
@@ -584,7 +705,7 @@ export default function BadgeManagement() {
                 onClick={handleCreateSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Membuat...' : 'Buat Badge'}
+                {isSubmitting ? (selectedBadge ? 'Menyimpan...' : 'Membuat...') : (selectedBadge ? 'Simpan Perubahan' : 'Buat Badge')}
               </button>
             </div>
           </div>
@@ -596,7 +717,7 @@ export default function BadgeManagement() {
         <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Tugaskan {selectedBadge.icon} {selectedBadge.name}</h3>
+              <h3>Tugaskan {selectedBadge.icon} {selectedBadge.nama}</h3>
               <button className="close-btn" onClick={() => setShowAssignModal(false)}>
                 <X size={24} />
               </button>
@@ -606,8 +727,8 @@ export default function BadgeManagement() {
               <div className="badge-preview">
                 <div className="preview-icon">{selectedBadge.icon}</div>
                 <div className="preview-info">
-                  <h4>{selectedBadge.name}</h4>
-                  <p>{tierLabels[selectedBadge.tier]}</p>
+                  <h4>{selectedBadge.nama}</h4>
+                  <p>{typeLabels[selectedBadge.tipe]}</p>
                 </div>
               </div>
 
@@ -616,8 +737,8 @@ export default function BadgeManagement() {
                 <input
                   id="nasabah"
                   type="text"
-                  value={assignData.nasabahName}
-                  onChange={(e) => setAssignData({ ...assignData, nasabahName: e.target.value })}
+                  value={assignData.nasabah_name}
+                  onChange={(e) => setAssignData({ ...assignData, nasabah_name: e.target.value })}
                   placeholder="Cari atau ketik nama nasabah..."
                   className="form-input"
                   list="nasabah-list"
@@ -654,7 +775,7 @@ export default function BadgeManagement() {
               <button
                 className="btn-primary"
                 onClick={handleAssignSubmit}
-                disabled={isSubmitting || !assignData.nasabahName}
+                disabled={isSubmitting || !assignData.nasabah_name}
               >
                 {isSubmitting ? 'Menugaskan...' : 'Tugaskan Badge'}
               </button>

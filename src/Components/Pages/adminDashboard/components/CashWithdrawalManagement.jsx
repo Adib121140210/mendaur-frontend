@@ -19,6 +19,69 @@ import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
 import '../styles/cashWithdrawalManagement.css';
 
+// Mock data for fallback
+const MOCK_CASH_WITHDRAWALS = [
+  {
+    id: 1,
+    user_id: 1,
+    user_name: 'Budi Santoso',
+    user_email: 'budi@email.com',
+    jumlah_poin: 5000,
+    jumlah_rupiah: 50000,
+    nama_bank: 'BCA',
+    nomor_rekening: '1234567890',
+    nama_penerima: 'Budi Santoso',
+    status: 'pending',
+    created_at: '2025-12-20T10:30:00',
+    catatan_admin: null,
+  },
+  {
+    id: 2,
+    user_id: 2,
+    user_name: 'Siti Nurhaliza',
+    user_email: 'siti@email.com',
+    jumlah_poin: 8000,
+    jumlah_rupiah: 80000,
+    nama_bank: 'Mandiri',
+    nomor_rekening: '9876543210',
+    nama_penerima: 'Siti N',
+    status: 'approved',
+    created_at: '2025-12-19T14:15:00',
+    catatan_admin: 'Sudah ditransfer',
+    tanggal_verifikasi: '2025-12-19T15:00:00',
+    processed_at: '2025-12-20T09:00:00',
+  },
+  {
+    id: 3,
+    user_id: 3,
+    user_name: 'Ahmad Wijaya',
+    user_email: 'ahmad@email.com',
+    jumlah_poin: 3000,
+    jumlah_rupiah: 30000,
+    nama_bank: 'BNI',
+    nomor_rekening: '1111111111',
+    nama_penerima: 'Ahmad W',
+    status: 'rejected',
+    created_at: '2025-12-18T09:45:00',
+    catatan_admin: 'Nomor rekening tidak valid',
+    tanggal_verifikasi: '2025-12-18T11:00:00',
+  },
+  {
+    id: 4,
+    user_id: 4,
+    user_name: 'Dina Kusuma',
+    user_email: 'dina@email.com',
+    jumlah_poin: 10000,
+    jumlah_rupiah: 100000,
+    nama_bank: 'BCA',
+    nomor_rekening: '2222222222',
+    nama_penerima: 'Dina Kusuma',
+    status: 'pending',
+    created_at: '2025-12-20T08:20:00',
+    catatan_admin: null,
+  },
+];
+
 export default function CashWithdrawalManagement() {
   const { hasPermission } = useAuth();
   const [withdrawals, setWithdrawals] = useState([]);
@@ -36,148 +99,40 @@ export default function CashWithdrawalManagement() {
   const [rejectionData, setRejectionData] = useState({ reason: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Separated fetch function (Session 2 pattern)
+  const loadCashWithdrawals = async () => {
+    setLoading(true);
+    try {
+      const result = await adminApi.getCashWithdrawals();
+      
+      // Multi-format response handler (supports 3+ formats)
+      let data = MOCK_CASH_WITHDRAWALS;
+      if (Array.isArray(result.data)) data = result.data;
+      else if (result.data?.data) data = result.data.data;
+      else if (result.data?.withdrawals) data = result.data.withdrawals;
+      
+      // Map API response to expected format (handle nested user object)
+      const mappedData = data.map(w => ({
+        ...w,
+        // Handle nested user object from API
+        user_name: w.user_name || w.user?.name || w.user?.nama_lengkap || w.nama_penerima || '-',
+        user_email: w.user_email || w.user?.email || '-',
+        // Ensure numeric values
+        jumlah_poin: Number(w.jumlah_poin) || 0,
+        jumlah_rupiah: Number(w.jumlah_rupiah) || 0,
+      }));
+      
+      setWithdrawals(mappedData);
+    } catch {
+      setWithdrawals(MOCK_CASH_WITHDRAWALS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load withdrawals on component mount
   useEffect(() => {
-    const fetchWithdrawals = async () => {
-      try {
-        setLoading(true);
-        const result = await adminApi.getCashWithdrawals();
-        if (result.success) {
-          setWithdrawals(result.data || []);
-        } else {
-          console.warn('Failed to fetch withdrawals, using fallback');
-          const mockData = [
-            {
-              id: 1,
-              user_id: 1,
-              user_name: 'Budi Santoso',
-              user_email: 'budi@email.com',
-              jumlah_poin: 5000,
-              jumlah_rupiah: 50000,
-              nama_bank: 'BCA',
-              nomor_rekening: '1234567890',
-              nama_penerima: 'Budi Santoso',
-              status: 'pending',
-              created_at: '2025-12-20T10:30:00',
-              catatan_admin: null,
-            },
-            {
-              id: 2,
-              user_id: 2,
-              user_name: 'Siti Nurhaliza',
-              user_email: 'siti@email.com',
-              jumlah_poin: 8000,
-              jumlah_rupiah: 80000,
-              nama_bank: 'Mandiri',
-              nomor_rekening: '9876543210',
-              nama_penerima: 'Siti N',
-              status: 'approved',
-              created_at: '2025-12-19T14:15:00',
-              catatan_admin: 'Sudah ditransfer',
-              tanggal_verifikasi: '2025-12-19T15:00:00',
-              processed_at: '2025-12-20T09:00:00',
-            },
-            {
-              id: 3,
-              user_id: 3,
-              user_name: 'Ahmad Wijaya',
-              user_email: 'ahmad@email.com',
-              jumlah_poin: 3000,
-              jumlah_rupiah: 30000,
-              nama_bank: 'BNI',
-              nomor_rekening: '1111111111',
-              nama_penerima: 'Ahmad W',
-              status: 'rejected',
-              created_at: '2025-12-18T09:45:00',
-              catatan_admin: 'Nomor rekening tidak valid',
-              tanggal_verifikasi: '2025-12-18T11:00:00',
-            },
-            {
-              id: 4,
-              user_id: 4,
-              user_name: 'Dina Kusuma',
-              user_email: 'dina@email.com',
-              jumlah_poin: 10000,
-              jumlah_rupiah: 100000,
-              nama_bank: 'BCA',
-              nomor_rekening: '2222222222',
-              nama_penerima: 'Dina Kusuma',
-              status: 'pending',
-              created_at: '2025-12-20T08:20:00',
-              catatan_admin: null,
-            },
-          ];
-          setWithdrawals(mockData);
-        }
-      } catch (err) {
-        console.warn('Withdrawal fetch error, using mock data:', err);
-        const mockData = [
-          {
-            id: 1,
-            user_id: 1,
-            user_name: 'Budi Santoso',
-            user_email: 'budi@email.com',
-            jumlah_poin: 5000,
-            jumlah_rupiah: 50000,
-            nama_bank: 'BCA',
-            nomor_rekening: '1234567890',
-            nama_penerima: 'Budi Santoso',
-            status: 'pending',
-            created_at: '2025-12-20T10:30:00',
-            catatan_admin: null,
-          },
-          {
-            id: 2,
-            user_id: 2,
-            user_name: 'Siti Nurhaliza',
-            user_email: 'siti@email.com',
-            jumlah_poin: 8000,
-            jumlah_rupiah: 80000,
-            nama_bank: 'Mandiri',
-            nomor_rekening: '9876543210',
-            nama_penerima: 'Siti N',
-            status: 'approved',
-            created_at: '2025-12-19T14:15:00',
-            catatan_admin: 'Sudah ditransfer',
-            tanggal_verifikasi: '2025-12-19T15:00:00',
-            processed_at: '2025-12-20T09:00:00',
-          },
-          {
-            id: 3,
-            user_id: 3,
-            user_name: 'Ahmad Wijaya',
-            user_email: 'ahmad@email.com',
-            jumlah_poin: 3000,
-            jumlah_rupiah: 30000,
-            nama_bank: 'BNI',
-            nomor_rekening: '1111111111',
-            nama_penerima: 'Ahmad W',
-            status: 'rejected',
-            created_at: '2025-12-18T09:45:00',
-            catatan_admin: 'Nomor rekening tidak valid',
-            tanggal_verifikasi: '2025-12-18T11:00:00',
-          },
-          {
-            id: 4,
-            user_id: 4,
-            user_name: 'Dina Kusuma',
-            user_email: 'dina@email.com',
-            jumlah_poin: 10000,
-            jumlah_rupiah: 100000,
-            nama_bank: 'BCA',
-            nomor_rekening: '2222222222',
-            nama_penerima: 'Dina Kusuma',
-            status: 'pending',
-            created_at: '2025-12-20T08:20:00',
-            catatan_admin: null,
-          },
-        ];
-        setWithdrawals(mockData);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWithdrawals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadCashWithdrawals();
   }, []);
 
   const filteredWithdrawals = withdrawals.filter((w) => {
@@ -203,8 +158,8 @@ export default function CashWithdrawalManagement() {
     pending: withdrawals.filter((w) => w.status === 'pending').length,
     approved: withdrawals.filter((w) => w.status === 'approved').length,
     rejected: withdrawals.filter((w) => w.status === 'rejected').length,
-    totalPoints: withdrawals.reduce((sum, w) => sum + w.jumlah_poin, 0),
-    totalRupiah: withdrawals.reduce((sum, w) => sum + w.jumlah_rupiah, 0),
+    totalPoints: withdrawals.reduce((sum, w) => sum + (Number(w.jumlah_poin) || 0), 0),
+    totalRupiah: withdrawals.reduce((sum, w) => sum + (Number(w.jumlah_rupiah) || 0), 0),
   };
 
   const formatDate = (dateString) => {
@@ -283,17 +238,8 @@ export default function CashWithdrawalManagement() {
         notes: approvalData.notes,
       });
       if (result.success) {
-        const updated = withdrawals.map((w) =>
-          w.id === selectedWithdrawal.id
-            ? {
-                ...w,
-                status: 'approved',
-                catatan_admin: approvalData.notes,
-                tanggal_verifikasi: new Date().toISOString(),
-              }
-            : w
-        );
-        setWithdrawals(updated);
+        // Refresh data from server
+        await loadCashWithdrawals();
         setShowApprovalModal(false);
         alert('✅ Penarikan disetujui! Persiapkan transfer dana.');
       } else {
@@ -324,17 +270,8 @@ export default function CashWithdrawalManagement() {
         notes: rejectionData.notes,
       });
       if (result.success) {
-        const updated = withdrawals.map((w) =>
-          w.id === selectedWithdrawal.id
-            ? {
-                ...w,
-                status: 'rejected',
-                catatan_admin: rejectionData.reason + (rejectionData.notes ? '\n' + rejectionData.notes : ''),
-                tanggal_verifikasi: new Date().toISOString(),
-              }
-            : w
-        );
-        setWithdrawals(updated);
+        // Refresh data from server
+        await loadCashWithdrawals();
         setShowRejectionModal(false);
         alert('❌ Penarikan ditolak. Poin telah dikembalikan ke nasabah.');
       } else {
@@ -426,7 +363,7 @@ export default function CashWithdrawalManagement() {
         <div className="stat-card">
           <div className="stat-content">
             <span className="stat-label">Total Nominal</span>
-            <span className="stat-value">Rp {(stats.totalRupiah / 1000).toFixed(0)}K</span>
+            <span className="stat-value">Rp {stats.totalRupiah.toLocaleString('id-ID')}</span>
           </div>
           <div className="stat-icon" style={{ background: '#fef08a' }}>
             <DollarSign size={24} color="#eab308" />

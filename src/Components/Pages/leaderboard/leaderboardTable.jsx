@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, TrendingUp, Clock, Calendar, Loader2 } from "lucide-react";
+import { Search, TrendingUp, Clock, Calendar, Loader2, Trophy, Timer, RefreshCw } from "lucide-react";
 import "./leaderboardTable.css";
 import Pagination from "../../ui/pagination";
 
@@ -10,11 +10,57 @@ export default function LeaderboardTable() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [timePeriod, setTimePeriod] = useState("all"); // all, monthly, weekly
+  const [timePeriod, setTimePeriod] = useState("season"); // season, monthly, weekly, all
+  const [seasonInfo, setSeasonInfo] = useState(null);
   const itemsPerPage = 10;
 
   // Get current user ID
   const currentUserId = localStorage.getItem('id_user');
+
+  // Calculate current season info (example: quarterly seasons)
+  useEffect(() => {
+    const calculateSeasonInfo = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth(); // 0-11
+      
+      // Define seasons (quarterly - adjust as needed)
+      // Season 1: Jan-Mar, Season 2: Apr-Jun, Season 3: Jul-Sep, Season 4: Oct-Dec
+      const seasonNumber = Math.floor(month / 3) + 1;
+      const seasonStartMonth = (seasonNumber - 1) * 3;
+      const seasonEndMonth = seasonStartMonth + 2;
+      
+      const seasonStart = new Date(year, seasonStartMonth, 1);
+      const seasonEnd = new Date(year, seasonEndMonth + 1, 0, 23, 59, 59); // Last day of end month
+      
+      // Calculate time remaining
+      const timeRemaining = seasonEnd.getTime() - now.getTime();
+      const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+      const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      const seasonNames = ['Musim Semi', 'Musim Panas', 'Musim Gugur', 'Musim Dingin'];
+      
+      setSeasonInfo({
+        name: `Season ${seasonNumber} ${year}`,
+        displayName: seasonNames[seasonNumber - 1],
+        number: seasonNumber,
+        year,
+        startDate: seasonStart.toISOString().split('T')[0],
+        endDate: seasonEnd.toISOString().split('T')[0],
+        startFormatted: seasonStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        endFormatted: seasonEnd.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        daysRemaining,
+        hoursRemaining,
+        isEnding: daysRemaining <= 7, // Flag if season ending soon
+      });
+    };
+    
+    calculateSeasonInfo();
+    
+    // Update every hour
+    const interval = setInterval(calculateSeasonInfo, 1000 * 60 * 60);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch leaderboard data from API
   useEffect(() => {
@@ -28,7 +74,28 @@ export default function LeaderboardTable() {
           throw new Error('Anda harus login untuk melihat leaderboard');
         }
 
-        const response = await fetch('http://127.0.0.1:8000/api/dashboard/leaderboard', {
+        // Build URL with period filter
+        let url = 'http://127.0.0.1:8000/api/dashboard/leaderboard';
+        const params = new URLSearchParams();
+        
+        // Add period filter to API call
+        if (timePeriod !== 'all') {
+          params.append('period', timePeriod);
+        }
+        
+        // Add season dates if season filter is active
+        if (timePeriod === 'season' && seasonInfo) {
+          params.append('start_date', seasonInfo.startDate);
+          params.append('end_date', seasonInfo.endDate);
+        }
+        
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
+
+        console.log('Fetching leaderboard with URL:', url);
+
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -60,7 +127,7 @@ export default function LeaderboardTable() {
     };
 
     fetchLeaderboard();
-  }, [timePeriod]); // Re-fetch when time period changes
+  }, [timePeriod, seasonInfo]); // Re-fetch when time period or season changes
 
   // Filter and search logic
   const filteredUsers = useMemo(() => {
@@ -106,15 +173,61 @@ export default function LeaderboardTable() {
 
   // Time period filter buttons
   const timePeriods = [
-    { value: 'all', label: 'Sepanjang Waktu', icon: <TrendingUp size={16} /> },
+    { value: 'season', label: 'Season', icon: <Trophy size={16} /> },
     { value: 'monthly', label: 'Bulan Ini', icon: <Calendar size={16} /> },
     { value: 'weekly', label: 'Minggu Ini', icon: <Clock size={16} /> },
+    { value: 'all', label: 'Semua', icon: <TrendingUp size={16} /> },
   ];
+
+  // Refresh handler
+  const handleRefresh = () => {
+    setLoading(true);
+    setError(null);
+    // Trigger re-fetch by updating a dependency
+    const currentPeriod = timePeriod;
+    setTimePeriod('');
+    setTimeout(() => setTimePeriod(currentPeriod), 100);
+  };
 
   return (
     <section className="leaderboardContainer">
       <div className="leaderboardHeader">
-        <h1 className="leaderboardTitle">Peringkat Pengguna</h1>
+        <div className="titleRow">
+          <h1 className="leaderboardTitle">Peringkat Pengguna</h1>
+          <button className="refreshButton" onClick={handleRefresh} disabled={loading}>
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
+        <p className="leaderboardSubtitle">
+          Kompetisi poin direset setiap 3 bulan. Raih peringkat tertinggi dan dapatkan hadiah!
+        </p>
+
+        {/* Season Banner */}
+        {timePeriod === 'season' && seasonInfo && (
+          <div className={`seasonBanner ${seasonInfo.isEnding ? 'ending' : ''}`}>
+            <div className="seasonInfo">
+              <Trophy className="seasonIcon" size={24} />
+              <div className="seasonDetails">
+                <span className="seasonName">{seasonInfo.name}</span>
+                <span className="seasonDates">{seasonInfo.startFormatted} - {seasonInfo.endFormatted}</span>
+              </div>
+            </div>
+            <div className="seasonCountdown">
+              <Timer size={16} />
+              <span>
+                {seasonInfo.daysRemaining > 0 
+                  ? `${seasonInfo.daysRemaining} hari ${seasonInfo.hoursRemaining} jam tersisa`
+                  : 'Season berakhir hari ini!'
+                }
+              </span>
+            </div>
+            {seasonInfo.isEnding && (
+              <div className="seasonWarning">
+                ⚠️ Season akan segera berakhir! Raih poinmu sekarang!
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Time Period Filters */}
         <div className="timePeriodFilters">
@@ -173,7 +286,7 @@ export default function LeaderboardTable() {
           <p className="errorMessage">❌ {error}</p>
           <button
             className="retryButton"
-            onClick={() => window.location.reload()}
+            onClick={handleRefresh}
           >
             Coba Lagi
           </button>
@@ -186,70 +299,55 @@ export default function LeaderboardTable() {
           <p className="emptyMessage">
             {searchQuery
               ? `Tidak ada pengguna dengan nama "${searchQuery}"`
-              : 'Belum ada data leaderboard'}
+              : timePeriod === 'season' 
+                ? 'Belum ada aktivitas di season ini. Jadilah yang pertama!'
+                : 'Belum ada data leaderboard'}
           </p>
         </div>
       )}
 
-      {/* Leaderboard Table */}
+      {/* Leaderboard Content - Data loaded once, rendered by page */}
       {!loading && !error && filteredUsers.length > 0 && (
         <>
-          <div className="leaderboardTableWrapper">
-            <table className="leaderboardTable" aria-label="Tabel peringkat pengguna berdasarkan poin">
-              <thead>
-                <tr>
-                  <th className="rankColumn">Peringkat</th>
-                  <th className="nameColumn">Nama</th>
-                  <th className="sampahColumn">Sampah (Kg)</th>
-                  <th className="poinColumn">Poin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user, index) => {
-                  const globalIndex = startIndex + index;
-                  const rankClass =
-                    globalIndex === 0
-                      ? "rankingGold"
-                      : globalIndex === 1
-                      ? "rankingSilver"
-                      : globalIndex === 2
-                      ? "rankingBronze"
-                      : "";
+          {/* Card View - Desktop & Mobile */}
+          <div className="leaderboardCardList">
+            {currentUsers.map((user, index) => {
+              const globalIndex = startIndex + index;
+              const isCurrentUser = String(user.user_id) === String(currentUserId);
+              const userName = user.nama || user.nama_user || user.name || 'Unknown';
+              const userWaste = user.total_sampah || user.sampah_terkumpul || user.waste_collected || 0;
+              const userPoints = user.total_poin || user.poin_terkumpul || user.points || 0;
 
-                  // Check if this is the current user
-                  const isCurrentUser = String(user.user_id) === String(currentUserId);
+              const rankEmoji = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : null;
+              const rankClass = globalIndex === 0 ? 'gold' : globalIndex === 1 ? 'silver' : globalIndex === 2 ? 'bronze' : '';
 
-                  // Get user data (handle different API field names)
-                  const userName = user.nama || user.nama_user || user.name || 'Unknown';
-                  const userWaste = user.total_sampah || user.sampah_terkumpul || user.waste_collected || 0;
-                  const userPoints = user.total_poin || user.poin_terkumpul || user.points || 0;
-
-                  return (
-                    <tr
-                      key={user.user_id || `user-${globalIndex}`}
-                      className={isCurrentUser ? 'currentUserRow' : ''}
-                    >
-                      <td className={`rankColumn ranking ${rankClass}`}>
-                        {globalIndex === 0 && '🥇'}
-                        {globalIndex === 1 && '🥈'}
-                        {globalIndex === 2 && '🥉'}
-                        {globalIndex > 2 && `#${globalIndex + 1}`}
-                      </td>
-                      <td className="nameColumn">
-                        {userName}
-                        {isCurrentUser && <span className="youBadge">Anda</span>}
-                      </td>
-                      <td className="sampahColumn">{userWaste.toLocaleString('id-ID')} Kg</td>
-                      <td className="poinColumn">
-                        {userPoints.toLocaleString("id-ID")}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <div 
+                  key={user.user_id || `user-${globalIndex}`} 
+                  className={`leaderboardCard ${rankClass} ${isCurrentUser ? 'currentUser' : ''}`}
+                >
+                  <div className="cardRank">
+                    {rankEmoji || <span className="rankNumber">#{globalIndex + 1}</span>}
+                  </div>
+                  <div className="cardContent">
+                    <div className="cardName">
+                      {userName}
+                      {isCurrentUser && <span className="youBadge">Anda</span>}
+                    </div>
+                    <div className="cardStats">
+                      <span className="cardWaste">🗑️ {userWaste.toLocaleString('id-ID')} Kg</span>
+                      <span className="cardPoints">⭐ {userPoints.toLocaleString('id-ID')} Poin</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
+          {/* Pagination - Total users info + navigation */}
+          <div className="paginationInfo">
+            Menampilkan {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredUsers.length)} dari {filteredUsers.length} pengguna
+          </div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

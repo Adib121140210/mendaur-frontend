@@ -866,7 +866,7 @@
 }
 
 /* Responsive */
-@media (max-width: 968px) {
+@media (max-width: 1024px) {
   .redemptions-table-wrapper {
     display: none;
   }

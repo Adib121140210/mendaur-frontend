@@ -1,22 +1,45 @@
 import { useState } from 'react'
 import { X, Loader } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import api from '../../../../services/apiClient.js'
+import adminApi from '../../../../services/adminApi'
+import DangerConfirmDialog from './DangerConfirmDialog'
 import '../styles/UserEditModal.css'
 
 export default function UserEditModal({ user, onClose, onSave }) {
   const { hasPermission } = useAuth()
+  
+  // Map role_id to role name for display
+  const getRoleName = (roleId) => {
+    const roleMap = {
+      1: 'nasabah',
+      2: 'admin',
+      3: 'superadmin'
+    }
+    return roleMap[roleId] || 'nasabah'
+  }
+  
+  // Map role name to role_id
+  const getRoleId = (roleName) => {
+    const roleMap = {
+      'nasabah': 1,
+      'admin': 2,
+      'superadmin': 3
+    }
+    return roleMap[roleName] || 1
+  }
+  
   const [formData, setFormData] = useState({
     nama: user?.nama || '',
     email: user?.email || '',
     no_hp: user?.no_hp || '',
     alamat: user?.alamat || '',
-    role: user?.role || 'nasabah',
+    role_id: user?.role_id || 1,
     tipe_nasabah: user?.tipe_nasabah || 'konvensional',
-    is_active: user?.is_active !== undefined ? user.is_active : true
+    status: user?.status || 'active'
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [showRoleConfirm, setShowRoleConfirm] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,53 +50,92 @@ export default function UserEditModal({ user, onClose, onSave }) {
     setError(null)
   }
 
+  const handleRoleChange = (e) => {
+    const roleName = e.target.value
+    const roleId = getRoleId(roleName)
+    
+    setFormData(prev => ({
+      ...prev,
+      role_id: roleId
+    }))
+    setError(null)
+  }
+
   const handleSave = async () => {
     try {
-      // ✅ Permission check
+      // Permission check
       if (!hasPermission('edit_user')) {
-        alert('❌ You do not have permission to edit users')
+        alert('Anda tidak memiliki izin untuk mengedit user')
         return
       }
       
       setSaving(true)
       setError(null)
 
-      // Build update payload with only changed fields
-      const updateData = {}
-      
-      if (formData.is_active !== user.is_active) {
-        updateData.is_active = formData.is_active ? 1 : 0
-      }
-      
-      if (formData.role !== user.role) {
-        updateData.role = formData.role
-      }
-      
-      if (formData.tipe_nasabah !== user.tipe_nasabah) {
-        updateData.tipe_nasabah = formData.tipe_nasabah
+      // Check what changed
+      const roleChanged = parseInt(formData.role_id) !== parseInt(user.role_id)
+      const statusChanged = formData.status !== user.status
+      const tipeChanged = formData.tipe_nasabah !== user.tipe_nasabah
+
+      // If role is being changed, show confirmation dialog
+      if (roleChanged) {
+        setShowRoleConfirm(true)
+        return
       }
 
-      // If nothing changed, just close
-      if (Object.keys(updateData).length === 0) {
-        alert('No changes made')
+      // Otherwise proceed with update
+      await executeUpdate(roleChanged, statusChanged, tipeChanged)
+    } catch (err) {
+      setError(err.message || 'Gagal menyimpan perubahan')
+      alert(`Error: ${err.message || 'Gagal menyimpan user'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const executeUpdate = async (roleChanged, statusChanged, tipeChanged) => {
+    try {
+      setSaving(true)
+
+      let updateSuccess = false
+
+      // Update role if changed (using specific endpoint)
+      if (roleChanged) {
+        const roleResult = await adminApi.updateUserRole(user.user_id, parseInt(formData.role_id))
+        if (roleResult.success) updateSuccess = true
+      }
+
+      // Update status if changed (using specific endpoint)
+      if (statusChanged) {
+        const statusResult = await adminApi.updateUserStatus(user.user_id, formData.status)
+        if (statusResult.success) updateSuccess = true
+      }
+
+      // Update tipe_nasabah if changed (using general update)
+      if (tipeChanged) {
+        const tipeResult = await adminApi.updateAdminUser(user.user_id, {
+          tipe_nasabah: formData.tipe_nasabah
+        })
+        if (tipeResult.success) updateSuccess = true
+      }
+
+      if (!roleChanged && !statusChanged && !tipeChanged) {
+        alert('Tidak ada perubahan yang terdeteksi')
         onClose()
         return
       }
 
-      // Send single update request
-      try {
-        await api.put(`/admin/users/${user.user_id}`, updateData)
-      } catch (err) {
-        throw new Error(`Failed to update user: ${err.message}`)
+      if (updateSuccess) {
+        alert(`User "${formData.nama}" berhasil diperbarui!`)
+        setShowRoleConfirm(false)
+        onSave()
+        onClose()
+      } else {
+        throw new Error('Semua percobaan update gagal')
       }
-
-      // Success message
-      alert(`User "${formData.nama}" updated successfully!`)
-      onSave()
-      onClose()
     } catch (err) {
-      console.error('Error saving user:', err)
-      setError(err.message || 'Failed to save user')
+      setError(err.message || 'Gagal menyimpan perubahan')
+      alert(`Error: ${err.message || 'Gagal menyimpan user'}`)
     } finally {
       setSaving(false)
     }
@@ -85,8 +147,8 @@ export default function UserEditModal({ user, onClose, onSave }) {
         <div className="modal-header">
           <div className="header-title">
             <h3>Edit User: {user?.nama}</h3>
-            <span className={`status-indicator status-${user?.is_active ? 'aktif' : 'deaktif'}`}>
-              {user?.is_active ? 'AKTIF' : 'DEAKTIF'}
+            <span className={`status-indicator status-${(user?.status || 'active').toLowerCase()}`}>
+              {(user?.status || 'active').toUpperCase()}
             </span>
           </div>
           <button className="modal-close-btn" onClick={onClose}>
@@ -153,19 +215,14 @@ export default function UserEditModal({ user, onClose, onSave }) {
             <label htmlFor="status">Status:</label>
             <select
               id="status"
-              name="is_active"
-              value={formData.is_active ? 'aktif' : 'deaktif'}
-              onChange={(e) => {
-                setFormData(prev => ({
-                  ...prev,
-                  is_active: e.target.value === 'aktif'
-                }))
-                setError(null)
-              }}
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
               className="form-input"
             >
-              <option value="aktif">Aktif</option>
-              <option value="deaktif">Deaktif</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
 
@@ -173,9 +230,9 @@ export default function UserEditModal({ user, onClose, onSave }) {
             <label htmlFor="role">Role:</label>
             <select
               id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
+              name="role_id"
+              value={getRoleName(formData.role_id)}
+              onChange={handleRoleChange}
               className="form-input"
             >
               <option value="nasabah">Nasabah</option>
@@ -194,7 +251,7 @@ export default function UserEditModal({ user, onClose, onSave }) {
               className="form-input"
             >
               <option value="konvensional">Konvensional</option>
-              <option value="modern">Modern</option>
+              <option value="korporat">Korporat</option>
             </select>
           </div>
         </form>
@@ -223,6 +280,25 @@ export default function UserEditModal({ user, onClose, onSave }) {
           </button>
         </div>
       </div>
+
+      {/* Role Change Confirmation Dialog */}
+      {showRoleConfirm && (
+        <DangerConfirmDialog
+          title="Konfirmasi Perubahan Role"
+          message={`Anda akan mengubah role user "${user?.nama}" dari "${getRoleName(user?.role_id)}" menjadi "${getRoleName(formData.role_id)}". Perubahan role akan mempengaruhi akses dan permission user terhadap sistem.`}
+          confirmText="UBAH"
+          actionType="warning"
+          onConfirm={() => {
+            const roleChanged = parseInt(formData.role_id) !== parseInt(user.role_id)
+            const statusChanged = formData.status !== user.status
+            const tipeChanged = formData.tipe_nasabah !== user.tipe_nasabah
+            executeUpdate(roleChanged, statusChanged, tipeChanged)
+          }}
+          onCancel={() => setShowRoleConfirm(false)}
+          isProcessing={saving}
+          buttonText="Ubah Role"
+        />
+      )}
     </div>
   )
 }

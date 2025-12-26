@@ -737,7 +737,7 @@
 }
 
 /* Responsive */
-@media (max-width: 968px) {
+@media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }

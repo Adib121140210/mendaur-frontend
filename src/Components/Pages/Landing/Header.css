@@ -4,108 +4,129 @@
 
 .header {
     display: flex;
-    /* justify-content: space-between; */
     align-items: center;
     padding: 1rem 4rem;
-    background-color: #fdf6f0;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     position: sticky;
     top: 0;
     z-index: 100;
-
 }
 
 .headerTitle {
-  font-size: 24px;
-  font-weight: 600;
-  color: #123524;
-  letter-spacing: 0.5px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: -0.5px;
+  cursor: pointer;
 }
 
 .navbar {
     display: flex;
-    align-items: right;
-    margin-left: 4rem;
+    align-items: center;
+    margin-left: 3rem;
     margin-right: auto;
 }
 
-.navLinks a{
-    font-size: 1rem;
-    margin: 8px;
+.navLinks a {
+    font-size: 0.95rem;
+    margin: 0 0.5rem;
     color: #374151;
     font-weight: 500;
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 1rem;
     border-radius: 8px;
-    transition: background-color 0.2s ease;
+    text-decoration: none;
+    transition: all 0.2s ease;
 }
 
 .navLinks a:hover {
-  background-color: #e0f2e9;
-  color: #dec120;
-
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
 }
 
 .navBtn {
   display: flex;
-  gap: 1rem;
-}
-
-.btnDaftar {
-  background-color: #1f2937;
-  font-size: medium;
-  color: #ffffff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-/* .btnMasuk {
-  display: inline-flex;
+  gap: 0.75rem;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #e5e7eb;
-  color: #2c2c2c;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1.2rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-} */
+}
 
 .btnMasuk {
   display: inline-flex;
-  background-color: white;
-  border: 1px solid #2e7d32;
-  color: #2e7d32;
-  padding: 0.5rem 1rem;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background-color 0.2s ease clr, transform 0.2s ease;
+  background: transparent;
+  border: 1.5px solid #22c55e;
+  color: #22c55e;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btnMasuk:hover {
-  background-color: #dec120;
-  color: #123524;
-  border: 1px solid #123524;
+  background: rgba(34, 197, 94, 0.08);
+  transform: translateY(-1px);
 }
 
-.navBtn .masukIcon{
-  width: 20px;
-  height: 20px;
+.btnDaftar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+}
+
+.btnDaftar:hover {
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35);
+}
+
+.navBtn .masukIcon {
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
   vertical-align: middle;
-  transition: transform 0.2s ease;
 }
 
-.navBTN:hover {
-  background-color: #dec210;
-  color: #374151;
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .navbar {
+    display: none;
+  }
+  
+  .headerTitle {
+    font-size: 1.25rem;
+  }
+  
+  .navBtn {
+    margin-left: auto;
+  }
+  
+  .btnMasuk,
+  .btnDaftar {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
 }
 
 

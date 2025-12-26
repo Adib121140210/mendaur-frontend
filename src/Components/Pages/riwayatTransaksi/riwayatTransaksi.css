@@ -37,6 +37,7 @@
   border-radius: 6px;
   border: 1px solid #d1d5db;
   flex: 1;
+  position: relative;
 }
 
 .searchBox input {
@@ -45,10 +46,14 @@
   background: transparent;
   font-size: 0.875rem;
   width: 100%;
+  padding-left: 0.25rem;
 }
 
 .searchIcon {
   color: #6b7280;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 
 .statusDropdown {

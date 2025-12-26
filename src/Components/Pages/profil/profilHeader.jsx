@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getUserBadges, uploadUserAvatar } from "../../../services/api";
-import { Upload, X } from "lucide-react";
+import { getUnlockedBadges, setBadgeTitle, uploadUserAvatar } from "../../../services/api";
+import { Upload, X, Star, Trophy, ChevronDown } from "lucide-react";
 import "../profil/profilHeader.css";
 
 export default function ProfilHeader() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [userBadges, setUserBadges] = useState([]);
   const [activeBadge, setActiveBadge] = useState(null);
+  const [showBadgeDropdown, setShowBadgeDropdown] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [savingBadge, setSavingBadge] = useState(false);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -87,21 +89,26 @@ export default function ProfilHeader() {
 
   const fetchUserBadges = async () => {
     try {
-      const result = await getUserBadges(user.user_id);
+      // Fetch unlocked badges only
+      const result = await getUnlockedBadges(user.user_id);
 
       if (result.status === 'success') {
-        setUserBadges(result.data || []);
+        const badgesData = result.data?.unlocked_badges || [];
+        
+        setUserBadges(badgesData);
 
-        // Set active badge from localStorage or first badge
-        const savedBadge = localStorage.getItem("badge_aktif");
-        if (savedBadge) {
-          setActiveBadge(parseInt(savedBadge, 10));
-        } else if (result.data.length > 0) {
-          setActiveBadge(result.data[0].badge_id);
+        // Get current badge title from backend
+        const currentBadgeTitleId = result.data?.current_badge_title_id;
+        
+        if (currentBadgeTitleId) {
+          setActiveBadge(currentBadgeTitleId);
+        } else if (badgesData.length > 0) {
+          // Default to first unlocked badge if no title set
+          setActiveBadge(badgesData[0].badge_id);
         }
       }
-    } catch (error) {
-      console.warn("Badges API not available yet:", error.message);
+    } catch {
+      // Silent fail - badges are optional feature
     }
   };
 
@@ -113,9 +120,26 @@ export default function ProfilHeader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.user_id]);
 
-  const handleSelectBadge = (badgeId) => {
-    setActiveBadge(badgeId);
-    localStorage.setItem("badge_aktif", badgeId);
+  const handleSelectBadge = async (badgeId) => {
+    setSavingBadge(true);
+    try {
+      // Save to backend using dedicated endpoint
+      const result = await setBadgeTitle(user.user_id, badgeId);
+      
+      if (result.status === 'success') {
+        setActiveBadge(badgeId);
+        setShowBadgeDropdown(false);
+        
+        // Refresh user data to sync badge_title_id
+        if (refreshUser) {
+          await refreshUser();
+        }
+      }
+    } catch {
+      alert("Gagal mengatur badge title. Pastikan badge sudah di-unlock.");
+    } finally {
+      setSavingBadge(false);
+    }
   };
 
   const currentBadge = userBadges.find(b => b.badge_id === activeBadge);
@@ -137,65 +161,100 @@ export default function ProfilHeader() {
         </div>
       )}
 
-      <div className="profilInfo">
-        <div className="avatarWrapper">
-          <img
-            src={getAvatarUrl()}
-            alt={`${user.nama} profile`}
-            className="profilAvatar"
-            onError={(e) => {
-              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama || 'User')}&size=120&background=4CAF50&color=fff&bold=true`;
-            }}
-          />
-          <button
-            className="uploadAvatarBtn"
-            onClick={() => setShowUploadModal(true)}
-            title="Upload avatar baru"
-          >
-            <Upload size={16} />
-          </button>
-        </div>
-        <div>
-          <h2 className="profilName">{user.nama}</h2>
-          <p className="profilEmail">{user.email}</p>
-          <span className="profilBadge">
-            {user.level || "Member"} • {user.total_poin || 0} Poin
-          </span>
-          {currentBadge && (
-            <span className="profilBadge">
-              🏆 {currentBadge.nama_badge || "Badge Aktif"}
-            </span>
-          )}
-        </div>
-      </div>
+      {/* Main Profile Card */}
+      <div className="profilCard">
+        {/* Left Section: Avatar + Info */}
+        <div className="profilLeftSection">
+          <div className="avatarWrapper">
+            <img
+              src={getAvatarUrl()}
+              alt={`${user.nama} profile`}
+              className="profilAvatar"
+              onError={(e) => {
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama || 'User')}&size=120&background=4CAF50&color=fff&bold=true`;
+              }}
+            />
+            <button
+              className="uploadAvatarBtn"
+              onClick={() => setShowUploadModal(true)}
+              title="Upload avatar baru"
+            >
+              <Upload size={16} />
+            </button>
+          </div>
+          
+          <div className="profilDetails">
+            <h2 className="profilName">{user.nama}</h2>
+            <p className="profilEmail">{user.email}</p>
+            
+            {/* Level Badge */}
+            <div className="levelBadge">
+              <Trophy size={14} />
+              <span>{user.level || "Member"}</span>
+            </div>
 
-      {userBadges.length > 0 && (
-        <div className="badgeSelector">
-          <h4>Pilih Badge Aktif:</h4>
-          <div className="badgeList">
-            {userBadges.map((b, index) => (
-              <button
-                key={b.badge_id || `badge-${index}`}
-                className={`badgeOption ${activeBadge === b.badge_id ? "selected" : ""}`}
-                onClick={() => handleSelectBadge(b.badge_id)}
-                title={`Reward: +${b.reward_poin || 0} poin`}
-              >
-                <span className="badgeIconMini">🏆</span>
-                <div className="badgeOptionInfo">
-                  <span className="badgeOptionName">{b.nama_badge || `Badge ${b.badge_id}`}</span>
-                  <span className="badgeOptionReward">+{b.reward_poin || 0} poin</span>
-                </div>
-              </button>
-            ))}
+            {/* Badge Title Selector */}
+            {userBadges.length > 0 ? (
+              <div className="badgeTitleSelector">
+                <button 
+                  className="badgeTitleBtn"
+                  onClick={() => setShowBadgeDropdown(!showBadgeDropdown)}
+                  disabled={savingBadge}
+                >
+                  <span className="badgeTitleIcon">
+                    {currentBadge?.icon || '🏆'}
+                  </span>
+                  <span className="badgeTitleText">
+                    {currentBadge?.nama || "Pilih Badge Title"}
+                  </span>
+                  <ChevronDown size={16} className={showBadgeDropdown ? 'rotated' : ''} />
+                </button>
+                
+                {showBadgeDropdown && (
+                  <div className="badgeDropdown">
+                    <div className="badgeDropdownHeader">
+                      Pilih Badge sebagai Title ({userBadges.length} badge tersedia)
+                    </div>
+                    {userBadges.map((badge, index) => (
+                      <button
+                        key={badge.badge_id || `badge-${index}`}
+                        className={`badgeDropdownItem ${activeBadge === badge.badge_id ? 'selected' : ''}`}
+                        onClick={() => handleSelectBadge(badge.badge_id)}
+                      >
+                        <span className="badgeItemIcon">{badge.icon || '🏆'}</span>
+                        <div className="badgeItemInfo">
+                          <span className="badgeItemName">{badge.nama || `Badge ${badge.badge_id}`}</span>
+                          <span className="badgeItemReward">+{badge.reward_poin || 0} poin</span>
+                        </div>
+                        {activeBadge === badge.badge_id && <span className="checkMark">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="noBadgesMessage">
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  Belum ada badge yang di-unlock
+                </span>
+              </div>
+            )}
           </div>
         </div>
-      )}
 
-      {userBadges.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#666', marginTop: '1rem' }}>
-          Belum memiliki badge. Setor sampah untuk mendapatkan badge!
-        </p>
-      )}
+        {/* Right Section: Points Display */}
+        <div className="profilRightSection">
+          <div className="pointsCard">
+            <div className="pointsIcon">
+              <Star size={24} />
+            </div>
+            <div className="pointsInfo">
+              <span className="pointsLabel">Total Poin</span>
+              <span className="pointsValue">{(user.total_poin || 0).toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Upload Modal */}
       {showUploadModal && (

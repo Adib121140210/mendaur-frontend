@@ -326,11 +326,53 @@
   justify-content: center;
   gap: 6px;
   transition: all 0.2s ease;
-  width: 100%;
+  flex: 1;
 }
 
 .assign-btn:hover {
   background: #059669;
+}
+
+/* Badge Actions Container */
+.badge-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.edit-btn {
+  padding: 8px 10px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #2563eb;
+}
+
+.delete-badge-btn {
+  padding: 8px 10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.delete-badge-btn:hover {
+  background: #dc2626;
 }
 
 /* Assignments Section */
