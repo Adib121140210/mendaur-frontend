@@ -451,22 +451,10 @@ export const adminApi = {
       })
 
       const headers = getAuthHeader()
-      console.log('📤 REQUEST DETAILS:', {
-        url: `${API_BASE_URL}/admin/penyetoran-sampah?${params}`,
-        method: 'GET',
-        authHeader: headers.Authorization ? headers.Authorization.substring(0, 30) + '...' : 'MISSING',
-        tokenInStorage: localStorage.getItem('token') ? 'YES' : 'NO'
-      })
 
       const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah?${params}`, {
         method: 'GET',
         headers: headers
-      })
-
-      console.log('📥 RESPONSE:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
       })
 
       if (!response.ok) {
@@ -500,7 +488,6 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info(`✅ Deposit #${depositId} loaded successfully`)
       return {
         success: true,
         data: data.data || data
@@ -543,7 +530,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info(`✅ Deposit #${depositId} approved`)
+      
       return {
         success: true,
         message: 'Deposit approved successfully',
@@ -575,7 +562,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info(`✅ Deposit #${depositId} rejected`)
+      
       return {
         success: true,
         message: 'Deposit rejected successfully',
@@ -603,7 +590,7 @@ export const adminApi = {
       }
 
       const data = await response.json()
-      console.info(`✅ Deposit #${depositId} deleted`)
+      
       return {
         success: true,
         message: 'Deposit deleted successfully',
@@ -621,10 +608,6 @@ export const adminApi = {
   getWasteStats: async () => {
     try {
       const headers = getAuthHeader()
-      console.log('📤 Sending stats request with headers:', {
-        Authorization: headers.Authorization ? headers.Authorization.substring(0, 20) + '...' : 'MISSING',
-        token: localStorage.getItem('token') ? 'Present' : 'MISSING'
-      })
 
       const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
         method: 'GET',
@@ -683,7 +666,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Admin #${adminId} loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch admin')
@@ -723,7 +706,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Admin #${adminId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update admin')
@@ -742,7 +725,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Admin #${adminId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete admin')
@@ -762,7 +745,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Activity logs for admin #${adminId} loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch activity logs')
@@ -801,7 +784,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Role #${roleId} loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch role')
@@ -841,7 +824,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Role #${roleId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update role')
@@ -860,7 +843,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Role #${roleId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete role')
@@ -881,7 +864,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Permissions assigned to role #${roleId}`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to assign permissions')
@@ -900,7 +883,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Permissions for role #${roleId} loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch role permissions')
@@ -1006,7 +989,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Badge #${badgeId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update badge')
@@ -1025,7 +1008,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Badge #${badgeId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete badge')
@@ -1045,7 +1028,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Badge #${badgeId} assigned to user #${userId}`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to assign badge')
@@ -1140,7 +1123,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Product #${produkId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update product')
@@ -1159,7 +1142,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Product #${produkId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete product')
@@ -1203,7 +1186,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Redemption #${redemptionId} approved`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to approve redemption')
@@ -1232,7 +1215,7 @@ export const adminApi = {
         throw new Error(errorData.message || `HTTP ${response.status}`)
       }
       const data = await response.json()
-      console.info(`✅ Redemption #${redemptionId} rejected`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to reject redemption')
@@ -1319,7 +1302,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Waste item #${jenisSampahId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update waste item')
@@ -1338,7 +1321,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Waste item #${jenisSampahId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete waste item')
@@ -1385,7 +1368,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Schedule #${jadwalId} loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch schedule details')
@@ -1483,7 +1466,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Schedule #${jadwalId} updated`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to update schedule')
@@ -1502,7 +1485,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Schedule #${jadwalId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete schedule')
@@ -1537,7 +1520,6 @@ export const adminApi = {
       
       
       if (!response.ok) {
-        console.error(`❌ HTTP Error ${response.status}: ${response.statusText}`)
         return { 
           success: false, 
           error: `HTTP ${response.status}`, 
@@ -1547,7 +1529,7 @@ export const adminApi = {
       }
       
       const data = await response.json()
-      console.info('✅ Notifications loaded:', data)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       
@@ -1587,7 +1569,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Notification #${notificationId} deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete notification')
@@ -1634,7 +1616,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Article "${slug}" loaded`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to fetch article details')
@@ -1721,7 +1703,7 @@ export const adminApi = {
         })
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const data = await response.json()
-        console.info(`✅ Article "${slug}" updated`)
+        
         return { success: true, data: data.data || data }
       } else {
         // Use JSON for non-file updates
@@ -1738,7 +1720,7 @@ export const adminApi = {
         })
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const data = await response.json()
-        console.info(`✅ Article "${slug}" updated`)
+        
         return { success: true, data: data.data || data }
       }
     } catch (error) {
@@ -1758,7 +1740,7 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
-      console.info(`✅ Article "${slug}" deleted`)
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to delete article')

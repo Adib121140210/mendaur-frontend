@@ -112,11 +112,9 @@ const ReportsSection = () => {
       const result = exportToPDF(report, reportType, { year, month, day })
       
       if (result.success) {
-        console.log('PDF exported successfully:', result.filename)
         alert(`✅ Report exported as PDF: ${result.filename}`)
       }
     } catch (err) {
-      console.error('PDF export error:', err)
       alert('❌ Error exporting PDF: ' + err.message)
     } finally {
       setLoading(false)
@@ -140,11 +138,9 @@ const ReportsSection = () => {
       const result = exportToExcel(report, reportType, { year, month, day })
       
       if (result.success) {
-        console.log('Excel exported successfully:', result.filename)
         alert(`✅ Report exported as Excel: ${result.filename}`)
       }
     } catch (err) {
-      console.error('Excel export error:', err)
       alert('❌ Error exporting Excel: ' + err.message)
     } finally {
       setLoading(false)

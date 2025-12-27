@@ -48,7 +48,7 @@ export const backupService = {
       }
 
       const data = await response.json()
-      console.log('💾 Database backup created:', data.data?.filename || 'backup')
+
       return {
         success: true,
         data: data.data || data,
@@ -81,7 +81,7 @@ export const backupService = {
       }
 
       const data = await response.json()
-      console.log('📦 Backups list retrieved:', data.data?.length || 0)
+
       return {
         success: true,
         data: data.data || [],
@@ -178,7 +178,7 @@ export const backupService = {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      console.log('📥 Backup downloaded:', filename)
+
       return {
         success: true,
         message: `Backup downloaded: ${filename}`
@@ -226,7 +226,7 @@ export const backupService = {
       }
 
       const data = await response.json()
-      console.log('♻️ Database restored from backup:', backupId)
+
       return {
         success: true,
         message: data.message || 'Database restored successfully',
@@ -266,7 +266,7 @@ export const backupService = {
       }
 
       const data = await response.json()
-      console.log('🗑️ Backup deleted:', backupId)
+
       return {
         success: true,
         message: data.message || 'Backup deleted'

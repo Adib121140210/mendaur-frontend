@@ -77,7 +77,7 @@ export function PermissionGuard({
   }
 
   // Invalid permission prop
-  console.warn('PermissionGuard: Invalid permission prop', { permission });
+
   return fallback;
 }
 
@@ -124,7 +124,7 @@ export function RoleGuard({
     return children;
   }
 
-  console.warn('RoleGuard: Invalid role prop', { role });
+
   return fallback;
 }
 

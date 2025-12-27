@@ -45,7 +45,6 @@ const PointBreakdown = ({ userId = null }) => {
       }
 
       const data = await response.json();
-      console.log('Breakdown data:', data);
 
       const breakdownData = data.data || [];
       setBreakdown(breakdownData);
@@ -54,7 +53,6 @@ const PointBreakdown = ({ userId = null }) => {
       const total = breakdownData.reduce((sum, item) => sum + item.total, 0);
       setTotalPoints(total);
     } catch (err) {
-      console.error('Error fetching breakdown:', err);
       setError(err.message);
     } finally {
       setLoading(false);

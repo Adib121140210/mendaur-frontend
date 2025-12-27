@@ -135,10 +135,6 @@ export default function Register() {
       });
 
       const result = await response.json();
-      
-      // Debug logging
-      console.log("Register Response Status:", response.status);
-      console.log("Register Response Data:", result);
 
       // Handle 422 Validation Error
       if (response.status === 422) {

@@ -1,4 +1,7 @@
-// API Helper - Utility for making authenticated API calls
+// API Helper - Utility for m      try {
+        errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {nticated API calls
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 /**
@@ -10,8 +13,6 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api';
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const fullUrl = `${API_BASE_URL}${endpoint}`;
-  
-  console.log(`🌐 API Call: ${options.method || 'GET'} ${fullUrl}`);
 
   const headers = {
     'Content-Type': 'application/json',
@@ -25,8 +26,6 @@ export const apiCall = async (endpoint, options = {}) => {
       headers,
     });
 
-    console.log(`📡 API Response: ${response.status} ${response.statusText}`);
-
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status}`;
       let errorData = null;
@@ -34,24 +33,8 @@ export const apiCall = async (endpoint, options = {}) => {
       try {
         errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
-        console.error('❌ API Error Details:', {
-          status: response.status,
-          statusText: response.statusText,
-          url: fullUrl,
-          errorData,
-          timestamp: new Date().toISOString()
-        });
-      } catch (parseError) {
-        // Response was not JSON
-        const textContent = await response.text();
-        console.error('❌ API Error (Non-JSON):', {
-          status: response.status,
-          statusText: response.statusText,
-          url: fullUrl,
-          textContent: textContent.substring(0, 200),
-          parseError,
-          timestamp: new Date().toISOString()
-        });
+      } catch {
+        // Response was not JSON - silent fail
       }
       
       const error = new Error(errorMessage);
@@ -61,17 +44,10 @@ export const apiCall = async (endpoint, options = {}) => {
     }
 
     const responseData = await response.json();
-    console.log(`✅ API Success:`, responseData);
     return responseData;
     
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      console.error('🔌 Network Error:', {
-        endpoint,
-        url: fullUrl,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
       throw new Error('Network error - Unable to connect to server');
     }
     throw error;
@@ -142,7 +118,7 @@ export const updateUserProfile = async (userId, data) => {
       return await response.json();
     }
   } catch {
-    console.log('PUT /profile failed, trying POST /profile/update...');
+    // PUT failed, try POST endpoint
   }
 
   // 2. Try POST /api/profile/update endpoint

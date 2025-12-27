@@ -14,7 +14,6 @@ export default function DashboardHeader() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
       // Implementasi search ke halaman atau API
       setSearchQuery("");
       setShowSearchModal(false);
@@ -31,7 +30,6 @@ export default function DashboardHeader() {
 
   /* handle notifications */
   const handleNotifications = () => {
-    console.log("Membuka notifikasi...");
     // Implementasi notifikasi akan ditambahkan nanti
   };
 

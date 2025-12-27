@@ -59,8 +59,6 @@ export default function Login() {
         setErrorMsg(result.message || "Email atau password salah.");
       }
     } catch (error) {
-      console.error("Login error:", error);
-
       if (error.message.includes("Failed to fetch") || error.message.includes("ERR_CONNECTION_REFUSED")) {
         setErrorMsg("Tidak dapat terhubung ke server. Pastikan backend berjalan di http://127.0.0.1:8000");
       } else {

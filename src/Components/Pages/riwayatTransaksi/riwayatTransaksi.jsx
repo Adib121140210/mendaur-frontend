@@ -40,8 +40,6 @@ export default function RiwayatTransaksi() {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('id_user');
 
-      console.log('🔍 Fetching transactions for user:', userId);
-
       // Fetch cash withdrawals
       const withdrawalsResponse = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
         headers: {
@@ -53,15 +51,12 @@ export default function RiwayatTransaksi() {
       let withdrawals = [];
       if (withdrawalsResponse.ok) {
         const withdrawalsData = await withdrawalsResponse.json();
-        console.log('Raw withdrawals response:', withdrawalsData);
         
         // Filter only withdrawals for current user
         const allWithdrawals = withdrawalsData.data?.data || withdrawalsData.data || [];
         const userWithdrawals = allWithdrawals.filter(item => 
           item.user_id?.toString() === userId?.toString()
         );
-        
-        console.log(`Filtered ${userWithdrawals.length} withdrawals from ${allWithdrawals.length} total`);
         
         withdrawals = userWithdrawals.map(item => ({
           id: `withdrawal-${item.penarikan_tunai_id}`,
@@ -116,8 +111,7 @@ export default function RiwayatTransaksi() {
             }));
           }
         }
-      } catch (wasteError) {
-        console.error('Error fetching waste deposits:', wasteError);
+      } catch {
         // Continue even if waste deposits fail
       }
 
@@ -133,7 +127,6 @@ export default function RiwayatTransaksi() {
 
         if (productResponse.ok) {
           const productData = await productResponse.json();
-          console.log('Raw product redemptions response:', productData);
 
           // Handle both array and object with data property
           const allRedemptions = Array.isArray(productData)
@@ -144,8 +137,6 @@ export default function RiwayatTransaksi() {
           const userRedemptions = allRedemptions.filter(item => 
             item.user_id?.toString() === userId?.toString()
           );
-          
-          console.log(`Filtered ${userRedemptions.length} product redemptions from ${allRedemptions.length} total`);
 
           productRedemptions = userRedemptions.map(item => ({
             id: `product-${item.penukaran_produk_id}`,
@@ -165,18 +156,8 @@ export default function RiwayatTransaksi() {
             claimedAt: item.claimed_at,
             rejectedAt: item.rejected_at,
           }));
-        } else {
-          // Log error response
-          console.error('Penukaran produk fetch error - Status:', productResponse.status);
-          try {
-            const errorData = await productResponse.json();
-            console.error('Error details:', errorData);
-          } catch {
-            console.error('Could not parse error response');
-          }
         }
-      } catch (productError) {
-        console.error('Error fetching product redemptions:', productError);
+      } catch {
         // Continue even if product redemptions fail
       }
 
@@ -191,8 +172,7 @@ export default function RiwayatTransaksi() {
       allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
       setTransactions(allTransactions);
-    } catch (err) {
-      console.error('Error fetching transactions:', err);
+    } catch {
       setError('Gagal memuat riwayat transaksi. Silakan coba lagi.');
     } finally {
       setLoading(false);

@@ -55,16 +55,12 @@ export default function TukarPoin() {
       setLoading(true);
       setError(null);
       
-      console.log('🔍 Fetching products for TukarPoin...');
-      
       // Fetch all products (backend returns only available products)
       const result = await productApi.getAllProducts();
 
       if (result.success) {
-        console.log('Products fetched for TukarPoin:', result.data);
         setProducts(result.data);
       } else {
-        console.error('Failed to fetch products:', result.message);
         setError(result.message);
         setProducts([]);
       }
@@ -233,14 +229,6 @@ export default function TukarPoin() {
         nama_penerima: accountName,
       };
 
-      // DEBUG: Log withdrawal request details
-      console.log('===== CASH WITHDRAWAL DEBUG =====');
-      console.log('Current user:', user);
-      console.log('User ID from localStorage:', localStorage.getItem('id_user'));
-      console.log('Token:', localStorage.getItem('token')?.substring(0, 20) + '...');
-      console.log('Withdrawal payload:', payload);
-      console.log('===== END DEBUG =====');
-
       const response = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
         method: 'POST',
         headers: {
@@ -253,17 +241,7 @@ export default function TukarPoin() {
 
       const result = await response.json();
       
-      // DEBUG: Log backend response
-      console.log('===== WITHDRAWAL RESPONSE =====');
-      console.log('Status:', response.status);
-      console.log('Response OK:', response.ok);
-      console.log('Result:', result);
-      console.log('===== END RESPONSE =====');
-      
       if (!response.ok) {
-        // Show detailed error from backend
-        console.error('Backend error:', result);
-        
         // Check if there are validation errors
         if (result.errors) {
           const errorMessages = Object.values(result.errors).flat().join('\n');
@@ -285,8 +263,6 @@ export default function TukarPoin() {
       // Refresh user data to update points display
       await refreshUser();
     } catch (err) {
-      console.error('Withdrawal error:', err);
-      console.error('Full error details:', err.message);
       setWithdrawError(err.message || "Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
@@ -373,16 +349,6 @@ export default function TukarPoin() {
         catatan: `Penukaran ${redeemQuantity} ${selectedProduct.nama}`, // Notes
       };
       
-      // DEBUG: Log user data and request details
-      console.log('===== REDEMPTION DEBUG =====');
-      console.log('Current user total_poin:', total_poin);
-      console.log('Current user object:', user);
-      console.log('Selected product:', selectedProduct);
-      console.log('Required points:', requiredPoints);
-      console.log('Sending redemption request:', payload);
-      console.log('Using token:', token.substring(0, 20) + '...');
-      console.log('===== END DEBUG =====')
-      
       const response = await fetch('http://127.0.0.1:8000/api/penukaran-produk', {
         method: 'POST',
         headers: {
@@ -395,23 +361,7 @@ export default function TukarPoin() {
 
       const result = await response.json();
       
-      console.log('Backend response:', result);
-      console.log('Response status:', response.status);
-      console.log('Response headers:', {
-        'Content-Type': response.headers.get('Content-Type'),
-      });
-      
-      // ADDITIONAL DEBUG: Log complete response structure
-      console.log('===== RESPONSE DETAILS =====');
-      console.log('Response OK:', response.ok);
-      console.log('Status:', response.status);
-      console.log('Status Text:', response.statusText);
-      console.log('Full result object:', JSON.stringify(result, null, 2));
-      console.log('===== END RESPONSE DETAILS =====')
-      
       if (!response.ok) {
-        console.error('Backend error (status ' + response.status + '):', result);
-        
         // Handle authentication errors
         if (response.status === 401) {
           throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
@@ -450,7 +400,6 @@ export default function TukarPoin() {
       // Refresh user data to update points display
       await refreshUser();
     } catch (err) {
-      console.error('Redemption error:', err);
       setRedeemError(err.message || "Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);

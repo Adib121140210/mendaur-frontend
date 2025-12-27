@@ -83,12 +83,10 @@ const AllUsersHistory = () => {
       }
 
       const data = await response.json();
-      console.log('Admin history data:', data);
 
       setHistory(data.data || []);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
     } catch (err) {
-      console.error('Error fetching history:', err);
       setError(err.message);
     } finally {
       setLoading(false);

@@ -52,8 +52,7 @@ export const authService = {
         message: 'Login successful',
         data: data.data,
       };
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch {
       return {
         success: false,
         message: 'Network error. Please try again.',
@@ -175,8 +174,7 @@ export const authService = {
       }
 
       return { success: false, token: null };
-    } catch (error) {
-      console.error('Token refresh error:', error);
+    } catch {
       return { success: false, token: null };
     }
   },

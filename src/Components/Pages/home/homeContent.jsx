@@ -32,21 +32,12 @@ const HomeContent = () => {
       // Get user ID from user object (backend uses user_id)
       const userId = user?.user_id || localStorage.getItem('id_user');
 
-      console.log('Debug Info:', {
-        userObject: user,
-        userID: userId,
-        hasToken: !!token,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-      });
-
       if (!token) {
-        console.error('No token found. User must be authenticated.');
         setLoading(false);
         return;
       }
 
       if (!userId) {
-        console.error('No user ID found. User data:', user, 'localStorage id_user:', localStorage.getItem('id_user'));
         setLoading(false);
         return;
       }
@@ -64,13 +55,6 @@ const HomeContent = () => {
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setUserStats(statsData.data);
-      } else {
-        const errorBody = await statsRes.text();
-        console.error('Stats API error:', {
-          status: statsRes.status,
-          statusText: statsRes.statusText,
-          responseBody: errorBody.substring(0, 500),
-        });
       }
 
       // Fetch leaderboard
@@ -80,8 +64,6 @@ const HomeContent = () => {
       if (leaderRes.ok) {
         const leaderData = await leaderRes.json();
         setLeaderboard(leaderData.data || []);
-      } else {
-        console.error('Leaderboard API error:', leaderRes.status, leaderRes.statusText);
       }
 
       // Fetch user badges
@@ -91,8 +73,6 @@ const HomeContent = () => {
       if (badgesRes.ok) {
         const badgesData = await badgesRes.json();
         setUserBadges(badgesData.data || []);
-      } else {
-        console.error('Badges API error:', badgesRes.status, badgesRes.statusText);
       }
 
       // Fetch recent activities from multiple sources (Tabung Sampah, Penukaran Poin, Penarikan Tunai)
@@ -116,8 +96,8 @@ const HomeContent = () => {
           }));
           allActivities.push(...tabungActivities);
         }
-      } catch (e) {
-        console.log('Tabung sampah fetch skipped:', e.message);
+      } catch {
+        // Silently skip if fetch fails
       }
 
       // 2. Fetch Penukaran Produk activities
@@ -138,8 +118,8 @@ const HomeContent = () => {
           }));
           allActivities.push(...redeemActivities);
         }
-      } catch (e) {
-        console.log('Penukaran produk fetch skipped:', e.message);
+      } catch {
+        // Silently skip if fetch fails
       }
 
       // 3. Fetch Penarikan Tunai activities
@@ -160,8 +140,8 @@ const HomeContent = () => {
           }));
           allActivities.push(...withdrawActivities);
         }
-      } catch (e) {
-        console.log('Penarikan tunai fetch skipped:', e.message);
+      } catch {
+        // Silently skip if fetch fails
       }
 
       // 4. Fallback: Try user activity log endpoint if available
@@ -179,16 +159,16 @@ const HomeContent = () => {
             }));
             allActivities.push(...logActivities);
           }
-        } catch (e) {
-          console.log('User activity log fetch skipped:', e.message);
+        } catch {
+          // Silently skip if fetch fails
         }
       }
 
       // Sort all activities by date (newest first) and take top 5
       allActivities.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       setRecentActivities(allActivities.slice(0, 5));
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch {
+      // Dashboard data fetch failed silently
     } finally {
       setLoading(false);
     }

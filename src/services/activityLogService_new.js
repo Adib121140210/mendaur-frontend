@@ -60,7 +60,6 @@ export const activityLogService = {
       }
 
       const data = await response.json()
-      console.log('Activity logs loaded:', data.data?.length || 0)
 
       return {
         success: true,

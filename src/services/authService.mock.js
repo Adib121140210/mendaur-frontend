@@ -67,17 +67,12 @@ export const authService = {
       localStorage.setItem('userRole', credential.role);
       localStorage.setItem('userId', mockUser.user_id);
 
-      console.warn('⚠️ USING MOCK AUTH - Backend database needs fixing!');
-      console.log('Mock token:', mockToken);
-      console.log('Mock user role:', credential.role);
-
       return {
         success: true,
         message: 'Mock login successful (Backend not ready)',
         data: { token: mockToken, user: mockUser },
       };
-    } catch (error) {
-      console.error('Mock login error:', error);
+    } catch {
       return {
         success: false,
         message: 'Mock login error',
@@ -177,8 +172,7 @@ export const authService = {
       const newToken = generateMockToken();
       localStorage.setItem('token', newToken);
       return { success: true, token: newToken };
-    } catch (error) {
-      console.error('Token refresh error:', error);
+    } catch {
       return { success: false, token: null };
     }
   },

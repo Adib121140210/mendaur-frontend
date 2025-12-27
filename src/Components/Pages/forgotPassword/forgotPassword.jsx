@@ -72,10 +72,6 @@ export default function ForgotPassword() {
       });
 
       const result = await response.json();
-      
-      // Debug logging
-      console.log("Forgot Password Response Status:", response.status);
-      console.log("Forgot Password Response Data:", result);
 
       // Handle 422 Validation Error
       if (response.status === 422) {
@@ -116,9 +112,8 @@ export default function ForgotPassword() {
       } else {
         setErrorMsg(result.message || "Gagal mengirim kode OTP");
       }
-    } catch (error) {
-      console.error("Send OTP error:", error);
-      setErrorMsg(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+    } catch {
+      setErrorMsg("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -177,8 +172,6 @@ export default function ForgotPassword() {
         email: email.trim(),
         otp: otpCode 
       };
-      
-      console.log('Verify OTP Request:', payload);
 
       const response = await fetch("http://127.0.0.1:8000/api/verify-otp", {
         method: "POST",
@@ -190,8 +183,6 @@ export default function ForgotPassword() {
       });
 
       const result = await response.json();
-      console.log('Verify OTP Response Status:', response.status);
-      console.log('Verify OTP Response Data:', result);
 
       // Handle different response formats
       if (response.status === 400) {
@@ -218,20 +209,13 @@ export default function ForgotPassword() {
 
       // Success
       if (result.success || result.status === "success") {
-        console.log('OTP Verified Successfully! Moving to reset step...');
-        
         // Store reset token if backend provides it
         if (result.data && result.data.reset_token) {
-          console.log('Reset token received from backend:', result.data.reset_token);
           setResetToken(result.data.reset_token);
         } else {
           // If backend doesn't return new token, use the OTP code as token
-          console.log('No reset token in response, using OTP code as token');
           setResetToken(otpCode);
         }
-        
-        // Also save the original OTP for fallback
-        console.log('Original OTP code saved:', otpCode);
         
         setSuccessMsg("Kode OTP berhasil diverifikasi");
         setErrorMsg(""); // Clear any previous errors
@@ -239,9 +223,8 @@ export default function ForgotPassword() {
       } else {
         setErrorMsg(result.message || "Kode OTP tidak valid");
       }
-    } catch (error) {
-      console.error("Verify OTP error:", error);
-      setErrorMsg(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+    } catch {
+      setErrorMsg("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -344,18 +327,6 @@ export default function ForgotPassword() {
 
       for (let i = 0; i < payloadVariations.length; i++) {
         const payload = payloadVariations[i];
-        const tokenFields = Object.keys(payload).filter(key => 
-          ['token', 'reset_token', 'otp'].includes(key)
-        );
-        const tokenFieldStr = tokenFields.join(' + ');
-
-        console.log(`Attempt ${i + 1}: Reset Password Request with field '${tokenFieldStr}':`, { 
-          email: payload.email,
-          ...tokenFields.reduce((acc, key) => ({ ...acc, [key]: payload[key] }), {}),
-          tokenSource: resetToken ? 'from_verify_response' : 'from_otp_input',
-          passwordLength: payload.password.length,
-          passwordsMatch: payload.password === payload.password_confirmation
-        });
 
         const response = await fetch("http://127.0.0.1:8000/api/reset-password", {
           method: "POST",
@@ -367,40 +338,27 @@ export default function ForgotPassword() {
         });
 
         const result = await response.json();
-        console.log(`Attempt ${i + 1}: Reset Password Response Status:`, response.status);
-        console.log(`Attempt ${i + 1}: Reset Password Response Data:`, result);
-
-        // Log validation errors if present
-        if (response.status === 422 && result.errors) {
-          console.log(`Attempt ${i + 1}: Validation Errors:`, result.errors);
-        }
 
         if (response.ok && (result.success || result.status === "success")) {
-          console.log(`Success with field '${tokenFieldStr}'!`);
-          console.log('Password Reset Successfully! Moving to success step...');
           setErrorMsg("");
           setStep('success');
           success = true;
           break;
         } else {
           lastError = result;
-          console.log(`Failed with field '${tokenFieldStr}', trying next...`);
         }
       }
 
       if (!success) {
         // All attempts failed
-        console.error('All attempts failed. Last error:', lastError);
-        
         if (lastError.message) {
           setErrorMsg(lastError.message);
         } else {
           setErrorMsg("Gagal mengubah password. Silakan coba lagi.");
         }
       }
-    } catch (error) {
-      console.error("Reset password error:", error);
-      setErrorMsg(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+    } catch {
+      setErrorMsg("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }

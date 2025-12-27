@@ -62,14 +62,7 @@ export default function NotificationManagement() {
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      console.log('Fetching notifications...');
       const result = await adminApi.getNotifications();
-      console.log('Notifications API response:', result);
-      
-      // Handle authentication error
-      if (!result.success && result.error === 'HTTP 401') {
-        console.error('🔒 Authentication failed - please login again');
-      }
       
       // Multi-format response handler
       // API returns: {success: true, data: {current_page, data: [...], ...}}
@@ -90,21 +83,16 @@ export default function NotificationManagement() {
           data = result.data.notifications;
         }
         
-        console.log('Notifications loaded from API:', data.length, 'items');
-        
         // If API returns empty array, use mock for demo
         if (data.length === 0) {
-          console.log('No notifications in database, showing mock data for demo');
           data = MOCK_NOTIFICATIONS;
         }
       } else {
-        console.warn('API returned no data or error, using mock');
         data = MOCK_NOTIFICATIONS;
       }
       
       setNotifications(data);
-    } catch (err) {
-      console.error('Notifications fetch error:', err.message);
+    } catch {
       setNotifications(MOCK_NOTIFICATIONS);
     } finally {
       setLoading(false);
@@ -212,8 +200,8 @@ export default function NotificationManagement() {
         } else {
           alert(`❌ ${result.message || 'Gagal menghapus notifikasi'}`);
         }
-      } catch (err) {
-        console.warn('Delete error:', err.message);
+      } catch {
+        // Delete error handled silently
       }
     }
   };

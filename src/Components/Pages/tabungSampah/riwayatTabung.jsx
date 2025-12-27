@@ -95,11 +95,6 @@ const RiwayatTabung = () => {
           return deposit.user_id === user.user_id;
         });
 
-        // Debug: Check structure of first deposit
-        if (validData.length > 0) {
-          console.log("Sample deposit data:", validData[0]);
-        }
-
         setDeposits(validData);
 
         // Calculate stats from filtered data
@@ -110,7 +105,6 @@ const RiwayatTabung = () => {
           calculateStats(validData);
         }
       } else {
-        console.warn("Invalid response format from API");
         setDeposits([]);
       }
     } catch (error) {

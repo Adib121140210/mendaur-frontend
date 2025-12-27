@@ -77,13 +77,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('permissions', JSON.stringify(userPermissions));
     localStorage.setItem('permissionsCount', permissionsCount.toString()); // Store count separately
     localStorage.setItem('id_user', userData.user_id); // For backward compatibility - now uses user_id from backend
-
-    console.log('Login successful:', {
-      userId: userData.user_id,
-      role: roleName,
-      permissions: permissionsCount,
-      isAdmin: roleName === 'admin' || roleName === 'superadmin'
-    });
   };
 
   const logout = () => {
@@ -124,11 +117,10 @@ export const AuthProvider = ({ children }) => {
         
         if (userData) {
           updateUser(userData);
-          console.log('User data refreshed:', userData.total_poin);
         }
       }
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
+    } catch {
+      // Silently handle refresh errors
     }
   };
 

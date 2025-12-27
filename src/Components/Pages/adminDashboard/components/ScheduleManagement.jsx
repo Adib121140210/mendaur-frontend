@@ -211,11 +211,7 @@ export default function ScheduleManagement() {
         status: formData.status || 'Buka'
       }
       
-      console.log('📤 Creating schedule with data:', scheduleData)
-      
       const result = await adminApi.createSchedule(scheduleData);
-      
-      console.log('📥 Create schedule result:', result)
       
       if (result.success) {
         // Refresh schedules list
@@ -223,7 +219,6 @@ export default function ScheduleManagement() {
         setShowCreateModal(false);
         alert('Jadwal baru berhasil dibuat');
       } else {
-        console.error('Create schedule failed:', result)
         let errorMessage = 'Gagal membuat jadwal'
         
         if (result.message) {
@@ -237,7 +232,6 @@ export default function ScheduleManagement() {
         alert(`❌ ${errorMessage}`);
       }
     } catch (err) {
-      console.error('Create error details:', err);
       alert(`Error: ${err.message || 'Terjadi kesalahan saat membuat jadwal'}`);
     } finally {
       setIsSubmitting(false);
@@ -271,8 +265,6 @@ export default function ScheduleManagement() {
         status: formData.status || 'Buka'
       }
       
-      console.log('📤 Updating schedule with data:', scheduleData)
-      
       const result = await adminApi.updateSchedule(selectedSchedule.jadwal_penyetoran_id, scheduleData);
       
       if (result.success) {
@@ -283,8 +275,7 @@ export default function ScheduleManagement() {
       } else {
         alert('❌ ' + (result.message || result.error || 'Gagal memperbarui jadwal'));
       }
-    } catch (err) {
-      console.error('Edit error:', err);
+    } catch {
       alert('❌ Terjadi kesalahan saat memperbarui jadwal');
     } finally {
       setIsSubmitting(false);

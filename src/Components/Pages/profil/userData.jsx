@@ -21,13 +21,11 @@ export default function UserData() {
       // Fetch user detail to get created_at
       try {
         const userDetail = await getUser(user.user_id);
-        console.log("User detail response:", userDetail);
         if (userDetail.data && userDetail.data.created_at) {
           setUserCreatedAt(userDetail.data.created_at);
-          console.log("Set created_at:", userDetail.data.created_at);
         }
       } catch {
-        console.warn("User detail API not available yet");
+        // User detail API not available yet
       }
 
       // Fetch activity logs
@@ -37,7 +35,7 @@ export default function UserData() {
           setAktivitas(aktResult.data || []);
         }
       } catch {
-        console.warn("Activity logs API not available yet");
+        // Activity logs API not available yet
       }
 
       // Fetch badges count and calculate total rewards
@@ -52,10 +50,10 @@ export default function UserData() {
           setTotalBadgeRewards(totalRewards);
         }
       } catch {
-        console.warn("Badges API not available yet");
+        // Badges API not available yet
       }
     } catch {
-      console.warn("Some user data APIs not available yet");
+      // Some user data APIs not available yet
     } finally {
       setLoading(false);
     }
@@ -87,8 +85,7 @@ export default function UserData() {
       const year = date.getFullYear();
 
       return `${day}-${month}-${year}`;
-    } catch (error) {
-      console.error("Error formatting date:", error);
+    } catch {
       return dateString || 'N/A';
     }
   };

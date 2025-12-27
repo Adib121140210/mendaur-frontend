@@ -50,7 +50,6 @@ const AdminStatsCard = () => {
       }
 
       const statsData = await statsResponse.json();
-      console.log('Admin stats:', statsData);
 
       setTotalPoints(statsData.data?.total_points_in_system || 0);
       setActiveUsers(statsData.data?.active_users || 0);
@@ -58,7 +57,6 @@ const AdminStatsCard = () => {
       setRecentActivity(statsData.data?.recent_activity || []);
       setLastUpdate(new Date());
     } catch (err) {
-      console.error('Error fetching admin stats:', err);
       setError(err.message);
     } finally {
       setLoading(false);

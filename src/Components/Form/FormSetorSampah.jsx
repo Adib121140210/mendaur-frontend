@@ -40,11 +40,9 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
           const mapsLink = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
           setFormData(prev => ({ ...prev, lokasi: mapsLink }));
           setMapCoords({ lat: coords.latitude, lng: coords.longitude });
-          console.log('Lokasi otomatis terdeteksi:', mapsLink);
         },
-        (error) => {
-          console.warn('Gagal mengambil lokasi otomatis:', error.message);
-          // Tidak menampilkan alert, user bisa set lokasi secara manual
+        () => {
+          // Gagal mengambil lokasi otomatis - user bisa set lokasi secara manual
         }
       );
     }
@@ -65,15 +63,11 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         let schedules = result.data || [];
-        console.log('Jadwal dari API:', schedules);
-        console.log('Total jadwal:', schedules.length);
 
         // Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
         // Tidak perlu menambahkan synthetic IDs lagi
         setJadwalList(schedules);
-        console.log('Jadwal yang ditampilkan:', schedules);
-      } catch (err) {
-        console.error("Gagal ambil jadwal:", err);
+      } catch {
         setJadwalList([]);
       }
     };
@@ -125,7 +119,6 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     if (errors.jenis) {
       setErrors(prev => ({ ...prev, jenis: null }));
     }
-    console.log('Kategori dipilih:', kategoriLabel || kategoriId);
   };
 
   // Ambil lokasi otomatis
@@ -189,17 +182,12 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     if (!finalUserId) {
       finalUserId = 1;
     }
-    console.log('Sending user_id:', finalUserId);
 
     // jadwalId adalah index string, convert ke int dan get selected schedule
     const selectedIndex = parseInt(formData.jadwalId);
     const selectedSchedule = jadwalList[selectedIndex];
     // ✅ Backend uses custom primary key jadwal_penyetoran_id
     const scheduleId = selectedSchedule?.jadwal_penyetoran_id;
-
-    console.log('Selected index:', selectedIndex);
-    console.log('Selected schedule:', selectedSchedule);
-    console.log('Schedule ID to send (jadwal_penyetoran_id):', scheduleId);
 
     data.append("user_id", finalUserId);
     data.append("jadwal_penyetoran_id", scheduleId);  // Send with correct field name
@@ -224,15 +212,9 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
       const result = await res.json();
 
-      // Log response untuk debugging
-      console.log('Response status:', res.status);
-      console.log('Response data:', result);
-
       if (!res.ok) {
         // Tangani validation errors dari Laravel
         if (result.errors) {
-          console.error('Validation errors:', result.errors);
-
           const backendErrors = {};
           Object.keys(result.errors).forEach(key => {
             backendErrors[key] = result.errors[key][0];
@@ -248,8 +230,6 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         throw new Error(result.message || "Terjadi kesalahan");
       }
 
-      console.log("Respons backend:", result);
-
       if (result.status === "success") {
         alert(result.message || "Tabung sampah berhasil!");
         // Reset form kembali ke awal
@@ -264,7 +244,6 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         onClose();
       }
     } catch (err) {
-      console.error("Error submit:", err);
       alert(err.message || "Gagal mengirim data");
     } finally {
       setLoading(false);

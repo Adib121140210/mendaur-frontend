@@ -40,7 +40,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log('🎖️ Badges loaded:', data.data?.length || 0)
+
       return {
         success: true,
         data: data.data || [],
@@ -121,7 +121,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log('✨ Badge created:', data.data?.id)
+
       return {
         success: true,
         data: data.data || data
@@ -161,7 +161,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log('✏️ Badge updated:', id)
+
       return {
         success: true,
         data: data.data || data
@@ -200,7 +200,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log('🗑️ Badge deleted:', id)
+
       return {
         success: true,
         message: data.message || 'Badge deleted'
@@ -247,7 +247,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log(`🏅 Badge ${badgeId} assigned to user ${userId}`)
+
       return {
         success: true,
         message: data.message || 'Badge assigned successfully'
@@ -294,7 +294,7 @@ export const badgeService = {
       }
 
       const data = await response.json()
-      console.log(`❌ Badge ${badgeId} revoked from user ${userId}`)
+
       return {
         success: true,
         message: data.message || 'Badge revoked successfully'

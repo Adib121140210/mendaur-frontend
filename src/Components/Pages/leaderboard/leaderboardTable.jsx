@@ -93,8 +93,6 @@ export default function LeaderboardTable() {
           url += `?${params.toString()}`;
         }
 
-        console.log('Fetching leaderboard with URL:', url);
-
         const response = await fetch(url, {
           method: 'GET',
           headers: {
@@ -108,7 +106,6 @@ export default function LeaderboardTable() {
         }
 
         const result = await response.json();
-        console.log('Leaderboard API response:', result);
 
         // Handle different API response structures
         const data = result.data || result.leaderboard || result;
@@ -119,7 +116,6 @@ export default function LeaderboardTable() {
           throw new Error('Format data leaderboard tidak valid');
         }
       } catch (err) {
-        console.error('Error fetching leaderboard:', err);
         setError(err.message);
       } finally {
         setLoading(false);

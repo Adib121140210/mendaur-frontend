@@ -20,13 +20,7 @@ const LeaderboardHeader = () => {
         const token = localStorage.getItem('token');
         const userId = localStorage.getItem('id_user');
 
-        // Add detailed logging
-        console.log('===== LEADERBOARD STATS DEBUG =====');
-        console.log('Fetching stats for user:', userId);
-        console.log('Token available:', !!token);
-
         if (!token || !userId) {
-          console.warn('No authentication token or user ID found');
           // Set some default stats for unauthenticated users
           setStats({
             poin: 0,
@@ -70,34 +64,16 @@ const LeaderboardHeader = () => {
           }),
         ]);
 
-        console.log('User stats response status:', userStatsResponse.status);
-        console.log('Leaderboard response status:', leaderboardResponse.status);
-
-        // If either request fails, log the error and show default stats
-        if (!userStatsResponse.ok) {
-          console.error(`User stats API error: ${userStatsResponse.status} ${userStatsResponse.statusText}`);
-          const errorBody = await userStatsResponse.text();
-          console.error('Response body:', errorBody);
-        }
-
-        if (!leaderboardResponse.ok) {
-          console.error(`Leaderboard API error: ${leaderboardResponse.status} ${leaderboardResponse.statusText}`);
-          const errorBody = await leaderboardResponse.text();
-          console.error('Response body:', errorBody);
-        }
-
         // Continue even if one fails, use available data
         let userStatsData = null;
         let leaderboardData = null;
 
         if (userStatsResponse.ok) {
           userStatsData = await userStatsResponse.json();
-          console.log('User stats response:', userStatsData);
         }
 
         if (leaderboardResponse.ok) {
           leaderboardData = await leaderboardResponse.json();
-          console.log('Leaderboard response:', leaderboardData);
         }
 
         // Extract user stats from the appropriate response
@@ -109,11 +85,9 @@ const LeaderboardHeader = () => {
 
         // Try to extract from userStatsData first (if it has user object)
         if (userStatsData?.user) {
-          console.log('Using user stats from /api/dashboard/stats/{userId}');
           userPoints = userStatsData.user.total_poin || userStatsData.user.poin || 0;
           userWaste = userStatsData.user.total_setor_sampah || userStatsData.user.sampah || 0;
         } else if (userStatsData?.statistics) {
-          console.log('Using statistics from /api/dashboard/stats/{userId}');
           userPoints = userStatsData.statistics.total_poin || userStatsData.statistics.poin || 0;
           userWaste = userStatsData.statistics.total_setor_sampah || userStatsData.statistics.sampah || 0;
         }
@@ -122,27 +96,20 @@ const LeaderboardHeader = () => {
         let leaderboard = [];
         if (leaderboardData?.data && Array.isArray(leaderboardData.data)) {
           leaderboard = leaderboardData.data;
-          console.log('Got leaderboard from leaderboardData.data');
         } else if (Array.isArray(leaderboardData)) {
           leaderboard = leaderboardData;
-          console.log('Got leaderboard directly');
         }
 
         const totalPeserta = Array.isArray(leaderboard) ? leaderboard.length : 0;
-
-        console.log('Leaderboard array length:', totalPeserta);
-        console.log('Looking for user ID:', currentUserId);
 
         // Find current user in leaderboard
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
           const currentUser = leaderboard.find(user => {
             const leaderboardUserId = parseInt(user.user_id || user.id, 10);
-            console.log('Comparing:', leaderboardUserId, '===', currentUserId, '?', leaderboardUserId === currentUserId);
             return leaderboardUserId === currentUserId;
           });
 
           if (currentUser) {
-            console.log('Found current user in leaderboard:', currentUser);
             userRank = currentUser.rank || null;
             // If we didn't get points from user stats API, use leaderboard data
             if (userPoints === 0) {
@@ -151,14 +118,8 @@ const LeaderboardHeader = () => {
             if (userWaste === 0) {
               userWaste = currentUser.total_setor_sampah || 0;
             }
-          } else {
-            console.warn('Current user not found in leaderboard');
           }
         }
-
-        console.log('Extracted user points:', userPoints);
-        console.log('Extracted user waste:', userWaste);
-        console.log('Extracted user rank:', userRank);
 
         // Calculate user's rank position
         let peringkat = '—';
@@ -176,9 +137,6 @@ const LeaderboardHeader = () => {
           poinRatio = avgPoints > 0 ? (userPoints / avgPoints).toFixed(1) : 0;
         }
 
-        console.log('Final stats:', { userPoints, userWaste, peringkat, totalPeserta, poinRatio, weeklyWaste });
-        console.log('===== END DEBUG =====');
-
         setStats({
           poin: userPoints,
           sampah: userWaste,
@@ -188,8 +146,7 @@ const LeaderboardHeader = () => {
           weeklyIncrease: weeklyWaste,
           seasonPoin: userPoints, // For now, same as total (backend should return season-specific)
         });
-      } catch (err) {
-        console.error('Error fetching leaderboard stats:', err);
+      } catch {
         // Set default stats on error
         setStats({
           poin: 0,
