@@ -4,6 +4,7 @@ import { Recycle, Search } from "lucide-react";
 import KategoriSampahWrapper from "./kategoriSampah";
 import JadwalTabungSampah from "./jadwalTabungSampah";
 import FormSetorSampah from "../../Form/FormSetorSampah";
+import { API_BASE_URL } from "../../../config/api";
 import "./tabungSampah.css";
 
 export default function TabungSampah() {
@@ -58,8 +59,8 @@ export default function TabungSampah() {
 
         // ✅ Fetch BOTH jenis-sampah AND kategori-sampah in parallel
         const [jenisResponse, kategoriResponse] = await Promise.all([
-          fetch("http://127.0.0.1:8000/api/jenis-sampah", fetchOptions),
-          fetch("http://127.0.0.1:8000/api/kategori-sampah", fetchOptions),
+          fetch(`${API_BASE_URL}/jenis-sampah`, fetchOptions),
+          fetch(`${API_BASE_URL}/kategori-sampah`, fetchOptions),
         ]);
 
         if (jenisResponse.ok && kategoriResponse.ok) {

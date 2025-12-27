@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Trophy, Target, Medal, TrendingUp } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./leaderboardHeader.css";
 
 const LeaderboardHeader = () => {
@@ -46,11 +47,11 @@ const LeaderboardHeader = () => {
         const seasonEnd = new Date(year, seasonEndMonth + 1, 0).toISOString().split('T')[0];
 
         // Build leaderboard URL with season filter
-        const leaderboardUrl = `http://127.0.0.1:8000/api/dashboard/leaderboard?period=season&start_date=${seasonStart}&end_date=${seasonEnd}`;
+        const leaderboardUrl = `${API_BASE_URL}/dashboard/leaderboard?period=season&start_date=${seasonStart}&end_date=${seasonEnd}`;
 
         // Fetch user stats and leaderboard in parallel
         const [userStatsResponse, leaderboardResponse] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/dashboard/stats/${userId}`, {
+          fetch(`${API_BASE_URL}/dashboard/stats/${userId}`, {
             headers: {
               'Accept': 'application/json',
               'Authorization': `Bearer ${token}`,

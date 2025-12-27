@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Loader,
 } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./riwayatTransaksi.css";
 
 export default function RiwayatTransaksi() {
@@ -41,7 +42,7 @@ export default function RiwayatTransaksi() {
       const userId = localStorage.getItem('id_user');
 
       // Fetch cash withdrawals
-      const withdrawalsResponse = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
+      const withdrawalsResponse = await fetch(`${API_BASE_URL}/penarikan-tunai`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
@@ -83,7 +84,7 @@ export default function RiwayatTransaksi() {
         const userId = localStorage.getItem('id_user');
 
         if (userId) {
-          const wasteResponse = await fetch(`http://127.0.0.1:8000/api/users/${userId}/tabung-sampah`, {
+          const wasteResponse = await fetch(`${API_BASE_URL}/users/${userId}/tabung-sampah`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Accept': 'application/json',
@@ -118,7 +119,7 @@ export default function RiwayatTransaksi() {
       // Fetch product redemptions
       let productRedemptions = [];
       try {
-        const productResponse = await fetch('http://127.0.0.1:8000/api/penukaran-produk', {
+        const productResponse = await fetch(`${API_BASE_URL}/penukaran-produk`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',

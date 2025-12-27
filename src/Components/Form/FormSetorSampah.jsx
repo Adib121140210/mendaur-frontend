@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./FormSetorSampah.css";
 import KategoriSampahWrapper from "../Pages/tabungSampah/kategoriSampah";
 import { useAuth } from "../Pages/context/AuthContext";
+import { API_BASE_URL } from "../../config/api";
 
 // Component for waste deposit form submission
 export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }) {
@@ -59,7 +60,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
   useEffect(() => {
     const fetchJadwal = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/jadwal-penyetoran");
+        const res = await fetch(`${API_BASE_URL}/jadwal-penyetoran`);
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         let schedules = result.data || [];
@@ -201,7 +202,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/tabung-sampah", {
+      const res = await fetch(`${API_BASE_URL}/tabung-sampah`, {
         method: "POST",
         headers: {
           'Accept': 'application/json',

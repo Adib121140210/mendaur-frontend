@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Filter, ChevronLeft, ChevronRight, AlertCircle, Search } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './pointHistory.css';
 
 const AllUsersHistory = () => {
@@ -68,7 +69,7 @@ const AllUsersHistory = () => {
 
       // Use admin endpoint for all users' history
       const response = await fetch(
-        `http://127.0.0.1:8000/api/poin/admin/history?${params.toString()}`,
+        `${API_BASE_URL}/poin/admin/history?${params.toString()}`,
         {
           method: 'GET',
           headers: {

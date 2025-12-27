@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, CheckCircle, XCircle, Loader, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./jadwalTabungSampah.css";
 
 export default function JadwalTabungSampah({ onSelect, showSelection = false }) {
@@ -19,7 +20,7 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
         const userId = localStorage.getItem("id_user");
 
         // Both modes fetch from same endpoint, filter on frontend
-        const endpoint = `http://127.0.0.1:8000/api/jadwal-penyetoran`;
+        const endpoint = `${API_BASE_URL}/jadwal-penyetoran`;
 
         const headers = {
           Accept: "application/json",

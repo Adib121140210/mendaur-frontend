@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, ArrowLeft, Leaf, AlertCircle, CheckCircle, KeyRound, Lock, Eye, EyeOff } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./forgotPassword.css";
 
 export default function ForgotPassword() {
@@ -62,7 +63,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/forgot-password", {
+      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export default function ForgotPassword() {
         otp: otpCode 
       };
 
-      const response = await fetch("http://127.0.0.1:8000/api/verify-otp", {
+      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +239,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/forgot-password", {
+      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -328,7 +329,7 @@ export default function ForgotPassword() {
       for (let i = 0; i < payloadVariations.length; i++) {
         const payload = payloadVariations[i];
 
-        const response = await fetch("http://127.0.0.1:8000/api/reset-password", {
+        const response = await fetch(`${API_BASE_URL}/reset-password`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import "./tukarPoin.css";
 import Pagination from '../../ui/pagination'
 import productApi from "../../../services/productApi";
 import ProdukCard from "../produk/produkCard";
+import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
 
 import {
   Star,
@@ -229,7 +230,7 @@ export default function TukarPoin() {
         nama_penerima: accountName,
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/penarikan-tunai', {
+      const response = await fetch(`${API_BASE_URL}/penarikan-tunai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -349,7 +350,7 @@ export default function TukarPoin() {
         catatan: `Penukaran ${redeemQuantity} ${selectedProduct.nama}`, // Notes
       };
       
-      const response = await fetch('http://127.0.0.1:8000/api/penukaran-produk', {
+      const response = await fetch(`${API_BASE_URL}/penukaran-produk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -594,7 +595,7 @@ export default function TukarPoin() {
                     <img 
                       src={selectedProduct.foto.startsWith('http') 
                         ? selectedProduct.foto 
-                        : `http://127.0.0.1:8000/${selectedProduct.foto}`}
+                        : `${STORAGE_URL}/${selectedProduct.foto}`}
                       alt={selectedProduct.nama} 
                     />
                   ) : (

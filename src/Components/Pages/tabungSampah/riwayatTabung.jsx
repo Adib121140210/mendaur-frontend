@@ -12,6 +12,7 @@ import {
   X
 } from "lucide-react";
 import useScrollTop from "../../lib/useScrollTop";
+import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
 import "./riwayatTabung.css";
 
 const RiwayatTabung = () => {
@@ -53,7 +54,7 @@ const RiwayatTabung = () => {
         params.append("status", statusFilter);
       }
 
-      const url = `http://127.0.0.1:8000/api/users/${user.user_id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `${API_BASE_URL}/users/${user.user_id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
 
       // Get auth token from localStorage
       const token = localStorage.getItem('token');      const response = await fetch(url, {
@@ -385,7 +386,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
               <img
                 src={deposit.foto_bukti.startsWith('http')
                   ? deposit.foto_bukti
-                  : `http://127.0.0.1:8000${deposit.foto_bukti}`}
+                  : `${STORAGE_URL}${deposit.foto_bukti}`}
                 alt="Bukti tabung sampah"
                 className="evidencePhoto"
               />

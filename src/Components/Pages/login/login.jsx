@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../../../config/api";
 import "./login.css";
 
 export default function Login() {
@@ -19,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +61,7 @@ export default function Login() {
       }
     } catch (error) {
       if (error.message.includes("Failed to fetch") || error.message.includes("ERR_CONNECTION_REFUSED")) {
-        setErrorMsg("Tidak dapat terhubung ke server. Pastikan backend berjalan di http://127.0.0.1:8000");
+        setErrorMsg("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
       } else {
         setErrorMsg(error.message || "Terjadi kesalahan. Silakan coba lagi.");
       }

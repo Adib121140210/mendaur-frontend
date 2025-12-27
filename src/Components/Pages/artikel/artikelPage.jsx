@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, BookOpen, TrendingUp, Filter } from "lucide-react";
 import ArtikelCard from "../../lib/artikel";
 import useScrollTop from "../../lib/useScrollTop";
+import { API_BASE_URL } from "../../../config/api";
 import "./artikelPage.css";
 
 const ArtikelPage = () => {
@@ -22,7 +23,7 @@ const ArtikelPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/artikel');
+      const response = await fetch(`${API_BASE_URL}/artikel`);
       if (!response.ok) return;
       
       const result = await response.json();
@@ -38,7 +39,7 @@ const ArtikelPage = () => {
 
   const fetchPopularArticles = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/artikel');
+      const response = await fetch(`${API_BASE_URL}/artikel`);
       if (!response.ok) return;
       
       const result = await response.json();

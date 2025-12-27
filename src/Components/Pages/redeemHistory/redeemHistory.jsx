@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, Calendar, AlertCircle, Search } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './redeemHistory.css';
 
 const AllRedemptions = () => {
@@ -56,7 +57,7 @@ const AllRedemptions = () => {
 
       // Use admin endpoint for all users' redemptions
       const response = await fetch(
-        `http://127.0.0.1:8000/api/poin/admin/redemptions?${params.toString()}`,
+        `${API_BASE_URL}/poin/admin/redemptions?${params.toString()}`,
         {
           method: 'GET',
           headers: {

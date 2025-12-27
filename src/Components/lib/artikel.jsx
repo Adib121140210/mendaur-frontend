@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import "./artikel.css";
 import Pagination from "../ui/pagination";
 import { Eye } from "lucide-react";
+import { API_BASE_URL, STORAGE_URL } from "../../config/api";
 
 const ArtikelCard = ({
   data = null,
@@ -31,7 +32,7 @@ const ArtikelCard = ({
       setLoading(true);
 
       // Fetch all articles from API (backend doesn't support query params)
-      const url = `http://127.0.0.1:8000/api/artikel`;
+      const url = `${API_BASE_URL}/artikel`;
       
       const response = await fetch(url);
 
@@ -112,14 +113,11 @@ const ArtikelCard = ({
       return foto;
     }
     
-    // Try different path patterns
-    const baseUrl = 'http://127.0.0.1:8000';
-    
     // Remove leading slashes and 'storage/' prefix if present
     let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
     
     // Try with storage prefix
-    return `${baseUrl}/storage/${cleanPath}`;
+    return `${STORAGE_URL}/storage/${cleanPath}`;
   };
 
   if (loading) {

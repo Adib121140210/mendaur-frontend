@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, AlertCircle, Download } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './pointBreakdown.css';
 
 const PointBreakdown = ({ userId = null }) => {
@@ -30,7 +31,7 @@ const PointBreakdown = ({ userId = null }) => {
       setError(null);
 
       const response = await fetch(
-        `http://127.0.0.1:8000/api/poin/breakdown/${currentUserId}`,
+        `${API_BASE_URL}/poin/breakdown/${currentUserId}`,
         {
           method: 'GET',
           headers: {

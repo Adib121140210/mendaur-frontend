@@ -2,6 +2,7 @@ import useScrollTop from "../../lib/useScrollTop";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, Calendar, User, ArrowLeft, Clock, Share2, BookOpen, TrendingUp } from "lucide-react";
+import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
 import "./artikelDetail.css";
 
 const ArtikelDetail = () => {
@@ -27,12 +28,11 @@ const ArtikelDetail = () => {
       setError(null);
       
       // Try fetching single artikel by ID
-      let response = await fetch(`http://127.0.0.1:8000/api/artikel/${artikelId}`);
+      let response = await fetch(`${API_BASE_URL}/artikel/${artikelId}`);
       
       // If 404, try fetching all articles and filter by ID
       if (!response.ok && response.status === 404) {
-        console.log('Single artikel endpoint not found, fetching all articles...');
-        response = await fetch('http://127.0.0.1:8000/api/artikel');
+        response = await fetch(`${API_BASE_URL}/artikel`);
         
         if (!response.ok) {
           // Use mock data if API is not available
@@ -118,7 +118,7 @@ const ArtikelDetail = () => {
 
   const fetchRelatedArticles = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/artikel');
+      const response = await fetch(`${API_BASE_URL}/artikel`);
       if (!response.ok) return;
       
       const result = await response.json();
@@ -165,14 +165,11 @@ const ArtikelDetail = () => {
       return foto;
     }
     
-    // Try different path patterns
-    const baseUrl = 'http://127.0.0.1:8000';
-    
     // Remove leading slashes and 'storage/' prefix if present
     let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
     
     // Try with storage prefix
-    return `${baseUrl}/storage/${cleanPath}`;
+    return `${STORAGE_URL}/storage/${cleanPath}`;
   };
 
   const handleShare = () => {

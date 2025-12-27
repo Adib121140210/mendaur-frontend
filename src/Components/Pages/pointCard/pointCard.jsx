@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, TrendingUp, Clock, AlertCircle, Users } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './pointCard.css';
 
 const AdminStatsCard = () => {
@@ -35,7 +36,7 @@ const AdminStatsCard = () => {
 
       // Fetch system-wide point statistics
       const statsResponse = await fetch(
-        'http://127.0.0.1:8000/api/poin/admin/stats',
+        `${API_BASE_URL}/poin/admin/stats`,
         {
           method: 'GET',
           headers: {

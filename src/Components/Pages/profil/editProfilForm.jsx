@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { updateUserProfile, uploadUserAvatar } from "../../../services/api";
 import { User, Mail, Phone, MapPin, Save, Loader2, Camera, X } from "lucide-react";
+import { STORAGE_URL } from "../../../config/api";
 import "./editProfilForm.css";
 
 export default function EditProfilForm({ user, onSuccess, onCancel }) {
@@ -110,7 +111,7 @@ export default function EditProfilForm({ user, onSuccess, onCancel }) {
   const getAvatarUrl = () => {
     if (previewUrl) return previewUrl;
     if (user.foto_profil) {
-      return `http://127.0.0.1:8000/storage/${user.foto_profil}`;
+      return `${STORAGE_URL}/storage/${user.foto_profil}`;
     }
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&size=120&background=4CAF50&color=fff&bold=true`;
   };

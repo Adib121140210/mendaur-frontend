@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, TrendingUp, Clock, Calendar, Loader2, Trophy, Timer, RefreshCw } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./leaderboardTable.css";
 import Pagination from "../../ui/pagination";
 
@@ -75,7 +76,7 @@ export default function LeaderboardTable() {
         }
 
         // Build URL with period filter
-        let url = 'http://127.0.0.1:8000/api/dashboard/leaderboard';
+        let url = `${API_BASE_URL}/dashboard/leaderboard`;
         const params = new URLSearchParams();
         
         // Add period filter to API call

@@ -3,6 +3,8 @@
  * Helps determine if 401 errors are due to invalid token or endpoint issues
  */
 
+import { API_BASE_URL } from '../config/api';
+
 /**
  * Test if current token is valid by calling a simple endpoint
  * @returns {boolean} true if token is valid, false otherwise
@@ -13,7 +15,7 @@ export const validateCurrentToken = async () => {
     if (!token) return false;
 
     // Try a simple endpoint that should always work if token is valid
-    const response = await fetch('http://127.0.0.1:8000/api/profile', {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -22,8 +24,7 @@ export const validateCurrentToken = async () => {
     });
 
     return response.ok;
-  } catch (error) {
-    console.error('Token validation error:', error);
+  } catch {
     return false;
   }
 };
@@ -33,16 +34,12 @@ export const validateCurrentToken = async () => {
  * @param {string} failedEndpoint - endpoint that returned 401
  */
 export const smart401Handler = async (failedEndpoint) => {
-  console.warn(`401 detected on ${failedEndpoint}, validating token...`);
-  
   // Check if token is actually invalid
   const isTokenValid = await validateCurrentToken();
   
   if (!isTokenValid) {
-    console.error('Token is invalid, forcing logout');
     forceLogout(`Invalid token detected on ${failedEndpoint}`);
   } else {
-    console.warn(`Token is valid, ${failedEndpoint} endpoint may have issues`);
     // Don't logout, just return error for component to handle
     return {
       success: false,

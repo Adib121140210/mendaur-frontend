@@ -4,6 +4,7 @@ import { Recycle, Trophy, Star, TrendingUp, Award, Activity } from "lucide-react
 import { useAuth } from "../context/AuthContext";
 import ArtikelCard from "../../lib/artikel";
 import Banner from "../../lib/banner";
+import { API_BASE_URL } from "../../../config/api";
 import "./homeContent.css";
 
 const HomeContent = () => {
@@ -49,7 +50,7 @@ const HomeContent = () => {
       };
 
       // Fetch user stats
-      const statsRes = await fetch(`http://127.0.0.1:8000/api/dashboard/stats/${userId}`, {
+      const statsRes = await fetch(`${API_BASE_URL}/dashboard/stats/${userId}`, {
         headers,
       });
       if (statsRes.ok) {
@@ -58,7 +59,7 @@ const HomeContent = () => {
       }
 
       // Fetch leaderboard
-      const leaderRes = await fetch('http://127.0.0.1:8000/api/dashboard/leaderboard', {
+      const leaderRes = await fetch(`${API_BASE_URL}/dashboard/leaderboard`, {
         headers,
       });
       if (leaderRes.ok) {
@@ -67,7 +68,7 @@ const HomeContent = () => {
       }
 
       // Fetch user badges
-      const badgesRes = await fetch(`http://127.0.0.1:8000/api/users/${userId}/badges`, {
+      const badgesRes = await fetch(`${API_BASE_URL}/users/${userId}/badges`, {
         headers,
       });
       if (badgesRes.ok) {
@@ -81,7 +82,7 @@ const HomeContent = () => {
       // 1. Fetch Tabung Sampah activities
       // Backend endpoint: GET /api/setor-sampah/user/{userId}
       try {
-        const tabungRes = await fetch(`http://127.0.0.1:8000/api/setor-sampah/user/${userId}`, { headers });
+        const tabungRes = await fetch(`${API_BASE_URL}/setor-sampah/user/${userId}`, { headers });
         
         if (tabungRes.ok) {
           const tabungData = await tabungRes.json();

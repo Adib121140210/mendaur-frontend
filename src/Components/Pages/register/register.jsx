@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, User, Phone, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./register.css";
 
 export default function Register() {
@@ -125,7 +126,7 @@ export default function Register() {
         password_confirmation: formData.password_confirm,
       };
 
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

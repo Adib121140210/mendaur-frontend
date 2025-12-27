@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Package, Coins, ShoppingCart, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import productApi from '../../../services/productApi';
+import { STORAGE_URL } from '../../../config/api';
 import './produkDetail.css';
 
 export default function ProdukDetail() {
@@ -42,7 +43,7 @@ export default function ProdukDetail() {
     if (!foto) return null;
     // If path doesn't start with storage/, add it
     const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
-    return `http://127.0.0.1:8000/${cleanPath}`;
+    return `${STORAGE_URL}/${cleanPath}`;
   };
 
   const handleRedeem = async () => {

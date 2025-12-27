@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getUnlockedBadges, setBadgeTitle, uploadUserAvatar } from "../../../services/api";
 import { Upload, X, Star, Trophy, ChevronDown } from "lucide-react";
+import { STORAGE_URL } from "../../../config/api";
 import "../profil/profilHeader.css";
 
 export default function ProfilHeader() {
@@ -147,7 +148,7 @@ export default function ProfilHeader() {
   // Generate avatar URL
   const getAvatarUrl = () => {
     if (user.foto_profil) {
-      return `http://127.0.0.1:8000/storage/${user.foto_profil}`;
+      return `${STORAGE_URL}/storage/${user.foto_profil}`;
     }
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&size=120&background=4CAF50&color=fff&bold=true`;
   };

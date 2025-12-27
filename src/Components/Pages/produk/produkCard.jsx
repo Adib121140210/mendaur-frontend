@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import "./produkCard.css";
 import Pagination from '../../ui/pagination'
+import { STORAGE_URL } from "../../../config/api";
 
 import { Coins, Package, ShoppingCart } from "lucide-react";
 
@@ -37,7 +38,7 @@ const ProdukCard = ({
     
     // If path doesn't start with storage/, add it
     const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
-    return `http://127.0.0.1:8000/${cleanPath}`;
+    return `${STORAGE_URL}/${cleanPath}`;
   };
 
   // Safe parse integer
