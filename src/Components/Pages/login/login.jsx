@@ -20,7 +20,11 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      // Debug: Log API endpoint
+      const loginUrl = `${API_BASE_URL}/login`;
+      console.log('Attempting login to:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,13 +35,26 @@ export default function Login() {
           password: password,
         }),
       });
+      
+      // Debug: Log response
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
 
       if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || "Login gagal");
+        // Try to parse as JSON, but handle HTML responses
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const result = await response.json();
+          throw new Error(result.message || "Login gagal");
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response:', text.substring(0, 200));
+          throw new Error("Server mengembalikan response yang tidak valid. Periksa backend API.");
+        }
       }
 
       const result = await response.json();
+      console.log('Login response:', result);
 
       if (result.status === "success") {
         // Extract login response
