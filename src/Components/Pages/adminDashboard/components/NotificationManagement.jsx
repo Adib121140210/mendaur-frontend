@@ -62,9 +62,9 @@ export default function NotificationManagement() {
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      console.log('📡 Fetching notifications...');
+      console.log('Fetching notifications...');
       const result = await adminApi.getNotifications();
-      console.log('📥 Notifications API response:', result);
+      console.log('Notifications API response:', result);
       
       // Handle authentication error
       if (!result.success && result.error === 'HTTP 401') {
@@ -90,21 +90,21 @@ export default function NotificationManagement() {
           data = result.data.notifications;
         }
         
-        console.log('✅ Notifications loaded from API:', data.length, 'items');
+        console.log('Notifications loaded from API:', data.length, 'items');
         
         // If API returns empty array, use mock for demo
         if (data.length === 0) {
-          console.log('ℹ️ No notifications in database, showing mock data for demo');
+          console.log('No notifications in database, showing mock data for demo');
           data = MOCK_NOTIFICATIONS;
         }
       } else {
-        console.warn('⚠️ API returned no data or error, using mock');
+        console.warn('API returned no data or error, using mock');
         data = MOCK_NOTIFICATIONS;
       }
       
       setNotifications(data);
     } catch (err) {
-      console.error('❌ Notifications fetch error:', err.message);
+      console.error('Notifications fetch error:', err.message);
       setNotifications(MOCK_NOTIFICATIONS);
     } finally {
       setLoading(false);

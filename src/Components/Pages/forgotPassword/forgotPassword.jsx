@@ -376,7 +376,7 @@ export default function ForgotPassword() {
         }
 
         if (response.ok && (result.success || result.status === "success")) {
-          console.log(`✅ Success with field '${tokenFieldStr}'!`);
+          console.log(`Success with field '${tokenFieldStr}'!`);
           console.log('Password Reset Successfully! Moving to success step...');
           setErrorMsg("");
           setStep('success');
@@ -384,7 +384,7 @@ export default function ForgotPassword() {
           break;
         } else {
           lastError = result;
-          console.log(`❌ Failed with field '${tokenFieldStr}', trying next...`);
+          console.log(`Failed with field '${tokenFieldStr}', trying next...`);
         }
       }
 

@@ -15,9 +15,9 @@ export const User = [
     transaksi: 8,
     ajakan: 2,
     riwayat_aktivitas: [
-      "✅ Menyetor 5kg plastik ke Bank Sampah Induk Nusa",
-      "🎁 Menukar 500 poin dengan sabun ramah lingkungan",
-      "📈 Naik ke Level 3"
+      "Menyetor 5kg plastik ke Bank Sampah Induk Nusa",
+      "Menukar 500 poin dengan sabun ramah lingkungan",
+      "Naik ke Level 3"
     ],
     badge_terkumpul: [], // akan diisi otomatis jika pakai hybrid unlock
     badge_aktif: null // tambahkan ini untuk menyimpan badge yang dipilih

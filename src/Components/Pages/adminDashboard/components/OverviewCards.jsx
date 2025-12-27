@@ -21,9 +21,16 @@ const OverviewCards = () => {
       setLoading(true)
       const result = await adminApi.getOverview()
       
+      // Check for 401 specifically and handle gracefully
+      if (result.statusCode === 401) {
+        console.warn('Admin overview endpoint returned 401 - using mock data for now')
+        setStats(MOCK_DATA)
+        return
+      }
+      
       // Multi-format response handler (supports 3+ formats)
       let statsData = MOCK_DATA
-      if (result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
+      if (result.success && result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
         // Check if it has the right structure
         if (result.data.users && result.data.waste && result.data.points && result.data.redemptions) {
           statsData = result.data

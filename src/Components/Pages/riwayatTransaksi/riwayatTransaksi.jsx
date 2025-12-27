@@ -53,7 +53,7 @@ export default function RiwayatTransaksi() {
       let withdrawals = [];
       if (withdrawalsResponse.ok) {
         const withdrawalsData = await withdrawalsResponse.json();
-        console.log('💰 Raw withdrawals response:', withdrawalsData);
+        console.log('Raw withdrawals response:', withdrawalsData);
         
         // Filter only withdrawals for current user
         const allWithdrawals = withdrawalsData.data?.data || withdrawalsData.data || [];
@@ -61,7 +61,7 @@ export default function RiwayatTransaksi() {
           item.user_id?.toString() === userId?.toString()
         );
         
-        console.log(`✅ Filtered ${userWithdrawals.length} withdrawals from ${allWithdrawals.length} total`);
+        console.log(`Filtered ${userWithdrawals.length} withdrawals from ${allWithdrawals.length} total`);
         
         withdrawals = userWithdrawals.map(item => ({
           id: `withdrawal-${item.penarikan_tunai_id}`,
@@ -103,9 +103,9 @@ export default function RiwayatTransaksi() {
 
             wasteDeposits = wasteArray.map(item => ({
               id: `waste-${item.tabung_sampah_id}`,
-              type: 'setor_sampah',
-              kategori: 'penyetoran',
-              deskripsi: `Setoran ${item.jenis_sampah}`,
+              type: 'tabung_sampah',
+              kategori: 'tabung',
+              deskripsi: `Tabung ${item.jenis_sampah}`,
               detail: `+${item.poin_diperoleh || 0} poin`,
               points: item.poin_diperoleh || 0,
               status: item.status || 'approved',
@@ -133,7 +133,7 @@ export default function RiwayatTransaksi() {
 
         if (productResponse.ok) {
           const productData = await productResponse.json();
-          console.log('🛍️ Raw product redemptions response:', productData);
+          console.log('Raw product redemptions response:', productData);
 
           // Handle both array and object with data property
           const allRedemptions = Array.isArray(productData)
@@ -145,7 +145,7 @@ export default function RiwayatTransaksi() {
             item.user_id?.toString() === userId?.toString()
           );
           
-          console.log(`✅ Filtered ${userRedemptions.length} product redemptions from ${allRedemptions.length} total`);
+          console.log(`Filtered ${userRedemptions.length} product redemptions from ${allRedemptions.length} total`);
 
           productRedemptions = userRedemptions.map(item => ({
             id: `product-${item.penukaran_produk_id}`,
@@ -292,12 +292,12 @@ export default function RiwayatTransaksi() {
           </button>
 
           <button
-            className={`filterStatusItem ${filterKategori === "penyetoran" ? "active" : ""}`}
-            onClick={() => setFilterKategori("penyetoran")}
+            className={`filterStatusItem ${filterKategori === "tabung" ? "active" : ""}`}
+            onClick={() => setFilterKategori("tabung")}
           >
             <div className="statusIconWrapper">
               <CheckCircle className="statusIcon green" />
-              <span className="statusLabel">Setoran</span>
+              <span className="statusLabel">Tabung Sampah</span>
             </div>
           </button>
 
@@ -352,11 +352,12 @@ export default function RiwayatTransaksi() {
                       <p className="cardSub">
                         {item.type === "tarik_tunai" && "Penarikan Tunai"}
                         {item.type === "tukar_produk" && "Penukaran Produk"}
-                        {item.type === "setor_sampah" && "Setoran Sampah"}
+                        {item.type === "tabung_sampah" && "Tabung Sampah"}
+                        {item.type === "setor_sampah" && "Tabung Sampah"}
                       </p>
                     </div>
-                    <div className={`cardPoint ${item.kategori === 'penyetoran' ? "masuk" : "keluar"}`}>
-                      {item.kategori === 'penyetoran' ? <ArrowUpCircle className="pointIcon" /> : <ArrowDownCircle className="pointIcon" />}
+                    <div className={`cardPoint ${item.kategori === 'tabung' || item.kategori === 'penyetoran' ? "masuk" : "keluar"}`}>
+                      {item.kategori === 'tabung' || item.kategori === 'penyetoran' ? <ArrowUpCircle className="pointIcon" /> : <ArrowDownCircle className="pointIcon" />}
                       <span>{item.detail}</span>
                     </div>
                   </div>
@@ -383,7 +384,7 @@ export default function RiwayatTransaksi() {
                       )}
 
                       {/* Waste Deposit Details */}
-                      {item.type === "setor_sampah" && (
+                      {(item.type === "tabung_sampah" || item.type === "setor_sampah") && (
                         <>
                           <p className="cardNote tambah">
                             <Recycle size={14} />

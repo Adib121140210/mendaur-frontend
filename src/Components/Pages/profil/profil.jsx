@@ -11,7 +11,7 @@ import EditProfilForm from "../profil/editProfilForm";
 import { SquarePen, X } from "lucide-react";
 
 export default function ProfilPage() {
-  const [activeTab, setActiveTab] = useState("achievement");
+  const [activeTab, setActiveTab] = useState("badge");
   const [isEditing, setIsEditing] = useState(false);
   const { user, isAuthenticated, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ export default function ProfilPage() {
 
           <div className="tabContent">
             <div className="tabContentWrapper">
-              {activeTab === "achievement" && <AchievementList />}
+              {activeTab === "badge" && <AchievementList />}
               {activeTab === "data" && <UserData />}
             </div>
           </div>

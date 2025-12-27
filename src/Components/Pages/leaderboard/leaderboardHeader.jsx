@@ -228,7 +228,7 @@ const LeaderboardHeader = () => {
       value: loading ? "..." : `${stats.sampah.toLocaleString('id-ID')} Kg`,
       description: loading ? "Memuat..." : stats.weeklyIncrease > 0 
         ? `+${stats.weeklyIncrease} Kg minggu ini` 
-        : 'Terus setor sampahmu!',
+        : 'Terus tabung sampahmu!',
       icon: <Target size={20} />,
     },
     {

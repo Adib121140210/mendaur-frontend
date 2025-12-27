@@ -56,7 +56,8 @@ export const authService = {
         nama: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
         email: email,
         no_hp: '082123456789',
-        total_poin: Math.floor(Math.random() * 5000),
+        actual_poin: Math.floor(Math.random() * 5000),
+        display_poin: Math.floor(Math.random() * 5000),
         level: credential.level,
       };
 

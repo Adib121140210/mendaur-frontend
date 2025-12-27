@@ -7,16 +7,16 @@ export default function ProfilTabs({ activeTab, setActiveTab }) {
     <div className="profilTabs">
       <div className="tabWrapper">
         <button
-          className={`tabButton ${activeTab === "achievement" ? "active" : ""}`}
-          onClick={() => setActiveTab("achievement")}
+          className={`tabButton ${activeTab === "badge" ? "active" : ""}`}
+          onClick={() => setActiveTab("badge")}
         >
-          Achievement
+          Badge
         </button>
         <button
           className={`tabButton ${activeTab === "data" ? "active" : ""}`}
           onClick={() => setActiveTab("data")}
         >
-          Data Poin
+          Data Pengguna
         </button>
       </div>
     </div>

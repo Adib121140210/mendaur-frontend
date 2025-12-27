@@ -95,16 +95,98 @@ const HomeContent = () => {
         console.error('Badges API error:', badgesRes.status, badgesRes.statusText);
       }
 
-      // Fetch recent activities
-      const activitiesRes = await fetch(`http://127.0.0.1:8000/api/users/${userId}/aktivitas`, {
-        headers,
-      });
-      if (activitiesRes.ok) {
-        const activitiesData = await activitiesRes.json();
-        setRecentActivities(activitiesData.data?.slice(0, 5) || []);
-      } else {
-        console.error('Activities API error:', activitiesRes.status, activitiesRes.statusText);
+      // Fetch recent activities from multiple sources (Tabung Sampah, Penukaran Poin, Penarikan Tunai)
+      const allActivities = [];
+
+      // 1. Fetch Tabung Sampah activities
+      // Backend endpoint: GET /api/setor-sampah/user/{userId}
+      try {
+        const tabungRes = await fetch(`http://127.0.0.1:8000/api/setor-sampah/user/${userId}`, { headers });
+        
+        if (tabungRes.ok) {
+          const tabungData = await tabungRes.json();
+          const tabungItems = tabungData.data || [];
+          
+          const tabungActivities = tabungItems.slice(0, 10).map((item, index) => ({
+            id: `tabung-${item.setor_id || item.id || index}`,
+            tipe_aktivitas: 'tabung_sampah',
+            deskripsi: `Menabung ${item.berat_sampah || item.total_berat || 0} kg ${item.jenis_sampah?.nama_jenis || item.nama_jenis || 'sampah'}`,
+            tanggal: item.tanggal_setor || item.created_at,
+            poin_perubahan: item.poin_diperoleh || item.total_poin || 0,
+          }));
+          allActivities.push(...tabungActivities);
+        }
+      } catch (e) {
+        console.log('Tabung sampah fetch skipped:', e.message);
       }
+
+      // 2. Fetch Penukaran Produk activities
+      // Backend endpoint: GET /api/penukaran-produk/user/{userId}
+      try {
+        const redeemRes = await fetch(`http://127.0.0.1:8000/api/penukaran-produk/user/${userId}`, { headers });
+        
+        if (redeemRes.ok) {
+          const redeemData = await redeemRes.json();
+          const redeemItems = redeemData.data || [];
+          
+          const redeemActivities = redeemItems.slice(0, 10).map((item, index) => ({
+            id: `redeem-${item.penukaran_id || item.id || index}`,
+            tipe_aktivitas: 'tukar_poin',
+            deskripsi: `Menukar poin untuk ${item.produk?.nama_produk || item.nama_produk || 'produk'}`,
+            tanggal: item.tanggal_penukaran || item.created_at,
+            poin_perubahan: -(item.total_poin || item.poin_digunakan || 0),
+          }));
+          allActivities.push(...redeemActivities);
+        }
+      } catch (e) {
+        console.log('Penukaran produk fetch skipped:', e.message);
+      }
+
+      // 3. Fetch Penarikan Tunai activities
+      // Backend endpoint: GET /api/penarikan-tunai/user/{userId}
+      try {
+        const withdrawRes = await fetch(`http://127.0.0.1:8000/api/penarikan-tunai/user/${userId}`, { headers });
+        
+        if (withdrawRes.ok) {
+          const withdrawData = await withdrawRes.json();
+          const withdrawItems = withdrawData.data || [];
+          
+          const withdrawActivities = withdrawItems.slice(0, 10).map((item, index) => ({
+            id: `withdraw-${item.penarikan_id || item.id || index}`,
+            tipe_aktivitas: 'penarikan_tunai',
+            deskripsi: `Penarikan tunai Rp ${(item.jumlah_rupiah || item.nominal || 0).toLocaleString('id-ID')}`,
+            tanggal: item.tanggal_penarikan || item.created_at,
+            poin_perubahan: -(item.poin_digunakan || 0),
+          }));
+          allActivities.push(...withdrawActivities);
+        }
+      } catch (e) {
+        console.log('Penarikan tunai fetch skipped:', e.message);
+      }
+
+      // 4. Fallback: Try user activity log endpoint if available
+      if (allActivities.length === 0) {
+        try {
+          const activitiesRes = await fetch(`http://127.0.0.1:8000/api/users/${userId}/aktivitas`, { headers });
+          if (activitiesRes.ok) {
+            const activitiesData = await activitiesRes.json();
+            const logActivities = (activitiesData.data || []).slice(0, 5).map((item, index) => ({
+              id: `log-${item.log_user_activity_id || index}`,
+              tipe_aktivitas: item.tipe_aktivitas || 'aktivitas',
+              deskripsi: item.deskripsi || 'Aktivitas',
+              tanggal: item.tanggal || item.created_at,
+              poin_perubahan: item.poin_perubahan || 0,
+            }));
+            allActivities.push(...logActivities);
+          }
+        } catch (e) {
+          console.log('User activity log fetch skipped:', e.message);
+        }
+      }
+
+      // Sort all activities by date (newest first) and take top 5
+      allActivities.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      setRecentActivities(allActivities.slice(0, 5));
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -116,7 +198,7 @@ const HomeContent = () => {
     return (
       <div className="homeContentWrapper">
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <h2>Selamat Datang di Mendaur! 🌱</h2>
+          <h2>Selamat Datang di Mendaur!</h2>
           <p style={{ margin: '20px 0', color: '#666' }}>
             Login untuk melihat statistik dan mengumpulkan poin
           </p>
@@ -167,7 +249,7 @@ const HomeContent = () => {
     <div className="homeContentWrapper">
       {/* Welcome Section */}
       <section className="welcomeSection">
-        <h1 className="welcomeTitle">Selamat Datang, {user.nama}! 👋</h1>
+        <h1 className="welcomeTitle">Selamat Datang, {user.nama}!</h1>
         <p className="welcomeSubtitle">Mari kita kelola sampah dan kumpulkan poin hari ini</p>
       </section>
 
@@ -181,13 +263,13 @@ const HomeContent = () => {
             key="stat-poin"
             icon={<Star />}
             title="Total Poin"
-            value={userStats?.total_poin || user.total_poin || 0}
+            value={userStats?.actual_poin || user.actual_poin || 0}
             color="#FFB800"
           />
           <StatCard
             key="stat-sampah"
             icon={<Recycle />}
-            title="Sampah Disetor"
+            title="Sampah Ditabung"
             value={`${userStats?.total_setor_sampah || user.total_setor_sampah || 0} Kg`}
             color="#4CAF50"
           />
@@ -273,7 +355,7 @@ const HomeContent = () => {
               })}
             </div>
           ) : (
-            <p className="emptyState">Belum ada badge. Setor sampah untuk mendapatkan badge!</p>
+            <p className="emptyState">Belum ada badge. Tabung sampah untuk mendapatkan badge!</p>
           )}
         </section>
       </div>
@@ -287,14 +369,11 @@ const HomeContent = () => {
         {recentActivities.length > 0 ? (
           <div className="activityList">
             {recentActivities.map((activity, index) => (
-              <div key={activity.log_user_activity_id || `activity-${index}`} className="activityItem">
+              <div key={activity.id || `activity-${index}`} className="activityItem">
                 <div className="activityIcon">
-                  {activity.tipe_aktivitas === 'badge_unlock' ? '🏆' :
-                   activity.tipe_aktivitas === 'setor_sampah' || activity.tipe_aktivitas === 'tabung_sampah' ? '♻️' :
+                  {activity.tipe_aktivitas === 'tabung_sampah' || activity.tipe_aktivitas === 'setor_sampah' ? '♻️' :
                    activity.tipe_aktivitas === 'tukar_poin' || activity.tipe_aktivitas === 'penukaran_produk' ? '🛍️' :
-                   activity.tipe_aktivitas === 'penarikan_tunai' || activity.tipe_aktivitas === 'tarik_tunai' ? '💰' :
-                   activity.tipe_aktivitas === 'login' ? '🔑' :
-                   activity.tipe_aktivitas === 'register' ? '👤' : '📊'}
+                   activity.tipe_aktivitas === 'penarikan_tunai' || activity.tipe_aktivitas === 'tarik_tunai' ? '💰' : ''}
                 </div>
                 <div className="activityContent">
                   <p className="activityDesc">{activity.deskripsi}</p>
@@ -306,7 +385,7 @@ const HomeContent = () => {
                     })}
                   </p>
                 </div>
-                {activity.poin_perubahan !== 0 && (
+                {activity.poin_perubahan !== 0 && activity.poin_perubahan !== undefined && (
                   <span className={`activityPoints ${activity.poin_perubahan > 0 ? 'positive' : 'negative'}`}>
                     {activity.poin_perubahan > 0 ? '+' : ''}{activity.poin_perubahan} poin
                   </span>

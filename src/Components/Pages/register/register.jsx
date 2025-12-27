@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, User, Phone, Lock, Eye, EyeOff, ArrowLeft, Leaf, AlertCircle, CheckCircle } from "lucide-react";
+import { Mail, User, Phone, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
 import "./register.css";
 
 export default function Register() {
@@ -264,7 +264,7 @@ export default function Register() {
         {/* Logo & Header */}
         <div className="registerHeader">
           <div className="logoIcon">
-            <Leaf size={32} strokeWidth={1.5} />
+            <img src="/assets/ecoTreasure_logo.png" alt="EcoTreasure Logo" className="logoImage" />
           </div>
           <h1 className="formTitle">Daftar ke Mendaur</h1>
           <p className="formSubtitle">Mulai perjalanan sustainability Anda</p>

@@ -15,6 +15,7 @@ import {
   Calendar,
   Award,
   Bell,
+  Trophy,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import '../styles/adminSidebar.css';
@@ -32,6 +33,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRol
       icon: <Users size={20} />,
       items: [
         { id: 'users', label: 'User Management', icon: <Users size={18} /> },
+        { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={18} /> },
         { id: 'notification', label: 'Notification Management', icon: <Bell size={18} /> },
       ],
     },

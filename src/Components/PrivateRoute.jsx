@@ -39,7 +39,7 @@ const PrivateRoute = ({ component, requiredRole = null }) => {
       return (
         <div className="access-denied-container">
           <div className="access-denied-card">
-            <h1>❌ Access Denied</h1>
+            <h1>Access Denied</h1>
             <p>You do not have permission to access this page.</p>
             <p>Required role: <strong>{requiredRole}</strong></p>
             <p>Your role: <strong>{userRole}</strong></p>

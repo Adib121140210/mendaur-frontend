@@ -345,12 +345,12 @@
 
 /* Activity Type Specific Colors */
 
-/* Setor Sampah - Green */
-.activityItem.activity-setor-sampah {
+/* Tabung Sampah - Green */
+.activityItem.activity-tabung-sampah {
   border-left-color: #10b981;
 }
 
-.activityIcon.activity-setor-sampah {
+.activityIcon.activity-tabung-sampah {
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
 }
@@ -527,7 +527,7 @@
   color: #db2777;
 }
 
-/* Responsif */
+/* === RESPONSIF === */
 @media screen and (max-width: 768px) {
   .userDataContainer {
     padding: 1rem;
@@ -535,12 +535,25 @@
   }
 
   .statsGrid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .statCard {
     padding: 16px;
+    min-height: 120px;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .statTitle {
+    font-size: 0.8rem;
+  }
+
+  .statIcon {
+    font-size: 18px;
   }
 
   .statsPaginationControls {
@@ -569,5 +582,63 @@
 
   .timelineDetail {
     font-size: 0.7rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .userDataContainer {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px;
+    min-height: 110px;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .statTitle {
+    font-size: 0.75rem;
+  }
+
+  .statIcon {
+    font-size: 16px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .userDataContainer {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+    min-height: 100px;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .statTitle {
+    font-size: 0.7rem;
+  }
+
+  .statIcon {
+    font-size: 14px;
   }
 }

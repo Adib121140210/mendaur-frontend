@@ -68,6 +68,7 @@ const PointBreakdown = ({ userId = null }) => {
 
   const getSourceIcon = (source) => {
     const icons = {
+      tabung_sampah: '♻️',
       setor_sampah: '♻️',
       tukar_poin: '🎁',
       bonus: '⭐',
@@ -81,7 +82,8 @@ const PointBreakdown = ({ userId = null }) => {
 
   const getSourceLabel = (source) => {
     const labels = {
-      setor_sampah: 'Waste Deposits',
+      tabung_sampah: 'Tabung Sampah',
+      setor_sampah: 'Tabung Sampah',
       tukar_poin: 'Redemptions',
       bonus: 'Bonuses',
       referral: 'Referrals',

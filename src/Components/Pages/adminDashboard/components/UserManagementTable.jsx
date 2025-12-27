@@ -503,7 +503,7 @@ function UserManagementTable() {
                       <td>{user.no_hp || user.no_hp || 'N/A'}</td>
                       <td>{getRoleBadge(user)}</td>
                       <td>{getStatusBadge(user.status, user)}</td>
-                      <td className="points">{user.total_poin || 0}</td>
+                      <td className="points">{user.actual_poin || 0}</td>
                       <td className="action-buttons">
                         <button
                           className="btn-edit"
@@ -566,7 +566,7 @@ function UserManagementTable() {
                   </div>
                   <div className="user-card-row">
                     <span className="label">Points:</span>
-                    <span className="value">{user.total_poin || 0}</span>
+                    <span className="value">{user.actual_poin || 0}</span>
                   </div>
                   <div className="user-card-row">
                     <span className="label">Role:</span>

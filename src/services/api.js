@@ -9,6 +9,9 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api';
  */
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
+  const fullUrl = `${API_BASE_URL}${endpoint}`;
+  
+  console.log(`🌐 API Call: ${options.method || 'GET'} ${fullUrl}`);
 
   const headers = {
     'Content-Type': 'application/json',
@@ -16,25 +19,63 @@ export const apiCall = async (endpoint, options = {}) => {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(fullUrl, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    let errorMessage = `API Error: ${response.status}`;
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorMessage;
-    } catch {
-      // Response was not JSON
+    console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+
+    if (!response.ok) {
+      let errorMessage = `API Error: ${response.status}`;
+      let errorData = null;
+      
+      try {
+        errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+        console.error('❌ API Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: fullUrl,
+          errorData,
+          timestamp: new Date().toISOString()
+        });
+      } catch (parseError) {
+        // Response was not JSON
+        const textContent = await response.text();
+        console.error('❌ API Error (Non-JSON):', {
+          status: response.status,
+          statusText: response.statusText,
+          url: fullUrl,
+          textContent: textContent.substring(0, 200),
+          parseError,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
     }
-    const error = new Error(errorMessage);
-    error.status = response.status;
+
+    const responseData = await response.json();
+    console.log(`✅ API Success:`, responseData);
+    return responseData;
+    
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error('🔌 Network Error:', {
+        endpoint,
+        url: fullUrl,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+      throw new Error('Network error - Unable to connect to server');
+    }
     throw error;
   }
-
-  return await response.json();
 };
 
 // Helper functions
@@ -72,7 +113,53 @@ export const getArticles = () => apiGet(`/articles`);
 export const getArticle = (id) => apiGet(`/articles/${id}`);
 export const login = (email, password) => apiPost('/login', { email, password }, { headers: {} });
 export const register = (data) => apiPost('/register', data, { headers: {} });
-export const updateUserProfile = (userId, data) => apiPut(`/users/${userId}`, data);
+
+/**
+ * Update user profile - tries multiple endpoints
+ * Backend endpoints (in priority order):
+ * 1. PUT /api/profile (primary)
+ * 2. POST /api/profile/update (alternative)
+ * @param {number} userId - User ID
+ * @param {object} data - Profile data to update
+ */
+export const updateUserProfile = async (userId, data) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/json',
+  };
+
+  // 1. Try primary PUT /api/profile endpoint first
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ ...data, user_id: userId }),
+    });
+    
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch {
+    console.log('PUT /profile failed, trying POST /profile/update...');
+  }
+
+  // 2. Try POST /api/profile/update endpoint
+  const response = await fetch(`${API_BASE_URL}/profile/update`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ ...data, user_id: userId }),
+  });
+  
+  if (response.ok) {
+    return await response.json();
+  }
+  
+  // If we get here, throw the error
+  const errorData = await response.json().catch(() => ({}));
+  throw new Error(errorData.message || 'Gagal memperbarui profil');
+};
 
 // Legacy function
 export const fetchRiwayat = async () => {

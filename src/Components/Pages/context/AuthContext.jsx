@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('permissionsCount', permissionsCount.toString()); // Store count separately
     localStorage.setItem('id_user', userData.user_id); // For backward compatibility - now uses user_id from backend
 
-    console.log('✅ Login successful:', {
+    console.log('Login successful:', {
       userId: userData.user_id,
       role: roleName,
       permissions: permissionsCount,
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
         
         if (userData) {
           updateUser(userData);
-          console.log('✅ User data refreshed:', userData.total_poin);
+          console.log('User data refreshed:', userData.total_poin);
         }
       }
     } catch (error) {

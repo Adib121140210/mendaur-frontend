@@ -104,11 +104,11 @@ export default function JadwalTabungSampah({ onSelect, showSelection = false }) 
       <div className="jadwalHeader">
         <div>
           <p className="jadwalCardTitle">
-            {showSelection ? " Pilih Jadwal Penyetoran" : " Jadwal Pengambilan Sampah"}
+            {showSelection ? " Pilih Jadwal Tabung Sampah" : " Jadwal Pengambilan Sampah"}
           </p>
           <p className="jadwalSubtitle">
             {showSelection
-              ? "Pilih jadwal untuk menyetor sampah Anda"
+              ? "Pilih jadwal untuk menabung sampah Anda"
               : "Lihat jadwal pengambilan sampah Anda (Penjadwalan diatur oleh admin)"}
           </p>
         </div>

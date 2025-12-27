@@ -250,7 +250,7 @@ export default function ProfilHeader() {
             </div>
             <div className="pointsInfo">
               <span className="pointsLabel">Total Poin</span>
-              <span className="pointsValue">{(user.total_poin || 0).toLocaleString('id-ID')}</span>
+              <span className="pointsValue">{(user.actual_poin || 0).toLocaleString('id-ID')}</span>
             </div>
           </div>
         </div>

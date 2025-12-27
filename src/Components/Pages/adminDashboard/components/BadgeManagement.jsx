@@ -30,7 +30,7 @@ export default function BadgeManagement() {
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [formData, setFormData] = useState({
     nama: '',
-    tipe: 'setor',
+    tipe: 'tabung',
     deskripsi: '',
     syarat_setor: 1,
     syarat_poin: 0,
@@ -47,23 +47,23 @@ export default function BadgeManagement() {
     {
       badge_id: 1,
       nama: 'Pemula Peduli',
-      deskripsi: 'Setor sampah pertama kali',
+      deskripsi: 'Tabung sampah pertama kali',
       icon: '🌱',
       syarat_poin: 0,
       syarat_setor: 1,
       reward_poin: 50,
-      tipe: 'setor',
+      tipe: 'tabung',
       assigned_count: 45,
     },
     {
       badge_id: 2,
       nama: 'Green Hero',
-      deskripsi: 'Telah melakukan 10 kali penyetoran',
+      deskripsi: 'Telah melakukan 10 kali tabung sampah',
       icon: '🦸',
       syarat_poin: 0,
       syarat_setor: 10,
       reward_poin: 200,
-      tipe: 'setor',
+      tipe: 'tabung',
       assigned_count: 32,
     },
     {

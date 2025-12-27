@@ -84,6 +84,7 @@ const AdminStatsCard = () => {
   const getActivityIcon = (type) => {
     switch (type) {
       case 'deposit':
+      case 'tabung_sampah':
       case 'setor_sampah':
         return '📦';
       case 'redeem':
@@ -101,6 +102,7 @@ const AdminStatsCard = () => {
   const getActivityColor = (type) => {
     switch (type) {
       case 'deposit':
+      case 'tabung_sampah':
       case 'setor_sampah':
         return 'income';
       case 'redeem':

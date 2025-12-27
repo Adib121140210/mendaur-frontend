@@ -207,6 +207,8 @@ export const adminApi = {
     }
   },
 
+  // Phase 2 Analytics Functions - Temporarily Disabled for Clean Deployment
+  /* 
   // Analytics - Waste
   getWasteAnalytics: async (period = 'monthly', filters = {}) => {
     try {
@@ -300,6 +302,7 @@ export const adminApi = {
       return handleError(error, 'Failed to fetch points analytics')
     }
   },
+  */
 
   awardPoints: async (userId, points, reason = '') => {
     try {

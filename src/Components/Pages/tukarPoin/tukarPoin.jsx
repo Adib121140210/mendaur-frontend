@@ -17,7 +17,8 @@ export default function TukarPoin() {
   const { user, refreshUser } = useAuth();
   
   // Get user points from authenticated user data
-  const total_poin = user?.total_poin || 0;
+  // Use actual_poin for balance/transaction validation (updated for new field structure)
+  const total_poin = user?.actual_poin || 0;
 
   // Product states
   const [products, setProducts] = useState([]);
@@ -60,10 +61,10 @@ export default function TukarPoin() {
       const result = await productApi.getAllProducts();
 
       if (result.success) {
-        console.log('✅ Products fetched for TukarPoin:', result.data);
+        console.log('Products fetched for TukarPoin:', result.data);
         setProducts(result.data);
       } else {
-        console.error('❌ Failed to fetch products:', result.message);
+        console.error('Failed to fetch products:', result.message);
         setError(result.message);
         setProducts([]);
       }

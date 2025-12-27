@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Leaf } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
@@ -86,7 +86,7 @@ export default function Login() {
         {/* Logo & Header */}
         <div className="loginHeader">
           <div className="logoIcon">
-            <Leaf size={32} strokeWidth={1.5} />
+            <img src="/assets/ecoTreasure_logo.png" alt="EcoTreasure Logo" className="logoImage" />
           </div>
           <h1 className="formTitle">Masuk ke Mendaur</h1>
           <p className="formSubtitle">Lanjutkan perjalanan sustainability Anda</p>

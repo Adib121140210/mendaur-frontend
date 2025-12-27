@@ -90,7 +90,7 @@ function ProfileSection() {
         ) : (
           <span className="profileBadge">{user.level || 'Member'}</span>
         )}
-        <span className="profilePoints">Poin: {user.total_poin || 0}</span>
+        <span className="profilePoints">Poin: {user.actual_poin || 0}</span>
       </div>
     </div>
   );

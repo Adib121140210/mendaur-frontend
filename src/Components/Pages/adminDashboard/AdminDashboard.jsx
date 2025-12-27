@@ -4,23 +4,26 @@ import { AlertCircle, Loader } from 'lucide-react'
 import AdminSidebar from './components/AdminSidebar'
 import OverviewCards from './components/OverviewCards'
 import UserManagementTable from './components/UserManagementTable'
-import WasteAnalytics from './components/WasteAnalytics'
-import PointsDistribution from './components/PointsDistribution'
-import WasteByUserTable from './components/WasteByUserTable'
-import ReportsSection from './components/ReportsSection'
+// Phase 2 Components (Temporarily removed for clean deployment)
+// import WasteAnalytics from './components/WasteAnalytics'
+// import PointsDistribution from './components/PointsDistribution'
+// import WasteByUserTable from './components/WasteByUserTable'
+// import ReportsSection from './components/ReportsSection'
 import ContentManagement from './components/ContentManagement'
 import WasteDepositsManagement from './components/WasteDepositsManagement'
 import ProductRedemptionManagement from './components/ProductRedemptionManagement'
 import CashWithdrawalManagement from './components/CashWithdrawalManagement'
 import NotificationManagement from './components/NotificationManagement'
+import LeaderboardManagement from './components/LeaderboardManagement'
 import './adminDashboard.css'
 import './styles/adminSidebar.css'
-import './styles/analyticsComponents.css'
+// import './styles/analyticsComponents.css' // Phase 2 CSS
 import './styles/contentManagement.css'
 import './styles/wasteDepositsManagement.css'
 import './styles/productRedemptionManagement.css'
 import './styles/cashWithdrawalManagement.css'
 import './styles/notificationManagement.css'
+import './styles/leaderboardManagement.css'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
@@ -98,9 +101,10 @@ const AdminDashboard = () => {
 
   const _tabs = [
     { id: 'overview', label: 'Dashboard' },
-    { id: 'waste-deposits', label: 'Penyetoran Sampah' },
+    { id: 'waste-deposits', label: 'Tabung Sampah' },
     { id: 'product-redemption', label: 'Penukaran Produk' },
     { id: 'cash-withdrawal', label: 'Penarikan Tunai' },
+    { id: 'leaderboard', label: 'Leaderboard' },
     { id: 'waste', label: 'Waste Analytics' },
     { id: 'points', label: 'Points Distribution' },
     { id: 'waste-by-user', label: 'Waste by User' },
@@ -180,24 +184,44 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {/* Leaderboard Management Tab */}
+            {activeTab === 'leaderboard' && (
+              <div className="tab-pane">
+                <LeaderboardManagement />
+              </div>
+            )}
+
+            {/* Phase 2 Features - Temporarily Disabled for Clean Deployment */}
             {/* Waste Analytics Tab */}
             {activeTab === 'waste' && (
               <div className="tab-pane">
-                <WasteAnalytics />
+                {/* <WasteAnalytics /> */}
+                <div className="coming-soon">
+                  <h3>Analytics Dashboard</h3>
+                  <p>Fitur ini akan tersedia di Phase 2</p>
+                </div>
               </div>
             )}
 
             {/* Points Distribution Tab */}
             {activeTab === 'points' && (
               <div className="tab-pane">
-                <PointsDistribution />
+                {/* <PointsDistribution /> */}
+                <div className="coming-soon">
+                  <h3>Points Analytics</h3>
+                  <p>Fitur ini akan tersedia di Phase 2</p>
+                </div>
               </div>
             )}
 
             {/* Waste by User Tab */}
             {activeTab === 'waste-by-user' && (
               <div className="tab-pane">
-                <WasteByUserTable />
+                {/* <WasteByUserTable /> */}
+                <div className="coming-soon">
+                  <h3>Waste by User Table</h3>
+                  <p>Fitur ini akan tersedia di Phase 2</p>
+                </div>
               </div>
             )}
 
@@ -215,10 +239,14 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Reports Tab */}
+            {/* Reports Tab - Phase 2 Feature */}
             {activeTab === 'reports' && (
               <div className="tab-pane">
-                <ReportsSection />
+                {/* <ReportsSection /> */}
+                <div className="coming-soon">
+                  <h3>Reports & Export</h3>
+                  <p>Fitur ini akan tersedia di Phase 2</p>
+                </div>
               </div>
             )}
           </div>

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 import { AuthProvider } from './Components/Pages/context/AuthContext'
+import './utils/debugAuth.js' // Debug tool for authentication issues
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

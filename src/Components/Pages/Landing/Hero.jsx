@@ -6,15 +6,15 @@ function Hero() {
     return (
         <section className="hero">
             <div className="heroContainer">
-                {/* Badge */}
+                {/* Badge
                 <div className="heroBadge">
                     <Banknote size={20} className="badgeIcon" />
                     <span className="badgeText">Platform Digital Terdepan</span>
-                </div>
+                </div> */}
 
                 {/* Hero Title */}
                 <h1 className="heroTitle">
-                    BANK SAMPAH
+                    Mendaur
                     <br />
                     <span className="heroTitleAccent">INDUK NUSA</span>
                 </h1>

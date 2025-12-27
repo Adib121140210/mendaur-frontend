@@ -12,12 +12,12 @@ const ArtikelPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [popularArticles, setPopularArticles] = useState([]);
-  const [stats, setStats] = useState({ total: 0, categories: 0 });
+  // const [stats, setStats] = useState({ total: 0, categories: 0 });
 
   useEffect(() => {
     fetchCategories();
     fetchPopularArticles();
-    fetchStats();
+    // fetchStats();
   }, []);
 
   const fetchCategories = async () => {
@@ -54,23 +54,23 @@ const ArtikelPage = () => {
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/artikel');
-      if (!response.ok) return;
+  // const fetchStats = async () => {
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:8000/api/artikel');
+  //     if (!response.ok) return;
       
-      const result = await response.json();
-      if (result.status === 'success') {
-        const uniqueCategories = [...new Set(result.data.map(a => a.kategori))];
-        setStats({
-          total: result.data.length,
-          categories: uniqueCategories.length
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
+  //     const result = await response.json();
+  //     if (result.status === 'success') {
+  //       const uniqueCategories = [...new Set(result.data.map(a => a.kategori))];
+  //       setStats({
+  //         total: result.data.length,
+  //         categories: uniqueCategories.length
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching stats:', error);
+  //   }
+  // };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -79,7 +79,7 @@ const ArtikelPage = () => {
 
   return (
     <div className="artikelPageWrapper">
-      {/* Header Section */}
+      {/* Header Section
       <div className="artikelPageHeader">
         <div className="headerContent">
           <h1 className="pageTitle">
@@ -90,7 +90,7 @@ const ArtikelPage = () => {
             Pelajari lebih lanjut tentang pengelolaan sampah, daur ulang, dan kelestarian lingkungan
           </p>
 
-          {/* Stats */}
+          {/* Stats
           <div className="artikelStats">
             <div className="statItem">
               <span className="statNumber">{stats.total}</span>
@@ -102,7 +102,7 @@ const ArtikelPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="artikelPageContent">
         {/* Sidebar */}

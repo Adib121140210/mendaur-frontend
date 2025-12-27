@@ -132,7 +132,8 @@ const AllUsersHistory = () => {
   const getTypeLabel = (type) => {
     const labels = {
       deposit: 'Deposit',
-      setor_sampah: 'Waste Deposit',
+      tabung_sampah: 'Tabung Sampah',
+      setor_sampah: 'Tabung Sampah',
       redeem: 'Redemption',
       tukar_poin: 'Point Exchange',
       bonus: 'Bonus',
@@ -144,6 +145,7 @@ const AllUsersHistory = () => {
   const getTypeIcon = (type) => {
     switch (type) {
       case 'deposit':
+      case 'tabung_sampah':
       case 'setor_sampah':
         return '📦';
       case 'redeem':
@@ -161,6 +163,7 @@ const AllUsersHistory = () => {
   const getTypeColor = (type) => {
     switch (type) {
       case 'deposit':
+      case 'tabung_sampah':
       case 'setor_sampah':
         return 'income';
       case 'redeem':
@@ -244,10 +247,10 @@ const AllUsersHistory = () => {
                 All
               </button>
               <button
-                className={`filter-btn ${filterType === 'setor_sampah' ? 'active' : ''}`}
-                onClick={() => handleFilterChange('setor_sampah')}
+                className={`filter-btn ${filterType === 'tabung_sampah' ? 'active' : ''}`}
+                onClick={() => handleFilterChange('tabung_sampah')}
               >
-                Deposits
+                Tabung Sampah
               </button>
               <button
                 className={`filter-btn ${filterType === 'tukar_poin' ? 'active' : ''}`}

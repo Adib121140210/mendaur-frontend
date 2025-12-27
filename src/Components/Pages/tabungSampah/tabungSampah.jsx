@@ -152,7 +152,7 @@ export default function TabungSampah() {
     <div className="tabungSampahPage">
       <h1 className="pageTitle">Tabung Sampah Digital</h1>
       <p className="pageSubtitle">
-        Kelola setoran sampah dan pantau harga terkini
+        Kelola tabung sampah dan pantau harga terkini
       </p>
 
       {/* Kategori Interaktif */}
@@ -243,7 +243,7 @@ export default function TabungSampah() {
       </div>
 
 
-      {/* Jadwal Penyetoran - Choose Available Deposit Slot */}
+      {/* Jadwal Tabung Sampah - Choose Available Deposit Slot */}
       <JadwalTabungSampah showSelection={true} onSelect={setSelectedScheduleId} />
 
 
@@ -259,14 +259,14 @@ export default function TabungSampah() {
             </span>
             <div className="actionButtons">
               <button className="riwayatButton" onClick={() => navigate('/dashboard/riwayatTabung')}>
-                Riwayat Setoran
+                Riwayat Tabung Sampah
               </button>
               <button
                 className="setorButton"
                 onClick={() => setShowFormModal(true)}
               >
                 <Recycle className="iconBox" />
-                Setor Sampah Sekarang
+                Tabung Sampah Sekarang
               </button>
             </div>
           </div>

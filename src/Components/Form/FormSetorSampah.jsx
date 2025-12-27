@@ -65,15 +65,15 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         let schedules = result.data || [];
-        console.log('🔍 Jadwal dari API:', schedules);
-        console.log('📊 Total jadwal:', schedules.length);
+        console.log('Jadwal dari API:', schedules);
+        console.log('Total jadwal:', schedules.length);
 
-        // ✅ Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
+        // Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
         // Tidak perlu menambahkan synthetic IDs lagi
         setJadwalList(schedules);
-        console.log('📋 Jadwal yang ditampilkan:', schedules);
+        console.log('Jadwal yang ditampilkan:', schedules);
       } catch (err) {
-        console.error("❌ Gagal ambil jadwal:", err);
+        console.error("Gagal ambil jadwal:", err);
         setJadwalList([]);
       }
     };
@@ -251,7 +251,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       console.log("Respons backend:", result);
 
       if (result.status === "success") {
-        alert(result.message || "Setor sampah berhasil!");
+        alert(result.message || "Tabung sampah berhasil!");
         // Reset form kembali ke awal
         setFormData({
           nama: "",
@@ -301,7 +301,7 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
           {/* Dropdown Jadwal */}
           <label>
-            Pilih Jadwal Penyetoran*:
+            Pilih Jadwal Tabung Sampah*:
             <select
               name="jadwalId"
               value={formData.jadwalId}

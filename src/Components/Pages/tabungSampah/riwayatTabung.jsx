@@ -198,7 +198,7 @@ const RiwayatTabung = () => {
     return (
       <div className="riwayatTabungWrapper">
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
-          <p>Memuat data penyetoran...</p>
+          <p>Memuat data tabung sampah...</p>
         </div>
       </div>
     );
@@ -210,14 +210,14 @@ const RiwayatTabung = () => {
       <div className="headerTop">
         <div className="headerTitle">
           <Recycle size={28} className="headerIcon" />
-          <h1 className="headerText">Riwayat Penyetoran Sampah</h1>
+          <h1 className="headerText">Riwayat Tabung Sampah</h1>
         </div>
       </div>
       <div className="riwayatTabungContent">
         {/* Stats Info */}
         <div className="riwayatTabungInfo">
           <div className="statItem">
-            <span className="statLabel">Total Penyetoran</span>
+            <span className="statLabel">Total Tabung</span>
             <span className="statValue">{stats.total}</span>
           </div>
           <div className="statItem">
@@ -279,13 +279,13 @@ const RiwayatTabung = () => {
             </div>
             <h3 className="emptyTitle">
               {statusFilter === "all"
-                ? "Belum ada penyetoran"
-                : `Tidak ada penyetoran ${getStatusText(statusFilter).toLowerCase()}`}
+                ? "Belum ada riwayat tabung sampah"
+                : `Tidak ada tabung sampah ${getStatusText(statusFilter).toLowerCase()}`}
             </h3>
             <p className="emptySubtext">
               {statusFilter === "all"
-                ? "Mulai setor sampah untuk berkontribusi pada lingkungan!"
-                : `Ubah filter untuk melihat penyetoran lainnya.`}
+                ? "Mulai tabung sampah untuk berkontribusi pada lingkungan!"
+                : `Ubah filter untuk melihat tabung sampah lainnya.`}
             </p>
           </div>
         ) : (
@@ -368,7 +368,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
     <div className="modalOverlay" onClick={onClose}>
       <div className="modalContent" onClick={(e) => e.stopPropagation()}>
         <div className="modalHeader">
-          <h2 className="modalTitle">Detail Penyetoran</h2>
+          <h2 className="modalTitle">Detail Tabung Sampah</h2>
           <button className="closeBtn" onClick={onClose}>
             <X size={24} />
           </button>
@@ -392,7 +392,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
                 src={deposit.foto_bukti.startsWith('http')
                   ? deposit.foto_bukti
                   : `http://127.0.0.1:8000${deposit.foto_bukti}`}
-                alt="Bukti penyetoran"
+                alt="Bukti tabung sampah"
                 className="evidencePhoto"
               />
             </div>
@@ -400,7 +400,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
 
           {/* Deposit Information */}
           <div className="infoSection">
-            <h3 className="sectionTitle">Informasi Penyetoran</h3>
+            <h3 className="sectionTitle">Informasi Tabung Sampah</h3>
             <div className="infoGrid">
               <div className="infoItem">
                 <span className="infoLabel">Jenis Sampah</span>
@@ -442,7 +442,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
                 <span className="infoValue">{deposit.titik_lokasi || "-"}</span>
               </div>
               <div className="infoItem">
-                <span className="infoLabel">Tanggal Setor</span>
+                <span className="infoLabel">Tanggal Tabung</span>
                 <span className="infoValue">{formatDate(deposit.created_at || deposit.tanggal_setor)}</span>
               </div>
               <div className="infoItem">

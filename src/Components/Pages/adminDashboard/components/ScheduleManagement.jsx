@@ -221,9 +221,9 @@ export default function ScheduleManagement() {
         // Refresh schedules list
         await loadSchedules()
         setShowCreateModal(false);
-        alert('✅ Jadwal baru berhasil dibuat');
+        alert('Jadwal baru berhasil dibuat');
       } else {
-        console.error('❌ Create schedule failed:', result)
+        console.error('Create schedule failed:', result)
         let errorMessage = 'Gagal membuat jadwal'
         
         if (result.message) {
@@ -237,8 +237,8 @@ export default function ScheduleManagement() {
         alert(`❌ ${errorMessage}`);
       }
     } catch (err) {
-      console.error('❌ Create error details:', err);
-      alert(`❌ ${err.message || 'Terjadi kesalahan saat membuat jadwal'}`);
+      console.error('Create error details:', err);
+      alert(`Error: ${err.message || 'Terjadi kesalahan saat membuat jadwal'}`);
     } finally {
       setIsSubmitting(false);
     }

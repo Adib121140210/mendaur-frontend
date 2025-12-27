@@ -94,7 +94,7 @@ export default function UserData() {
   };
 
   const stats = [
-    { title: "Total Poin", value: `${user.total_poin || 0}`, icon: <Star size={20} /> },
+    { title: "Total Poin", value: `${user.actual_poin || 0}`, icon: <Star size={20} /> },
     { title: "Total Sampah", value: `${user.total_setor_sampah || 0} Kg`, icon: <Recycle size={20} /> },
     { title: "Badge Rewards", value: `${totalBadgeRewards} Poin`, icon: <Trophy size={20} />},
     { title: "Level", value: user.level || "Member", icon: <Trophy size={20} /> },
@@ -116,7 +116,7 @@ export default function UserData() {
 
     if (tipe.includes('tukar_poin') || tipe.includes('tukar poin')) {
       return <ArrowLeftRight size={16} />;
-    } else if (tipe.includes('setor_sampah') || tipe.includes('setor sampah')) {
+    } else if (tipe.includes('tabung_sampah') || tipe.includes('tabung sampah') || tipe.includes('setor_sampah') || tipe.includes('setor sampah')) {
       return <Recycle size={16} />;
     } else if (tipe.includes('badge_unlock') || tipe.includes('badge unlock') || tipe.includes('badge')) {
       return <Trophy size={16} />;
@@ -153,8 +153,8 @@ export default function UserData() {
 
     if (tipe.includes('tukar_poin') || tipe.includes('tukar poin')) {
       return 'activity-tukar-poin';
-    } else if (tipe.includes('setor_sampah') || tipe.includes('setor sampah')) {
-      return 'activity-setor-sampah';
+    } else if (tipe.includes('tabung_sampah') || tipe.includes('tabung sampah') || tipe.includes('setor_sampah') || tipe.includes('setor sampah')) {
+      return 'activity-tabung-sampah';
     } else if (tipe.includes('badge_unlock') || tipe.includes('badge unlock') || tipe.includes('badge')) {
       return 'activity-badge';
     } else if (tipe.includes('tukar_produk') || tipe.includes('tukar produk')) {
