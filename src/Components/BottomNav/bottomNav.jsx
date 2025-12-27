@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../Pages/context/authContext';
+import { useAuth } from '../Pages/context/AuthContext';
 import { House, CircleUserRound, Recycle, Coins, Scroll, WavesLadder } from 'lucide-react';
 import './bottomNav.css';
 
