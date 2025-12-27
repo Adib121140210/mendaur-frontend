@@ -1,7 +1,11 @@
 // API Configuration
 // Uses environment variable in production, fallback to localhost in development
 // Support both VITE_API_BASE_URL and VITE_API_URL for flexibility
-const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+const rawUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+
+// Ensure URL has protocol (https://)
+const baseUrl = rawUrl && !rawUrl.startsWith('http') ? `https://${rawUrl}` : rawUrl;
+
 export const API_BASE_URL = baseUrl ? `${baseUrl}/api` : 'http://127.0.0.1:8000/api';
 export const STORAGE_URL = baseUrl || 'http://127.0.0.1:8000';
 
