@@ -1,45 +1,76 @@
+import { lazy, Suspense } from 'react'
 import {Routes, Route, Navigate} from 'react-router-dom'
 import "./index.css"
 import { useAuth } from './Components/Pages/context/AuthContext'
 import BottomNav from './Components/BottomNav/bottomNav'
 
-// Auth Pages
-import Landing from './Components/Pages/Landing/Landing'
+// Loading component for Suspense
+const PageLoader = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    flexDirection: 'column',
+    gap: '16px'
+  }}>
+    <div style={{
+      width: '40px',
+      height: '40px',
+      border: '4px solid #e5e7eb',
+      borderTop: '4px solid #16a34a',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite'
+    }} />
+    <span style={{ color: '#6b7280', fontSize: '14px' }}>Memuat...</span>
+    <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </div>
+);
+
+// Auth Pages - Load immediately (small, critical for first paint)
 import Login from "./Components/Pages/login/login"
-import Daftar from "./Components/Pages/daftar/daftar"
-import Register from './Components/Pages/register/register'
-import ForgotPassword from './Components/Pages/forgotPassword/forgotPassword'
 
-// User Layout & Pages
-import Layout from "./Components/Pages/home/Layout"
-import HomeContent from "./Components/Pages/home/homeContent"
-import ArtikelPage from './Components/Pages/artikel/artikelPage'
-import ArtikelDetail from './Components/Pages/artikelDetail/artikelDetail'
-import Profil from "./Components/Pages/profil/profil"
-import TabungSampah from './Components/Pages/tabungSampah/tabungSampah'
-import RiwayatTabung from './Components/Pages/tabungSampah/riwayatTabung'
-import Produk from "./Components/Pages/produk/produk"
-import ProdukDetail from './Components/Pages/produk/produkDetail'
-import TukarPoin from "./Components/Pages/tukarPoin/tukarPoin"
-import Leaderboard from "./Components/Pages/leaderboard/leaderboard"
-import RiwayatTransaksi from './Components/Pages/riwayatTransaksi/riwayatTransaksi'
+// Lazy load other pages for faster initial load
+const Landing = lazy(() => import('./Components/Pages/Landing/Landing'))
+const Daftar = lazy(() => import('./Components/Pages/daftar/daftar'))
+const Register = lazy(() => import('./Components/Pages/register/register'))
+const ForgotPassword = lazy(() => import('./Components/Pages/forgotPassword/forgotPassword'))
 
-// Admin Point System Components
-import AdminPointDashboard from './Components/Pages/pointDashboard/pointDashboard'
-import AdminStatsCard from './Components/Pages/pointCard/pointCard'
-import AllUsersHistory from './Components/Pages/pointHistory/pointHistory'
-import PointBreakdown from './Components/Pages/pointBreakdown/pointBreakdown'
-import AllRedemptions from './Components/Pages/redeemHistory/redeemHistory'
+// User Layout & Pages - Lazy load
+const Layout = lazy(() => import("./Components/Pages/home/Layout"))
+const HomeContent = lazy(() => import("./Components/Pages/home/homeContent"))
+const ArtikelPage = lazy(() => import('./Components/Pages/artikel/artikelPage'))
+const ArtikelDetail = lazy(() => import('./Components/Pages/artikelDetail/artikelDetail'))
+const Profil = lazy(() => import("./Components/Pages/profil/profil"))
+const TabungSampah = lazy(() => import('./Components/Pages/tabungSampah/tabungSampah'))
+const RiwayatTabung = lazy(() => import('./Components/Pages/tabungSampah/riwayatTabung'))
+const Produk = lazy(() => import("./Components/Pages/produk/produk"))
+const ProdukDetail = lazy(() => import('./Components/Pages/produk/produkDetail'))
+const TukarPoin = lazy(() => import("./Components/Pages/tukarPoin/tukarPoin"))
+const Leaderboard = lazy(() => import("./Components/Pages/leaderboard/leaderboard"))
+const RiwayatTransaksi = lazy(() => import('./Components/Pages/riwayatTransaksi/riwayatTransaksi'))
 
-// Admin Dashboard Component
-import AdminDashboard from './Components/Pages/adminDashboard/AdminDashboard'
+// Admin Point System Components - Lazy load
+const AdminPointDashboard = lazy(() => import('./Components/Pages/pointDashboard/pointDashboard'))
+const AdminStatsCard = lazy(() => import('./Components/Pages/pointCard/pointCard'))
+const AllUsersHistory = lazy(() => import('./Components/Pages/pointHistory/pointHistory'))
+const PointBreakdown = lazy(() => import('./Components/Pages/pointBreakdown/pointBreakdown'))
+const AllRedemptions = lazy(() => import('./Components/Pages/redeemHistory/redeemHistory'))
+
+// Admin Dashboard Component - Lazy load
+const AdminDashboard = lazy(() => import('./Components/Pages/adminDashboard/AdminDashboard'))
 
 // Protected Route Components
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+    return <PageLoader />;
   }
 
   if (!isAuthenticated) {
@@ -63,41 +94,42 @@ const App = () => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+    return <PageLoader />;
   }
 
   return (
     <>
-      <Routes>
-        {/* Root Route - Redirect based on auth status */}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Root Route - Redirect based on auth status */}
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                isAdmin ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />
+              ) : (
+                <Login />
+              )
+            }
+          />
+
+        {/* Public Auth Routes */}
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/daftar" element={<Daftar />} />
+
+        {/* User Dashboard Routes (Protected) */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
-            isAuthenticated ? (
-              isAdmin ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />
-            ) : (
-              <Login />
-            )
+            <ProtectedRoute requiredRole="user">
+              <Layout />
+            </ProtectedRoute>
           }
-        />
-
-      {/* Public Auth Routes */}
-      <Route path="/landing" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/daftar" element={<Daftar />} />
-
-      {/* User Dashboard Routes (Protected) */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute requiredRole="user">
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<HomeContent />} />
+        >
+          <Route index element={<HomeContent />} />
         <Route path="artikel" element={<ArtikelPage />} />
         <Route path="artikel/:id" element={<ArtikelDetail />} />
         <Route path="profil" element={<Profil />} />
@@ -164,7 +196,8 @@ const App = () => {
 
       {/* Catch-all - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
       <BottomNav />
     </>
   );
