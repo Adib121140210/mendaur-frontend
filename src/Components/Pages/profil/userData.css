@@ -104,12 +104,15 @@
 .statContent {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
+  min-width: 0; /* Prevent overflow */
+  width: 100%;
 }
 
 .iconBox {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px; /* Prevent shrinking */
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -135,6 +138,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0; /* Allow text truncation */
+  flex: 1;
 }
 
 .statTitle {
@@ -143,6 +148,9 @@
   color: var(--color-gray);
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .statValue {
@@ -150,6 +158,7 @@
   font-weight: 800;
   color: var(--color-gray-dark);
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .statValue.rewardValue {

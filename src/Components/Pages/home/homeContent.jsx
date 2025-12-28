@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Recycle, Trophy, Star, TrendingUp, Award, Activity } from "lucide-react";
+import { Recycle, Trophy, Star, TrendingUp, Award, Activity, RefreshCw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import ArtikelCard from "../../lib/artikel";
 import Banner from "../../lib/banner";
@@ -16,6 +16,8 @@ const HomeContent = () => {
   const [userBadges, setUserBadges] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user?.user_id) {
@@ -199,6 +201,34 @@ const HomeContent = () => {
     }
   };
 
+  // Refresh leaderboard function
+  const refreshLeaderboard = async () => {
+    try {
+      setLeaderboardLoading(true);
+      setLeaderboardError(false);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${API_BASE_URL}/dashboard/leaderboard`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data.data || []);
+      } else {
+        setLeaderboardError(true);
+      }
+    } catch {
+      setLeaderboardError(true);
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="homeContentWrapper">
@@ -293,24 +323,43 @@ const HomeContent = () => {
       <div className="dashboardRow">
         {/* Leaderboard */}
         <section className="leaderboardSection">
-          <h2 className="sectionTitle">
-            <Trophy size={20} />
-            Leaderboard
-          </h2>
+          <div className="sectionTitleWrapper">
+            <h2 className="sectionTitle">
+              <Trophy size={20} />
+              Leaderboard
+            </h2>
+            <button 
+              className="refreshBtn" 
+              onClick={refreshLeaderboard}
+              disabled={leaderboardLoading}
+              title="Refresh leaderboard"
+            >
+              <RefreshCw size={16} className={leaderboardLoading ? 'spinning' : ''} />
+            </button>
+          </div>
           <div className="leaderboardList">
-            {leaderboard.slice(0, 10).map((leader, index) => {
-              const currentUserId = user?.user_id || localStorage.getItem('id_user');
-              return (
-                <div
-                  key={leader.user_id}
-                  className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
-                >
-                  <span className="leaderRank">#{index + 1}</span>
-                  <span className="leaderName">{leader.nama}</span>
-                  <span className="leaderPoints">{leader.total_poin} pts</span>
-                </div>
-              );
-            })}
+            {leaderboardError ? (
+              <div className="leaderboardError">
+                <p>Gagal memuat leaderboard</p>
+                <button onClick={refreshLeaderboard} className="retryBtn">Coba Lagi</button>
+              </div>
+            ) : leaderboard.length > 0 ? (
+              leaderboard.slice(0, 10).map((leader, index) => {
+                const currentUserId = user?.user_id || localStorage.getItem('id_user');
+                return (
+                  <div
+                    key={leader.user_id}
+                    className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
+                  >
+                    <span className="leaderRank">#{index + 1}</span>
+                    <span className="leaderName">{leader.nama}</span>
+                    <span className="leaderPoints">{leader.total_poin} pts</span>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="emptyState">Belum ada data leaderboard</p>
+            )}
           </div>
         </section>
 
@@ -323,10 +372,14 @@ const HomeContent = () => {
           {userBadges.length > 0 ? (
             <div className="badgesList">
               {userBadges.map((badge) => {
-                // Get badge icon URL from API
+                // Get badge icon URL from API - handle emoji and invalid paths
                 const getBadgeIconUrl = (icon) => {
                   if (!icon) return null;
+                  // Check if icon is an emoji (Unicode emoji range)
+                  if (/^\p{Emoji}/u.test(icon) || icon.length <= 4) return null;
                   if (icon.startsWith('http')) return icon;
+                  // Skip invalid paths
+                  if (!icon.includes('.') && !icon.includes('/')) return null;
                   const cleanPath = icon.startsWith('storage/') ? icon : `storage/${icon}`;
                   return `${API_BASE_URL}/${cleanPath}`;
                 };

@@ -33,11 +33,17 @@
   align-items: center;
   gap: 0.5rem;
   background-color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
   flex: 1;
   position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchBox:focus-within {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .searchBox input {
@@ -49,6 +55,10 @@
   padding-left: 0.25rem;
 }
 
+.searchBox input::placeholder {
+  color: #9ca3af;
+}
+
 .searchIcon {
   color: #6b7280;
   flex-shrink: 0;
@@ -57,12 +67,19 @@
 }
 
 .statusDropdown {
-  padding: 6px 10px;
-  font-size: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
   background-color: white;
   color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.statusDropdown:focus {
+  outline: none;
+  border-color: #10b981;
 }
 
 /* ========== Kategori Filter ========== */
