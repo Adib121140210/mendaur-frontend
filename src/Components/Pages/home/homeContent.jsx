@@ -119,7 +119,7 @@ const HomeContent = () => {
             tipe_aktivitas: 'tabung_sampah',
             deskripsi: `Menabung ${item.berat_sampah || item.total_berat || 0} kg ${item.jenis_sampah?.nama_jenis || item.nama_jenis || 'sampah'}`,
             tanggal: item.tanggal_setor || item.created_at,
-            poin_perubahan: item.poin_diperoleh || item.total_poin || 0,
+            poin_perubahan: item.poin_diperoleh || item.poin || 0,
           }));
           allActivities.push(...tabungActivities);
         }
@@ -141,7 +141,7 @@ const HomeContent = () => {
             tipe_aktivitas: 'tukar_poin',
             deskripsi: `Menukar poin untuk ${item.produk?.nama_produk || item.nama_produk || 'produk'}`,
             tanggal: item.tanggal_penukaran || item.created_at,
-            poin_perubahan: -(item.total_poin || item.poin_digunakan || 0),
+            poin_perubahan: -(item.poin_digunakan || item.poin || 0),
           }));
           allActivities.push(...redeemActivities);
         }
@@ -353,7 +353,7 @@ const HomeContent = () => {
                   >
                     <span className="leaderRank">#{index + 1}</span>
                     <span className="leaderName">{leader.nama}</span>
-                    <span className="leaderPoints">{leader.total_poin} pts</span>
+                    <span className="leaderPoints">{leader.display_poin || leader.total_poin || leader.poin || 0} pts</span>
                   </div>
                 );
               })

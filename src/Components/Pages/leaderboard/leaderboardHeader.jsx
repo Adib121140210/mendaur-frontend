@@ -100,10 +100,10 @@ const LeaderboardHeader = () => {
 
         // Try to extract from userStatsData first (if it has user object)
         if (userStatsData?.user) {
-          userPoints = userStatsData.user.total_poin || userStatsData.user.poin || 0;
+          userPoints = userStatsData.user.display_poin || userStatsData.user.actual_poin || userStatsData.user.poin || 0;
           userWaste = userStatsData.user.total_setor_sampah || userStatsData.user.sampah || 0;
         } else if (userStatsData?.statistics) {
-          userPoints = userStatsData.statistics.total_poin || userStatsData.statistics.poin || 0;
+          userPoints = userStatsData.statistics.display_poin || userStatsData.statistics.actual_poin || userStatsData.statistics.poin || 0;
           userWaste = userStatsData.statistics.total_setor_sampah || userStatsData.statistics.sampah || 0;
         }
 
@@ -128,7 +128,7 @@ const LeaderboardHeader = () => {
             userRank = currentUser.rank || null;
             // If we didn't get points from user stats API, use leaderboard data
             if (userPoints === 0) {
-              userPoints = currentUser.total_poin || 0;
+              userPoints = currentUser.display_poin || currentUser.actual_poin || currentUser.poin || 0;
             }
             if (userWaste === 0) {
               userWaste = currentUser.total_setor_sampah || 0;
@@ -146,7 +146,7 @@ const LeaderboardHeader = () => {
         let poinRatio = 0;
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
           const totalPoints = leaderboard.reduce((sum, user) => {
-            return sum + (user.total_poin || 0);
+            return sum + (user.display_poin || user.actual_poin || user.poin || 0);
           }, 0);
           const avgPoints = totalPoints / leaderboard.length;
           poinRatio = avgPoints > 0 ? (userPoints / avgPoints).toFixed(1) : 0;

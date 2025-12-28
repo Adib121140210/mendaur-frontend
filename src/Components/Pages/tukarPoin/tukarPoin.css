@@ -15,7 +15,6 @@
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
-  background: (--color_primary-dark);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -29,12 +28,11 @@
 
 /* BANNER POIN */
 .userPointsSection {
-  background: linear-gradient(135deg, #065f46 0%, #047857 50%, #10b981 100%);
+  background: (--color-primary-dark);
   border-radius: 20px;
   padding: 2rem 2.5rem;
   margin-bottom: 2rem;
   text-align: left;
-  box-shadow: 0 10px 40px rgba(4, 120, 87, 0.3);
   position: relative;
   overflow: hidden;
 }

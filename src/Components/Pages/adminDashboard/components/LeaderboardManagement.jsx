@@ -389,7 +389,7 @@ const LeaderboardManagement = () => {
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                     </td>
                     <td className="name-cell">{user.nama}</td>
-                    <td className="points-cell">{user.total_poin?.toLocaleString('id-ID')} pts</td>
+                    <td className="points-cell">{(user.display_poin || user.actual_poin || user.poin || 0)?.toLocaleString('id-ID')} pts</td>
                     <td className="badge-cell">{user.badge_title || '-'}</td>
                   </tr>
                 ))}

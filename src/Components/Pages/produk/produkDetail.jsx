@@ -31,7 +31,7 @@ export default function ProdukDetail() {
   const fetchUserPoints = useCallback(() => {
     // Get from localStorage or API
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserPoints(user.total_poin || 0);
+    setUserPoints(user.actual_poin || user.display_poin || 0);
   }, []);
 
   useEffect(() => {

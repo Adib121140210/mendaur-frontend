@@ -152,8 +152,8 @@ export default function LeaderboardTable() {
 
     // Sort by points (backend should do this, but ensure it's sorted)
     filtered.sort((a, b) => {
-      const pointsA = a.total_poin || a.poin_terkumpul || a.points || 0;
-      const pointsB = b.total_poin || b.poin_terkumpul || b.points || 0;
+      const pointsA = a.display_poin || a.actual_poin || a.poin || a.points || 0;
+      const pointsB = b.display_poin || b.actual_poin || b.poin || b.points || 0;
       return pointsB - pointsA;
     });
 
@@ -324,7 +324,7 @@ export default function LeaderboardTable() {
               const isCurrentUser = String(user.user_id) === String(currentUserId);
               const userName = user.nama || user.nama_user || user.name || 'Unknown';
               const userWaste = user.total_sampah || user.sampah_terkumpul || user.waste_collected || 0;
-              const userPoints = user.total_poin || user.poin_terkumpul || user.points || 0;
+              const userPoints = user.display_poin || user.actual_poin || user.poin || user.points || 0;
 
               const rankEmoji = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : null;
               const rankClass = globalIndex === 0 ? 'gold' : globalIndex === 1 ? 'silver' : globalIndex === 2 ? 'bronze' : '';

@@ -146,7 +146,7 @@ const PoinCorrectionPage = () => {
 
   const getCurrentPoin = (userId) => {
     const user = users.find(u => u.user_id === parseInt(userId));
-    return user?.total_poin || 0;
+    return user?.actual_poin || user?.display_poin || user?.poin || 0;
   };
 
   const getPoinDifference = () => {
@@ -210,7 +210,7 @@ const PoinCorrectionPage = () => {
                 <option value="">-- Choose a user --</option>
                 {users.map(user => (
                   <option key={user.user_id} value={user.user_id}>
-                    {user.nama} ({user.email}) - Current: {user.total_poin} poin
+                    {user.nama} ({user.email}) - Current: {user.actual_poin || user.display_poin || 0} poin
                   </option>
                 ))}
               </select>
