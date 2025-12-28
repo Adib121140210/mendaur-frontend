@@ -1,6 +1,35 @@
 // API Helper - Utility for making authenticated API calls
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
+// Default timeout for API requests (5 seconds)
+const DEFAULT_TIMEOUT = 5000;
+
+/**
+ * Fetch with timeout
+ * @param {string} url - URL to fetch
+ * @param {object} options - Fetch options
+ * @param {number} timeout - Timeout in milliseconds
+ */
+const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - server took too long to respond');
+    }
+    throw error;
+  }
+};
+
 /**
  * Make an authenticated API call with Bearer token
  * @param {string} endpoint - API endpoint path (e.g., '/users/1')
@@ -18,7 +47,7 @@ export const apiCall = async (endpoint, options = {}) => {
   };
 
   try {
-    const response = await fetch(fullUrl, {
+    const response = await fetchWithTimeout(fullUrl, {
       ...options,
       headers,
     });

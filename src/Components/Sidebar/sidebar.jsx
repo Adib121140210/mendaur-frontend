@@ -28,12 +28,25 @@ function ProfileSection() {
     const fetchBadgeTitle = async () => {
       if (user?.user_id) {
         try {
-          const result = await getBadgeTitle(user.user_id);
+          // Add timeout protection for badge title fetch
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 3000)
+          );
+          
+          const result = await Promise.race([
+            getBadgeTitle(user.user_id),
+            timeoutPromise
+          ]);
+          
           if (result.status === 'success' && result.data?.badge_title) {
             setBadgeTitleData(result.data.badge_title);
           }
-        } catch {
+        } catch (error) {
           // Silent fail - badge title is optional
+          // Just log for debugging
+          if (error.message !== 'Timeout') {
+            console.warn('Failed to load badge title:', error.message);
+          }
         }
       }
     };

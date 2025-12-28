@@ -49,31 +49,54 @@ const HomeContent = () => {
         'Accept': 'application/json',
       };
 
-      // Fetch user stats
-      const statsRes = await fetch(`${API_BASE_URL}/dashboard/stats/${userId}`, {
-        headers,
-      });
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setUserStats(statsData.data);
-      }
+      // Fetch with timeout helper
+      const fetchWithTimeout = async (url, timeout = 5000) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        
+        try {
+          const response = await fetch(url, { 
+            headers,
+            signal: controller.signal 
+          });
+          clearTimeout(timeoutId);
+          return response;
+        } catch (error) {
+          clearTimeout(timeoutId);
+          if (error.name === 'AbortError') {
+            console.warn(`Request timeout for ${url}`);
+          }
+          throw error;
+        }
+      };
 
-      // Fetch leaderboard
-      const leaderRes = await fetch(`${API_BASE_URL}/dashboard/leaderboard`, {
-        headers,
-      });
-      if (leaderRes.ok) {
-        const leaderData = await leaderRes.json();
-        setLeaderboard(leaderData.data || []);
-      }
+      // Fetch all data in parallel with timeout protection
+      try {
+        const [statsRes, leaderRes, badgesRes] = await Promise.allSettled([
+          fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`),
+          fetchWithTimeout(`${API_BASE_URL}/dashboard/leaderboard`),
+          fetchWithTimeout(`${API_BASE_URL}/users/${userId}/badges`)
+        ]);
 
-      // Fetch user badges
-      const badgesRes = await fetch(`${API_BASE_URL}/users/${userId}/badges`, {
-        headers,
-      });
-      if (badgesRes.ok) {
-        const badgesData = await badgesRes.json();
-        setUserBadges(badgesData.data || []);
+        // Process user stats
+        if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
+          const statsData = await statsRes.value.json();
+          setUserStats(statsData.data);
+        }
+
+        // Process leaderboard
+        if (leaderRes.status === 'fulfilled' && leaderRes.value.ok) {
+          const leaderData = await leaderRes.value.json();
+          setLeaderboard(leaderData.data || []);
+        }
+
+        // Process user badges
+        if (badgesRes.status === 'fulfilled' && badgesRes.value.ok) {
+          const badgesData = await badgesRes.value.json();
+          setUserBadges(badgesData.data || []);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
       }
 
       // Fetch recent activities from multiple sources (Tabung Sampah, Penukaran Poin, Penarikan Tunai)
