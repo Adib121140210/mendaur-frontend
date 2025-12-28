@@ -1,17 +1,49 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./FormSetorSampah.css";
-import KategoriSampahWrapper from "../Pages/tabungSampah/kategoriSampah";
 import { useAuth } from "../Pages/context/AuthContext";
 import { API_BASE_URL } from "../../config/api";
+import { 
+  MapPin, 
+  Navigation, 
+  Calendar, 
+  Clock, 
+  Image as ImageIcon, 
+  X, 
+  Check, 
+  ChevronDown,
+  FileText,
+  Package,
+  Shirt,
+  Monitor,
+  MoreHorizontal,
+  Layers
+} from "lucide-react";
 
-// Component for waste deposit form submission
-export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }) {
+// Kategori sampah dengan icon
+const KATEGORI_SAMPAH = [
+  { id: 'kertas', label: 'Kertas', icon: FileText, color: '#D97706' },
+  { id: 'plastik', label: 'Plastik', icon: Package, color: '#2563EB' },
+  { id: 'logam', label: 'Logam', icon: Layers, color: '#6B7280' },
+  { id: 'tekstil', label: 'Tekstil', icon: Shirt, color: '#DC2626' },
+  { id: 'elektronik', label: 'Elektronik', icon: Monitor, color: '#F59E0B' },
+  { id: 'lainnya', label: 'Lainnya', icon: MoreHorizontal, color: '#8B5CF6' },
+];
+
+export default function FormSetorSampah({ 
+  onClose, 
+  userId, 
+  preSelectedSchedule,
+  preSelectedKategori 
+}) {
   const { user } = useAuth();
+  
+  // Form state
   const [formData, setFormData] = useState({
     nama: "",
     noHp: "",
     lokasi: "",
-    jenis: "",
+    koordinat: { lat: null, lng: null },
+    jenis: preSelectedKategori || "",
     foto: null,
     jadwalId: preSelectedSchedule || "",
   });
@@ -19,13 +51,13 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
   const [jadwalList, setJadwalList] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [selectedKategori, setSelectedKategori] = useState(null);
-  const [mapCoords, setMapCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default: Jakarta
-  const mapRef = useRef(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState(null);
+  const [showJadwalDropdown, setShowJadwalDropdown] = useState(false);
+  const [selectedJadwal, setSelectedJadwal] = useState(null);
 
   // Set user data otomatis saat pertama kali load
   useEffect(() => {
-    // Isi nama dan nomor HP dari data user yang login
     if (user) {
       setFormData(prev => ({
         ...prev,
@@ -33,28 +65,26 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         noHp: user.no_hp || user.phone || "",
       }));
     }
-
-    // Ambil lokasi user secara otomatis
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-          const mapsLink = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
-          setFormData(prev => ({ ...prev, lokasi: mapsLink }));
-          setMapCoords({ lat: coords.latitude, lng: coords.longitude });
-        },
-        () => {
-          // Gagal mengambil lokasi otomatis - user bisa set lokasi secara manual
-        }
-      );
-    }
   }, [user]);
+
+  // Update kategori when preSelectedKategori changes
+  useEffect(() => {
+    if (preSelectedKategori) {
+      setFormData(prev => ({ ...prev, jenis: preSelectedKategori }));
+    }
+  }, [preSelectedKategori]);
 
   // Update jadwalId when preSelectedSchedule changes
   useEffect(() => {
-    if (preSelectedSchedule) {
+    if (preSelectedSchedule !== undefined && preSelectedSchedule !== null && preSelectedSchedule !== "") {
       setFormData(prev => ({ ...prev, jadwalId: preSelectedSchedule }));
+      // Find and set the selected jadwal object
+      const jadwal = jadwalList.find((j, idx) => 
+        j.jadwal_penyetoran_id === preSelectedSchedule || idx === preSelectedSchedule
+      );
+      if (jadwal) setSelectedJadwal(jadwal);
     }
-  }, [preSelectedSchedule]);
+  }, [preSelectedSchedule, jadwalList]);
 
   // Ambil jadwal aktif dari backend
   useEffect(() => {
@@ -64,109 +94,174 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
         if (!res.ok) throw new Error("Gagal mengambil jadwal");
         const result = await res.json();
         let schedules = result.data || [];
-
-        // Backend sekarang mengembalikan real IDs (1, 2, 3, dll)
-        // Tidak perlu menambahkan synthetic IDs lagi
+        
+        // Filter hanya jadwal yang buka
+        schedules = schedules.filter(s => 
+          s.status?.toLowerCase() === 'buka' || 
+          s.status?.toLowerCase() === 'aktif' ||
+          s.status?.toLowerCase() === 'active' ||
+          !s.status // Include if no status (assume open)
+        );
+        
         setJadwalList(schedules);
+        
+        // Set selected jadwal if preSelectedSchedule exists
+        if (preSelectedSchedule !== undefined && preSelectedSchedule !== null) {
+          const jadwal = schedules.find((j, idx) => 
+            j.jadwal_penyetoran_id === preSelectedSchedule || idx === preSelectedSchedule
+          );
+          if (jadwal) setSelectedJadwal(jadwal);
+        }
       } catch {
         setJadwalList([]);
       }
     };
     fetchJadwal();
-  }, []);
+  }, [preSelectedSchedule]);
 
-  // Inisialisasi Static Map (tanpa perlu API key)
-  useEffect(() => {
-    if (!mapRef.current) return;
-
-    // Render static map image
-    const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCoords.lat},${mapCoords.lng}&zoom=15&size=600x300&markers=color:red%7C${mapCoords.lat},${mapCoords.lng}&style=feature:all%7Celement:labels.text%7Cvisibility:on`;
-
-    mapRef.current.innerHTML = `
-      <div style="position: relative; width: 100%; height: 100%;">
-        <img
-          src="${staticMapUrl}"
-          alt="Static Map"
-          style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;"
-        />
-        <div style="position: absolute; top: 10px; right: 10px; background: white; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-          📍 ${mapCoords.lat.toFixed(4)}, ${mapCoords.lng.toFixed(4)}
-        </div>
-      </div>
-    `;
-  }, [mapCoords]);
-
-  // Handle input perubahan form
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-    // Hapus error untuk field ini jika ada
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
-    }
-  };
-
-  // Handle kategori selection dari KategoriSampahWrapper
-  const handleKategoriChange = (kategoriId, kategoriLabel) => {
-    setSelectedKategori(kategoriId);
+  // Handle kategori selection
+  const handleKategoriSelect = (kategoriId) => {
     setFormData(prev => ({
       ...prev,
-      jenis: kategoriLabel || kategoriId
+      jenis: prev.jenis === kategoriId ? "" : kategoriId
     }));
-    // Hapus error
     if (errors.jenis) {
       setErrors(prev => ({ ...prev, jenis: null }));
     }
   };
 
-  // Ambil lokasi otomatis
-  const handleAmbilLokasi = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation tidak didukung di browser ini.");
-      return;
+  // Handle jadwal selection
+  const handleJadwalSelect = (jadwal, index) => {
+    setSelectedJadwal(jadwal);
+    setFormData(prev => ({ ...prev, jadwalId: index.toString() }));
+    setShowJadwalDropdown(false);
+    if (errors.jadwal) {
+      setErrors(prev => ({ ...prev, jadwal: null }));
     }
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const mapsLink = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
-        setFormData((prev) => ({ ...prev, lokasi: mapsLink }));
-        setMapCoords({ lat: coords.latitude, lng: coords.longitude });
-      },
-      (error) => {
-        alert("Gagal mengambil lokasi: " + error.message);
-        window.open("https://www.google.com/maps", "_blank");
-      }
-    );
   };
 
-  // Validasi sederhana
+  // Handle foto change dengan preview
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, foto: "Ukuran file maksimal 5MB" }));
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, foto: "File harus berupa gambar" }));
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, foto: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      if (errors.foto) {
+        setErrors(prev => ({ ...prev, foto: null }));
+      }
+    }
+  };
+
+  // Remove foto
+  const handleRemoveFoto = () => {
+    setFormData(prev => ({ ...prev, foto: null }));
+    setFotoPreview(null);
+  };
+
+  // Get current location
+  const handleGetLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setErrors(prev => ({ ...prev, lokasi: "Browser tidak mendukung geolocation" }));
+      return;
+    }
+
+    setGettingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        
+        setFormData(prev => ({
+          ...prev,
+          lokasi: mapsLink,
+          koordinat: { lat: latitude, lng: longitude }
+        }));
+        
+        setGettingLocation(false);
+        if (errors.lokasi) {
+          setErrors(prev => ({ ...prev, lokasi: null }));
+        }
+      },
+      (error) => {
+        setGettingLocation(false);
+        let errorMsg = "Gagal mendapatkan lokasi";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMsg = "Izin lokasi ditolak. Aktifkan izin lokasi di browser.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMsg = "Informasi lokasi tidak tersedia";
+            break;
+          case error.TIMEOUT:
+            errorMsg = "Waktu habis saat mendapatkan lokasi";
+            break;
+          default:
+            break;
+        }
+        setErrors(prev => ({ ...prev, lokasi: errorMsg }));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  }, [errors.lokasi]);
+
+  // Auto get location on mount
+  useEffect(() => {
+    handleGetLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Validasi form
   const validate = () => {
     const newErrors = {};
-    if (!formData.nama.trim()) newErrors.nama = "Nama wajib diisi";
-    if (!formData.noHp.trim()) newErrors.noHp = "No HP wajib diisi";
-    if (!formData.lokasi.trim()) newErrors.lokasi = "Titik lokasi wajib diisi";
-    if (!formData.jenis) newErrors.jenis = "Jenis sampah wajib dipilih";
+    if (!formData.lokasi.trim()) newErrors.lokasi = "Lokasi wajib diisi";
+    if (!formData.jenis) newErrors.jenis = "Kategori sampah wajib dipilih";
     if (!formData.foto) newErrors.foto = "Foto sampah wajib diunggah";
-    if (!formData.jadwalId) newErrors.jadwal = "Jadwal wajib dipilih";
+    if (!formData.jadwalId && formData.jadwalId !== 0 && formData.jadwalId !== "0") {
+      newErrors.jadwal = "Jadwal wajib dipilih";
+    }
     return newErrors;
   };
 
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form
     const validation = validate();
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
+      // Scroll to first error
+      const firstErrorField = document.querySelector('.error-field');
+      if (firstErrorField) firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
-    // Check authentication token
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Anda harus login terlebih dahulu untuk mengajukan penjemputan sampah');
+      alert('Anda harus login terlebih dahulu');
       return;
     }
 
@@ -174,28 +269,27 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
 
     const data = new FormData();
 
-    // Gunakan user_id dari authenticated user
-    // Fallback: gunakan userId prop jika diberikan, atau coba dari user context, terakhir fallback ke 1
     let finalUserId = userId;
     if (!finalUserId && user?.user_id) {
-      finalUserId = user.user_id;  // ✅ Backend returns user_id, not id
+      finalUserId = user.user_id;
     }
     if (!finalUserId) {
-      finalUserId = 1;
+      finalUserId = localStorage.getItem('id_user') || 1;
     }
 
-    // jadwalId adalah index string, convert ke int dan get selected schedule
     const selectedIndex = parseInt(formData.jadwalId);
     const selectedSchedule = jadwalList[selectedIndex];
-    // ✅ Backend uses custom primary key jadwal_penyetoran_id
     const scheduleId = selectedSchedule?.jadwal_penyetoran_id;
 
     data.append("user_id", finalUserId);
-    data.append("jadwal_penyetoran_id", scheduleId);  // Send with correct field name
-    data.append("nama_lengkap", formData.nama);
-    data.append("no_hp", formData.noHp);
+    data.append("jadwal_penyetoran_id", scheduleId);
+    data.append("nama_lengkap", formData.nama || user?.nama || "User");
+    data.append("no_hp", formData.noHp || user?.no_hp || "-");
     data.append("titik_lokasi", formData.lokasi);
-    data.append("jenis_sampah", formData.jenis);
+    
+    // Get kategori label
+    const kategori = KATEGORI_SAMPAH.find(k => k.id === formData.jenis);
+    data.append("jenis_sampah", kategori?.label || formData.jenis);
 
     if (formData.foto) {
       data.append("foto_sampah", formData.foto);
@@ -214,215 +308,291 @@ export default function FormSetorSampah({ onClose, userId, preSelectedSchedule }
       const result = await res.json();
 
       if (!res.ok) {
-        // Tangani validation errors dari Laravel
         if (result.errors) {
           const backendErrors = {};
           Object.keys(result.errors).forEach(key => {
             backendErrors[key] = result.errors[key][0];
           });
           setErrors(backendErrors);
-
-          // Tampilkan pesan error detail
-          const errorMessages = Object.values(result.errors).flat().join('\n');
-          alert(`Validasi gagal:\n${errorMessages}`);
-
           throw new Error(result.message || "Validasi gagal");
         }
         throw new Error(result.message || "Terjadi kesalahan");
       }
 
       if (result.status === "success") {
-        alert(result.message || "Tabung sampah berhasil!");
-        // Reset form kembali ke awal
-        setFormData({
-          nama: "",
-          noHp: "",
-          lokasi: "",
-          jenis: "",
-          foto: null,
-          jadwalId: "",
-        });
+        alert("✅ " + (result.message || "Penjemputan sampah berhasil diajukan!"));
         onClose();
       }
     } catch (err) {
-      alert(err.message || "Gagal mengirim data");
+      alert("❌ " + (err.message || "Gagal mengirim data"));
     } finally {
       setLoading(false);
     }
   };
 
+  // Format jadwal display
+  const formatJadwalDisplay = (jadwal) => {
+    if (!jadwal) return null;
+    
+    const timeStart = jadwal.waktu_mulai?.substring(0, 5) || '00:00';
+    const timeEnd = jadwal.waktu_selesai?.substring(0, 5) || '00:00';
+    
+    return {
+      hari: jadwal.hari || jadwal.tanggal || '-',
+      waktu: `${timeStart} - ${timeEnd}`,
+      lokasi: jadwal.lokasi || '-'
+    };
+  };
 
   return (
-    <div className="formModalOverlay" onClick={onClose}>
-      <div className="formModal" onClick={(e) => e.stopPropagation()}>
-        <h2>Form Penjemputan Sampah</h2>
+    <div className="form-overlay" onClick={onClose}>
+      <div className="form-container" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="form-header">
+          <h2>Ajukan Penjemputan Sampah</h2>
+          <p>Lengkapi data berikut untuk mengajukan penjemputan</p>
+          <button className="close-btn" onClick={onClose} aria-label="Tutup">
+            <X size={20} />
+          </button>
+        </div>
 
-        {/* Add debug info */}
-        {!userId && (
-          <div style={{padding: '10px', background: '#fff3cd', marginBottom: '10px', borderRadius: '4px'}}>
-            User ID tidak diberikan. Menggunakan user default (ID: 1)
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          {/* Field tersembunyi - dikirim ke backend tapi tidak terlihat user */}
-          <div className="hiddenFields">
-            <input
-              type="hidden"
-              name="nama"
-              value={formData.nama}
-            />
-            <input
-              type="hidden"
-              name="noHp"
-              value={formData.noHp}
-            />
-          </div>
-
-          {/* Dropdown Jadwal */}
-          <label>
-            Pilih Jadwal Tabung Sampah*:
-            <select
-              name="jadwalId"
-              value={formData.jadwalId}
-              onChange={handleChange}
-              required
-            >
-              <option value="">-- Pilih Jadwal --</option>
-              {jadwalList.length === 0 ? (
-                <option disabled>Tidak ada jadwal tersedia</option>
-              ) : (
-                jadwalList.map((j, index) => {
-                  // Format tanggal dengan benar
-                  const date = new Date(j.tanggal);
-                  const formattedDate = date.toLocaleDateString('id-ID', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  });
-                  // Format waktu (tanpa detik)
-                  const timeStart = j.waktu_mulai?.substring(0, 5) || '';
-                  const timeEnd = j.waktu_selesai?.substring(0, 5) || '';
-
-                  return (
-                    <option key={index} value={index}>
-                      {formattedDate} ({timeStart} - {timeEnd}) @ {j.lokasi}
-                    </option>
-                  );
-                })
-              )}
-            </select>
-            {errors.jadwal && <span className="errorText">{errors.jadwal}</span>}
-          </label>
-
-          <label>
-            Titik Lokasi* (Pilih Lokasi di Peta):
-            <div style={{ marginTop: '0.8rem' }}>
-              {/* Container Peta Google Maps */}
-              <div
-                ref={mapRef}
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '300px',
-                  backgroundColor: '#f0f0f0',
-                  border: '2px solid #ccc',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  marginBottom: '0.8rem'
-                }}
-              >
-              </div>
-
-              {/* Input Lokasi - Otomatis Terisi */}
-              <input
-                type="text"
-                name="lokasi"
-                value={formData.lokasi}
-                onChange={handleChange}
-                placeholder="📍 Klik pada peta untuk memilih lokasi..."
-                readOnly
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  marginBottom: '0.8rem',
-                  fontSize: '0.9rem',
-                  backgroundColor: '#f5f5f5',
-                  cursor: 'not-allowed'
-                }}
-              />
-
-              {/* Tombol Aksi */}
+        <form onSubmit={handleSubmit} className="form-content">
+          {/* Section: Jadwal */}
+          <div className={`form-section ${errors.jadwal ? 'error-field' : ''}`}>
+            <label className="section-label">
+              <Calendar size={18} />
+              <span>Pilih Jadwal Penjemputan</span>
+            </label>
+            
+            <div className="jadwal-selector">
               <button
                 type="button"
-                className="lokasiButton"
-                onClick={handleAmbilLokasi}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  marginBottom: '0.8rem'
-                }}
+                className={`jadwal-trigger ${selectedJadwal ? 'selected' : ''}`}
+                onClick={() => setShowJadwalDropdown(!showJadwalDropdown)}
               >
-                � Gunakan Lokasi Saya Saat Ini
+                {selectedJadwal ? (
+                  <div className="jadwal-selected">
+                    <div className="jadwal-info">
+                      <span className="jadwal-hari">{formatJadwalDisplay(selectedJadwal)?.hari}</span>
+                      <span className="jadwal-detail">
+                        <Clock size={14} /> {formatJadwalDisplay(selectedJadwal)?.waktu}
+                      </span>
+                      <span className="jadwal-detail">
+                        <MapPin size={14} /> {formatJadwalDisplay(selectedJadwal)?.lokasi}
+                      </span>
+                    </div>
+                    <Check size={18} className="check-icon" />
+                  </div>
+                ) : (
+                  <span className="placeholder">Pilih jadwal penjemputan...</span>
+                )}
+                <ChevronDown size={18} className={`chevron ${showJadwalDropdown ? 'open' : ''}`} />
               </button>
 
-              {errors.lokasi && <span className="errorText">{errors.lokasi}</span>}
-              {formData.lokasi && (
-                <span className="successText" style={{ marginTop: '0.5rem', display: 'block' }}>
-                  ✅ Lokasi telah diatur
-                </span>
+              {showJadwalDropdown && (
+                <div className="jadwal-dropdown">
+                  {jadwalList.length === 0 ? (
+                    <div className="jadwal-empty">Tidak ada jadwal tersedia</div>
+                  ) : (
+                    jadwalList.map((jadwal, index) => {
+                      const display = formatJadwalDisplay(jadwal);
+                      const isSelected = selectedJadwal?.jadwal_penyetoran_id === jadwal.jadwal_penyetoran_id;
+                      
+                      return (
+                        <div
+                          key={jadwal.jadwal_penyetoran_id || index}
+                          className={`jadwal-option ${isSelected ? 'selected' : ''}`}
+                          onClick={() => handleJadwalSelect(jadwal, index)}
+                        >
+                          <div className="jadwal-option-content">
+                            <span className="jadwal-hari">{display?.hari}</span>
+                            <span className="jadwal-meta">
+                              <Clock size={12} /> {display?.waktu}
+                            </span>
+                            <span className="jadwal-meta">
+                              <MapPin size={12} /> {display?.lokasi}
+                            </span>
+                          </div>
+                          {isSelected && <Check size={16} className="check-icon" />}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               )}
             </div>
-          </label>
+            {errors.jadwal && <span className="error-text">{errors.jadwal}</span>}
+          </div>
 
-          <label>
-            {/* Jenis Sampah */}
-            <KategoriSampahWrapper
-              selectedKategori={selectedKategori}
-              setSelectedKategori={setSelectedKategori}
-              onSelectionChange={handleKategoriChange}
-            />
-            {errors.jenis && <span className="errorText">{errors.jenis}</span>}
-            {selectedKategori && (
-              <span className="successText">Kategori terseleksi: {formData.jenis}</span>
-            )}
-          </label>
+          {/* Section: Lokasi */}
+          <div className={`form-section ${errors.lokasi ? 'error-field' : ''}`}>
+            <label className="section-label">
+              <MapPin size={18} />
+              <span>Lokasi Penjemputan</span>
+            </label>
 
-          <label>
-            Foto Sampah*:
-            <input
-              type="file"
-              name="foto"
-              accept="image/*"
-              onChange={handleChange}
-              required
-            />
-            {formData.foto && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
-                📸 {formData.foto.name} ({(formData.foto.size / 1024).toFixed(2)} KB)
-              </div>
-            )}
-            {errors.foto && <span className="errorText">{errors.foto}</span>}
-          </label>
+            {/* Map Preview */}
+            <div className="map-preview">
+              {formData.koordinat.lat && formData.koordinat.lng ? (
+                <>
+                  <img 
+                    src={`https://staticmap.openstreetmap.de/staticmap.php?center=${formData.koordinat.lat},${formData.koordinat.lng}&zoom=16&size=600x200&markers=${formData.koordinat.lat},${formData.koordinat.lng},red-pushpin`}
+                    alt="Map Preview"
+                    className="map-image"
+                  />
+                  <div className="map-coords">
+                    <MapPin size={14} />
+                    <span>{formData.koordinat.lat.toFixed(5)}, {formData.koordinat.lng.toFixed(5)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="map-placeholder">
+                  <MapPin size={32} />
+                  <span>Klik tombol di bawah untuk mendapatkan lokasi</span>
+                </div>
+              )}
+            </div>
 
-          <p className="formNote">
-            *Catatan: Berat minimum sampah adalah <strong>3Kg</strong> untuk melakukan penjemputan.
-          </p>
-
-          <div className="formActions">
-            <button type="submit" disabled={loading}>
-              {loading ? "Mengirim..." : "Ajukan Penjemputan"}
+            <button
+              type="button"
+              className={`location-btn ${gettingLocation ? 'loading' : ''} ${formData.lokasi ? 'success' : ''}`}
+              onClick={handleGetLocation}
+              disabled={gettingLocation}
+            >
+              {gettingLocation ? (
+                <>
+                  <span className="spinner"></span>
+                  <span>Mendapatkan lokasi...</span>
+                </>
+              ) : formData.lokasi ? (
+                <>
+                  <Check size={18} />
+                  <span>Lokasi Berhasil Didapatkan</span>
+                </>
+              ) : (
+                <>
+                  <Navigation size={18} />
+                  <span>Gunakan Lokasi Saya</span>
+                </>
+              )}
             </button>
-            <button type="button" onClick={onClose} disabled={loading}>
+            
+            {errors.lokasi && <span className="error-text">{errors.lokasi}</span>}
+          </div>
+
+          {/* Section: Kategori Sampah */}
+          <div className={`form-section ${errors.jenis ? 'error-field' : ''}`}>
+            <label className="section-label">
+              <Package size={18} />
+              <span>Kategori Sampah</span>
+            </label>
+
+            <div className="kategori-grid">
+              {KATEGORI_SAMPAH.map((kategori) => {
+                const Icon = kategori.icon;
+                const isSelected = formData.jenis === kategori.id;
+                
+                return (
+                  <button
+                    key={kategori.id}
+                    type="button"
+                    className={`kategori-item ${isSelected ? 'selected' : ''}`}
+                    style={{ 
+                      '--kategori-color': kategori.color,
+                      borderColor: isSelected ? kategori.color : undefined 
+                    }}
+                    onClick={() => handleKategoriSelect(kategori.id)}
+                  >
+                    <div className="kategori-icon" style={{ color: kategori.color }}>
+                      <Icon size={22} />
+                    </div>
+                    <span className="kategori-label">{kategori.label}</span>
+                    {isSelected && (
+                      <div className="kategori-check" style={{ backgroundColor: kategori.color }}>
+                        <Check size={12} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.jenis && <span className="error-text">{errors.jenis}</span>}
+          </div>
+
+          {/* Section: Foto Sampah */}
+          <div className={`form-section ${errors.foto ? 'error-field' : ''}`}>
+            <label className="section-label">
+              <ImageIcon size={18} />
+              <span>Foto Sampah</span>
+            </label>
+
+            {fotoPreview ? (
+              <div className="foto-preview-container">
+                <img src={fotoPreview} alt="Preview" className="foto-preview" />
+                <div className="foto-info">
+                  <span className="foto-name">{formData.foto?.name}</span>
+                  <span className="foto-size">
+                    {(formData.foto?.size / 1024).toFixed(1)} KB
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  className="foto-remove"
+                  onClick={handleRemoveFoto}
+                  aria-label="Hapus foto"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <label className="foto-upload">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFotoChange}
+                  className="foto-input"
+                />
+                <div className="foto-upload-content">
+                  <ImageIcon size={32} />
+                  <span className="foto-upload-text">Klik untuk upload foto</span>
+                  <span className="foto-upload-hint">JPG, PNG (Maks. 5MB)</span>
+                </div>
+              </label>
+            )}
+            {errors.foto && <span className="error-text">{errors.foto}</span>}
+          </div>
+
+          {/* Note */}
+          <div className="form-note">
+            <span>📦</span>
+            <p>Berat minimum sampah adalah <strong>3 Kg</strong> untuk penjemputan.</p>
+          </div>
+
+          {/* Actions */}
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              className="btn-submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  <span>Mengirim...</span>
+                </>
+              ) : (
+                <>
+                  <Check size={18} />
+                  <span>Ajukan Penjemputan</span>
+                </>
+              )}
+            </button>
+            <button 
+              type="button" 
+              className="btn-cancel"
+              onClick={onClose}
+              disabled={loading}
+            >
               Batal
             </button>
           </div>

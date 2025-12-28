@@ -279,7 +279,7 @@ export default function TabungSampah() {
         <FormSetorSampah
           onClose={() => setShowFormModal(false)}
           userId={userId} // Real logged-in user ID from localStorage
-          selectedKategori={selectedKategori}
+          preSelectedKategori={selectedKategori?.toLowerCase()} // Pass selected category to form
           preSelectedSchedule={selectedScheduleId} // Pass selected schedule to form
         />
       )}
