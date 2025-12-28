@@ -49,15 +49,29 @@ const LeaderboardHeader = () => {
         // Build leaderboard URL with season filter
         const leaderboardUrl = `${API_BASE_URL}/dashboard/leaderboard?period=season&start_date=${seasonStart}&end_date=${seasonEnd}`;
 
-        // Fetch user stats and leaderboard in parallel
-        const [userStatsResponse, leaderboardResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/dashboard/stats/${userId}`, {
+        // Fetch with timeout helper for slow backend
+        const fetchWithTimeout = async (url, options, timeout = 15000) => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          try {
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeoutId);
+            return response;
+          } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+          }
+        };
+
+        // Fetch user stats and leaderboard in parallel with timeout
+        const [userStatsResponse, leaderboardResponse] = await Promise.allSettled([
+          fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`, {
             headers: {
               'Accept': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
           }),
-          fetch(leaderboardUrl, {
+          fetchWithTimeout(leaderboardUrl, {
             headers: {
               'Accept': 'application/json',
               'Authorization': `Bearer ${token}`,
@@ -69,12 +83,12 @@ const LeaderboardHeader = () => {
         let userStatsData = null;
         let leaderboardData = null;
 
-        if (userStatsResponse.ok) {
-          userStatsData = await userStatsResponse.json();
+        if (userStatsResponse.status === 'fulfilled' && userStatsResponse.value.ok) {
+          userStatsData = await userStatsResponse.value.json();
         }
 
-        if (leaderboardResponse.ok) {
-          leaderboardData = await leaderboardResponse.json();
+        if (leaderboardResponse.status === 'fulfilled' && leaderboardResponse.value.ok) {
+          leaderboardData = await leaderboardResponse.value.json();
         }
 
         // Extract user stats from the appropriate response

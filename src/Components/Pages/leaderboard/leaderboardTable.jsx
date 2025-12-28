@@ -94,13 +94,20 @@ export default function LeaderboardTable() {
           url += `?${params.toString()}`;
         }
 
+        // Fetch with timeout for slow backend (15 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error('Gagal mengambil data leaderboard');
@@ -117,7 +124,11 @@ export default function LeaderboardTable() {
           throw new Error('Format data leaderboard tidak valid');
         }
       } catch (err) {
-        setError(err.message);
+        if (err.name === 'AbortError') {
+          setError('Request timeout - server lambat merespons');
+        } else {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }

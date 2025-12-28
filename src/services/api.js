@@ -1,8 +1,8 @@
 // API Helper - Utility for making authenticated API calls
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api';
 
-// Default timeout for API requests (5 seconds)
-const DEFAULT_TIMEOUT = 5000;
+// Default timeout for API requests (15 seconds - increased for slow backend)
+const DEFAULT_TIMEOUT = 15000;
 
 /**
  * Fetch with timeout

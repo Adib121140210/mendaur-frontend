@@ -49,8 +49,8 @@ const HomeContent = () => {
         'Accept': 'application/json',
       };
 
-      // Fetch with timeout helper
-      const fetchWithTimeout = async (url, timeout = 5000) => {
+      // Fetch with timeout helper - increased to 15s for slow backend endpoints
+      const fetchWithTimeout = async (url, timeout = 15000) => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         

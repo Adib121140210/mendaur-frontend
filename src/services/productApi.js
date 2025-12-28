@@ -1,6 +1,28 @@
 // Product API Service - Public product endpoints for customers
 import { API_BASE_URL } from '../config/api';
 
+// Default timeout for slow backend (15 seconds)
+const DEFAULT_TIMEOUT = 15000;
+
+/**
+ * Fetch with timeout helper
+ */
+const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - server lambat merespons');
+    }
+    throw error;
+  }
+};
+
 /**
  * Get auth header with Bearer token
  */
@@ -40,7 +62,7 @@ const productApi = {
       const queryString = params.toString();
       const url = `${API_BASE_URL}/produk${queryString ? '?' + queryString : ''}`;
       
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         method: 'GET',
         headers: getAuthHeader()
       });
@@ -68,7 +90,7 @@ const productApi = {
     try {
       const url = `${API_BASE_URL}/produk/${productId}`;
       
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         method: 'GET',
         headers: getAuthHeader()
       });
@@ -94,7 +116,7 @@ const productApi = {
    */
   redeemProduct: async (redemptionData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/penukaran-produk`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/penukaran-produk`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(redemptionData)
@@ -126,7 +148,7 @@ const productApi = {
       const params = new URLSearchParams();
       if (userId) params.append('user_id', userId);
       
-      const response = await fetch(`${API_BASE_URL}/penukaran-produk?${params}`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/penukaran-produk?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       });
