@@ -18,7 +18,8 @@ const MOCK_USERS = [
     no_hp: '081234567890',
     role: 'user',
     status: 'active',
-    total_poin: 1500,
+    actual_poin: 1500,
+    display_poin: 1500,
   },
   {
     user_id: 2,
@@ -27,7 +28,8 @@ const MOCK_USERS = [
     no_hp: '081234567891',
     role: 'user',
     status: 'active',
-    total_poin: 2000,
+    actual_poin: 2000,
+    display_poin: 2000,
   },
 ]
 
