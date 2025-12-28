@@ -2,7 +2,7 @@ import useScrollTop from "../../lib/useScrollTop";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, Calendar, User, ArrowLeft, Clock, Share2, BookOpen, TrendingUp } from "lucide-react";
-import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
+import { API_BASE_URL, getStorageUrl } from "../../../config/api";
 import "./artikelDetail.css";
 
 const ArtikelDetail = () => {
@@ -160,16 +160,12 @@ const ArtikelDetail = () => {
   const getImageUrl = (foto) => {
     if (!foto) return null;
     
-    // If already a full URL, use as-is
+    // Handle Cloudinary URLs and local storage paths
     if (foto.startsWith('http://') || foto.startsWith('https://')) {
       return foto;
     }
     
-    // Remove leading slashes and 'storage/' prefix if present
-    let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
-    
-    // Try with storage prefix
-    return `${STORAGE_URL}/storage/${cleanPath}`;
+    return getStorageUrl(foto);
   };
 
   const handleShare = () => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Package, Coins, ShoppingCart, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import productApi from '../../../services/productApi';
-import { STORAGE_URL } from '../../../config/api';
+import { getStorageUrl } from '../../../config/api';
 import './produkDetail.css';
 
 export default function ProdukDetail() {
@@ -41,9 +41,9 @@ export default function ProdukDetail() {
 
   const getImageUrl = (foto) => {
     if (!foto) return null;
-    // If path doesn't start with storage/, add it
-    const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
-    return `${STORAGE_URL}/${cleanPath}`;
+    // Handle Cloudinary URLs and local storage paths
+    if (foto.startsWith('http')) return foto;
+    return getStorageUrl(foto);
   };
 
   const handleRedeem = async () => {

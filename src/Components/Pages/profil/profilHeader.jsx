@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getUnlockedBadges, setBadgeTitle, uploadUserAvatar } from "../../../services/api";
 import { Upload, X, Star, Trophy, ChevronDown } from "lucide-react";
-import { STORAGE_URL } from "../../../config/api";
+import { getStorageUrl } from "../../../config/api";
 import "../profil/profilHeader.css";
 
 export default function ProfilHeader() {
@@ -145,10 +145,10 @@ export default function ProfilHeader() {
 
   const currentBadge = userBadges.find(b => b.badge_id === activeBadge);
 
-  // Generate avatar URL
+  // Generate avatar URL - handles both Cloudinary URLs and local storage paths
   const getAvatarUrl = () => {
     if (user.foto_profil) {
-      return `${STORAGE_URL}/storage/${user.foto_profil}`;
+      return getStorageUrl(user.foto_profil);
     }
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&size=120&background=4CAF50&color=fff&bold=true`;
   };

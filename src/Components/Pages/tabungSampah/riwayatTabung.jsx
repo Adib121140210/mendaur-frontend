@@ -12,7 +12,7 @@ import {
   X
 } from "lucide-react";
 import useScrollTop from "../../lib/useScrollTop";
-import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
+import { API_BASE_URL, getStorageUrl } from "../../../config/api";
 import "./riwayatTabung.css";
 
 const RiwayatTabung = () => {
@@ -386,7 +386,7 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
               <img
                 src={deposit.foto_bukti.startsWith('http')
                   ? deposit.foto_bukti
-                  : `${STORAGE_URL}${deposit.foto_bukti}`}
+                  : getStorageUrl(deposit.foto_bukti)}
                 alt="Bukti tabung sampah"
                 className="evidencePhoto"
               />

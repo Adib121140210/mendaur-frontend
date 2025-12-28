@@ -3,7 +3,7 @@ import { Sidebarlinks, SidebarBottomlinks } from "../lib/navigation";
 import { useAuth } from "../Pages/context/AuthContext";
 import { useState, useEffect } from "react";
 import { getBadgeTitle } from "../../services/api";
-import { STORAGE_URL } from "../../config/api";
+import { getStorageUrl } from "../../config/api";
 import "./sidebar.css";
 
 export default function Sidebar() {
@@ -62,10 +62,10 @@ function ProfileSection() {
     );
   }
 
-  // Generate avatar URL
+  // Generate avatar URL - handles both Cloudinary URLs and local storage paths
   const getAvatarUrl = () => {
     if (user.foto_profil) {
-      return `${STORAGE_URL}/storage/${user.foto_profil}`;
+      return getStorageUrl(user.foto_profil);
     }
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&size=80&background=4CAF50&color=fff&bold=true`;
   };

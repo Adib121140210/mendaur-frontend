@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import "./artikel.css";
 import Pagination from "../ui/pagination";
 import { Eye } from "lucide-react";
-import { API_BASE_URL, STORAGE_URL } from "../../config/api";
+import { API_BASE_URL, getStorageUrl } from "../../config/api";
 
 const ArtikelCard = ({
   data = null,
@@ -104,20 +104,16 @@ const ArtikelCard = ({
     }
   };
 
-  // Helper function untuk image URL dengan multiple fallback strategies
+  // Helper function untuk image URL - handles Cloudinary and local storage
   const getImageUrl = (foto) => {
     if (!foto) return null;
     
-    // If already a full URL, use as-is
+    // Handle Cloudinary URLs and local storage paths
     if (foto.startsWith('http://') || foto.startsWith('https://')) {
       return foto;
     }
     
-    // Remove leading slashes and 'storage/' prefix if present
-    let cleanPath = foto.replace(/^\/+/, '').replace(/^storage\//, '');
-    
-    // Try with storage prefix
-    return `${STORAGE_URL}/storage/${cleanPath}`;
+    return getStorageUrl(foto);
   };
 
   if (loading) {

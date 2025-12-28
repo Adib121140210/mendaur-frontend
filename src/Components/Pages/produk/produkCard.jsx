@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import "./produkCard.css";
 import Pagination from '../../ui/pagination'
-import { STORAGE_URL } from "../../../config/api";
+import { getStorageUrl } from "../../../config/api";
 
 import { Coins, Package, ShoppingCart } from "lucide-react";
 
@@ -30,15 +30,14 @@ const ProdukCard = ({
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Get image URL from backend
+  // Get image URL from backend - handles Cloudinary URLs and local storage
   const getImageUrl = (foto) => {
     if (!foto) return null;
-    // Backend returns path like "storage/produks/xxx.jpg" or "produks/xxx.jpg"
+    // Backend returns Cloudinary URL or path like "storage/produks/xxx.jpg"
     if (foto.startsWith('http')) return foto;
     
-    // If path doesn't start with storage/, add it
-    const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
-    return `${STORAGE_URL}/${cleanPath}`;
+    // Use centralized helper for local storage paths
+    return getStorageUrl(foto);
   };
 
   // Safe parse integer

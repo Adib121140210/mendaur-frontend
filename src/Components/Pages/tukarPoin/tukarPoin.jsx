@@ -4,7 +4,7 @@ import "./tukarPoin.css";
 import Pagination from '../../ui/pagination'
 import productApi from "../../../services/productApi";
 import ProdukCard from "../produk/produkCard";
-import { API_BASE_URL, STORAGE_URL } from "../../../config/api";
+import { API_BASE_URL, getStorageUrl } from "../../../config/api";
 
 import {
   Star,
@@ -595,7 +595,7 @@ export default function TukarPoin() {
                     <img 
                       src={selectedProduct.foto.startsWith('http') 
                         ? selectedProduct.foto 
-                        : `${STORAGE_URL}/${selectedProduct.foto}`}
+                        : getStorageUrl(selectedProduct.foto)}
                       alt={selectedProduct.nama} 
                     />
                   ) : (
