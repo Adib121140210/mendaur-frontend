@@ -104,7 +104,7 @@ const BookingModal = ({ onClose, onSuccess }) => {
         status: "pending",
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/jadwal-penyetoran`, {
+      const response = await fetch(`${API_BASE_URL}/jadwal-penyetoran`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

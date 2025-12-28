@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${API_BASE_URL}/api/profile`, {
+      const response = await fetch(`${API_BASE_URL}/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',

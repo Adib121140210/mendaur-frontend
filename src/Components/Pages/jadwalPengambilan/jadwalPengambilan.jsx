@@ -30,7 +30,7 @@ const JadwalPengambilan = () => {
           throw new Error("Authentication required");
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/jadwal-penyetoran`, {
+        const response = await fetch(`${API_BASE_URL}/jadwal-penyetoran`, {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
