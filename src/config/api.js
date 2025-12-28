@@ -6,8 +6,11 @@ const rawUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
 // Ensure URL has protocol (https://)
 const baseUrl = rawUrl && !rawUrl.startsWith('http') ? `https://${rawUrl}` : rawUrl;
 
-export const API_BASE_URL = baseUrl ? `${baseUrl}/api` : 'http://127.0.0.1:8000/api';
-export const STORAGE_URL = baseUrl || 'http://127.0.0.1:8000';
+// Production fallback URL - Railway backend
+const PRODUCTION_URL = 'https://mendaur.up.railway.app';
+
+export const API_BASE_URL = baseUrl ? `${baseUrl}/api` : `${PRODUCTION_URL}/api`;
+export const STORAGE_URL = baseUrl || PRODUCTION_URL;
 
 // Helper to get full storage URL for images
 export const getStorageUrl = (path) => {
