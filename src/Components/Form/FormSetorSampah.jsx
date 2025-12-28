@@ -140,7 +140,7 @@ export default function FormSetorSampah({
     }
   };
 
-  // Handle foto change dengan preview
+  // Handle foto change dengan preview dan kompresi
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -156,19 +156,82 @@ export default function FormSetorSampah({
         return;
       }
 
-      setFormData(prev => ({ ...prev, foto: file }));
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-      
+      // Clear previous errors
       if (errors.foto) {
         setErrors(prev => ({ ...prev, foto: null }));
       }
+
+      // Compress image if > 1MB
+      if (file.size > 1024 * 1024) {
+        compressImage(file);
+      } else {
+        setFormData(prev => ({ ...prev, foto: file }));
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFotoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
+  };
+
+  // Compress image untuk mengurangi ukuran file
+  const compressImage = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize jika terlalu besar (max 1920px)
+        const maxDimension = 1920;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to blob with quality 0.8
+        canvas.toBlob(
+          (blob) => {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+
+            console.log('Original size:', (file.size / 1024).toFixed(2), 'KB');
+            console.log('Compressed size:', (compressedFile.size / 1024).toFixed(2), 'KB');
+
+            setFormData(prev => ({ ...prev, foto: compressedFile }));
+            
+            // Create preview from compressed
+            const previewReader = new FileReader();
+            previewReader.onloadend = () => {
+              setFotoPreview(previewReader.result);
+            };
+            previewReader.readAsDataURL(compressedFile);
+          },
+          'image/jpeg',
+          0.8 // Quality 80%
+        );
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   // Remove foto
@@ -296,14 +359,22 @@ export default function FormSetorSampah({
     }
 
     try {
+      // Upload with timeout protection (30 seconds for large files)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const res = await fetch(`${API_BASE_URL}/tabung-sampah`, {
         method: "POST",
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it automatically for FormData
         },
         body: data,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const result = await res.json();
 
@@ -314,8 +385,19 @@ export default function FormSetorSampah({
             backendErrors[key] = result.errors[key][0];
           });
           setErrors(backendErrors);
+          
+          // Show specific error for file size
+          if (backendErrors.foto_sampah) {
+            throw new Error(backendErrors.foto_sampah);
+          }
           throw new Error(result.message || "Validasi gagal");
         }
+        
+        // Handle specific HTTP errors
+        if (res.status === 413) {
+          throw new Error("Ukuran file terlalu besar untuk server. Coba kompres foto atau gunakan foto dengan ukuran lebih kecil.");
+        }
+        
         throw new Error(result.message || "Terjadi kesalahan");
       }
 
@@ -324,7 +406,12 @@ export default function FormSetorSampah({
         onClose();
       }
     } catch (err) {
-      alert("❌ " + (err.message || "Gagal mengirim data"));
+      if (err.name === 'AbortError') {
+        alert("❌ Upload timeout. Coba lagi atau gunakan foto dengan ukuran lebih kecil.");
+      } else {
+        alert("❌ " + (err.message || "Gagal mengirim data"));
+      }
+      console.error('Upload error:', err);
     } finally {
       setLoading(false);
     }
