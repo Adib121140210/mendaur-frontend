@@ -431,51 +431,53 @@ export default function FormSetorSampah({
               <span>Lokasi Penjemputan</span>
             </label>
 
-            {/* Map Preview */}
-            <div className="map-preview">
-              {formData.koordinat.lat && formData.koordinat.lng ? (
-                <>
-                  <img 
-                    src={`https://staticmap.openstreetmap.de/staticmap.php?center=${formData.koordinat.lat},${formData.koordinat.lng}&zoom=16&size=600x200&markers=${formData.koordinat.lat},${formData.koordinat.lng},red-pushpin`}
-                    alt="Map Preview"
-                    className="map-image"
-                  />
-                  <div className="map-coords">
-                    <MapPin size={14} />
-                    <span>{formData.koordinat.lat.toFixed(5)}, {formData.koordinat.lng.toFixed(5)}</span>
-                  </div>
-                </>
-              ) : (
-                <div className="map-placeholder">
-                  <MapPin size={32} />
-                  <span>Klik tombol di bawah untuk mendapatkan lokasi</span>
+            {/* Info Box */}
+            <div className="location-info-box">
+              <Navigation size={16} />
+              <p>Form ini akan otomatis mengambil lokasi dari perangkat Anda. Cukup setujui situs untuk mengetahui lokasi Anda.</p>
+            </div>
+
+            {/* Location Input */}
+            <div className="location-input-wrapper">
+              <input
+                type="text"
+                className="location-input"
+                value={formData.lokasi}
+                onChange={(e) => setFormData(prev => ({ ...prev, lokasi: e.target.value }))}
+                placeholder="Lokasi akan terisi otomatis..."
+                readOnly={gettingLocation}
+              />
+              {formData.lokasi && (
+                <div className="location-status success">
+                  <Check size={16} />
+                </div>
+              )}
+              {gettingLocation && (
+                <div className="location-status loading">
+                  <span className="spinner-small"></span>
                 </div>
               )}
             </div>
 
-            <button
-              type="button"
-              className={`location-btn ${gettingLocation ? 'loading' : ''} ${formData.lokasi ? 'success' : ''}`}
-              onClick={handleGetLocation}
-              disabled={gettingLocation}
-            >
-              {gettingLocation ? (
-                <>
-                  <span className="spinner"></span>
-                  <span>Mendapatkan lokasi...</span>
-                </>
-              ) : formData.lokasi ? (
-                <>
-                  <Check size={18} />
-                  <span>Lokasi Berhasil Didapatkan</span>
-                </>
-              ) : (
-                <>
-                  <Navigation size={18} />
-                  <span>Gunakan Lokasi Saya</span>
-                </>
-              )}
-            </button>
+            {/* Koordinat Display */}
+            {formData.koordinat.lat && formData.koordinat.lng && (
+              <div className="koordinat-display">
+                <MapPin size={14} />
+                <span>Koordinat: {formData.koordinat.lat.toFixed(6)}, {formData.koordinat.lng.toFixed(6)}</span>
+              </div>
+            )}
+
+            {/* Retry Button - only show if location failed */}
+            {!formData.lokasi && !gettingLocation && (
+              <button
+                type="button"
+                className="location-retry-btn"
+                onClick={handleGetLocation}
+              >
+                <Navigation size={16} />
+                <span>Coba Ambil Lokasi Lagi</span>
+              </button>
+            )}
             
             {errors.lokasi && <span className="error-text">{errors.lokasi}</span>}
           </div>

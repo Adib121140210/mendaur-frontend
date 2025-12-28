@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import ProdukCard from "./produkCard";
+import { ProductGridSkeleton } from "../../Loading/Skeleton";
 import "./produk.css";
 import productApi from "../../../services/productApi";
 
@@ -95,10 +96,7 @@ export default function Produk() {
 
       {/* Loading State */}
       {loading && (
-        <div className="produkLoading">
-          <div className="spinner"></div>
-          <p>Memuat produk...</p>
-        </div>
+        <ProductGridSkeleton count={8} />
       )}
 
       {/* Error State */}

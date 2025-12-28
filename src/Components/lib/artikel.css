@@ -282,7 +282,43 @@
   font-weight: 500;
 }
 
-/* Responsif */
+/* ===================================
+   RESPONSIVE - Standard Breakpoints
+   Mobile Small:   320px - 480px
+   Mobile Large:   481px - 768px
+   Tablet/Laptop:  769px - 1024px
+   Desktop:        1025px+
+=================================== */
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .artikelWrapper {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .artikelCardImage {
+    height: 220px;
+  }
+}
+
+/* Tablet (769px - 1024px) */
+@media (max-width: 1024px) {
+  .artikelWrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .artikelCardImage {
+    height: 200px;
+  }
+
+  .artikelContent {
+    padding: 18px;
+  }
+}
+
+/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
   .artikelWrapper {
     grid-template-columns: 1fr;
@@ -293,6 +329,11 @@
     height: 180px;
   }
 
+  .artikelContent {
+    padding: 16px;
+    gap: 10px;
+  }
+
   .artikelContent h3 {
     font-size: 1rem;
   }
@@ -300,5 +341,79 @@
   .readMoreBtn {
     font-size: 0.8rem;
     padding: 10px 16px;
+  }
+
+  .pagination {
+    gap: 12px;
+  }
+
+  .pagination button {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile Small (320px - 480px) */
+@media (max-width: 480px) {
+  .artikelWrapper {
+    gap: 16px;
+  }
+
+  .artikelCardImage {
+    height: 160px;
+  }
+
+  .artikelContent {
+    padding: 14px;
+    gap: 8px;
+  }
+
+  .artikelContent h3 {
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  .artikelKategori {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .artikelMeta {
+    font-size: 0.7rem;
+  }
+
+  .readMoreBtn {
+    font-size: 0.75rem;
+    padding: 8px 14px;
+  }
+
+  .pagination button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+
+  .artikel-loading-state,
+  .artikel-empty-state {
+    padding: 40px 16px;
+  }
+}
+
+/* Extra Small (< 360px) */
+@media (max-width: 360px) {
+  .artikelCardImage {
+    height: 140px;
+  }
+
+  .artikelContent {
+    padding: 12px;
+  }
+
+  .artikelContent h3 {
+    font-size: 0.9rem;
+  }
+
+  .readMoreBtn {
+    width: 100%;
+    justify-content: center;
   }
 }

@@ -401,10 +401,68 @@
   gap: 24px;
 }
 
-/* Responsif */
+/* ===================================
+   RESPONSIVE - Standard Breakpoints
+   Mobile Small:   320px - 480px
+   Mobile Large:   481px - 768px
+   Tablet/Laptop:  769px - 1024px
+   Desktop:        1025px+
+=================================== */
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .homeContentWrapper {
+    padding: 32px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .dashboardRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tablet/Laptop (769px - 1024px) */
+@media (max-width: 1024px) {
+  .homeContentWrapper {
+    padding: 24px;
+  }
+
+  .welcomeSection {
+    padding: 24px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.75rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .dashboardRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .artikelGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
   .homeContentWrapper {
     padding: 16px;
+    gap: 20px;
+  }
+
+  .welcomeSection {
+    padding: 20px;
+    border-radius: 10px;
   }
 
   .welcomeTitle {
@@ -412,11 +470,11 @@
   }
 
   .welcomeSubtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .statsGrid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
 
@@ -424,21 +482,151 @@
     padding: 16px;
   }
 
+  .statIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .statIcon svg {
+    width: 24px;
+    height: 24px;
+  }
+
   .statValue {
     font-size: 1.5rem;
+  }
+
+  .statTitle {
+    font-size: 0.8rem;
   }
 
   .dashboardRow {
     grid-template-columns: 1fr;
   }
 
+  .leaderboardSection,
+  .badgesSection {
+    padding: 20px;
+  }
+
+  .sectionTitle {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+
   .contentbox {
     padding: 16px;
-    gap: 24px;
+    gap: 20px;
   }
 
   .card {
     padding: 16px;
     font-size: 1rem;
+  }
+
+  .artikelGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Mobile Small (320px - 480px) */
+@media (max-width: 480px) {
+  .homeContentWrapper {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .welcomeSection {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.25rem;
+  }
+
+  .welcomeSubtitle {
+    font-size: 0.85rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 12px;
+    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .statIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+  }
+
+  .statIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .statTitle {
+    font-size: 0.75rem;
+  }
+
+  .leaderboardSection,
+  .badgesSection {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .artikelTitle {
+    font-size: 1.25rem;
+  }
+
+  .contentbox {
+    padding: 12px;
+    gap: 16px;
+  }
+}
+
+/* Extra Small Mobile (< 360px) */
+@media (max-width: 360px) {
+  .homeContentWrapper {
+    padding: 10px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.1rem;
+  }
+
+  .welcomeSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .statCard {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
   }
 }

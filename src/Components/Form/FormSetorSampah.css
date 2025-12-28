@@ -267,94 +267,121 @@
   color: #10b981;
 }
 
-/* ====== MAP PREVIEW ====== */
-.map-preview {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 0.75rem;
-  border: 2px solid #e5e7eb;
-}
-
-.map-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.map-placeholder {
-  width: 100%;
-  height: 100%;
+/* ====== LOCATION INPUT ====== */
+.location-info-box {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.location-info-box svg {
+  color: #10b981;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.location-info-box p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #065f46;
+  line-height: 1.5;
+}
+
+.location-input-wrapper {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.location-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  padding-right: 2.75rem;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.location-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background: #fff;
+}
+
+.location-input::placeholder {
   color: #9ca3af;
 }
 
-.map-placeholder span {
-  font-size: 0.85rem;
-  text-align: center;
-  padding: 0 1rem;
-}
-
-.map-coords {
+.location-status {
   position: absolute;
-  bottom: 0.5rem;
-  right: 0.5rem;
-  background: white;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: #374151;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  justify-content: center;
 }
 
-.map-coords svg {
+.location-status.success svg {
   color: #10b981;
 }
 
-/* Location Button */
-.location-btn {
+.location-status.loading {
+  color: #6b7280;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.koordinat-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.koordinat-display svg {
+  color: #10b981;
+}
+
+.location-retry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.75rem;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   transition: all 0.2s;
 }
 
-.location-btn:hover:not(:disabled) {
+.location-retry-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.location-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.location-btn.success {
-  background: #10b981;
-}
-
-.location-btn.loading {
-  background: #6b7280;
 }
 
 /* ====== KATEGORI GRID ====== */
@@ -627,7 +654,103 @@
   }
 }
 
-/* ====== RESPONSIVE ====== */
+/* ===================================
+   RESPONSIVE - Standard Breakpoints
+   Mobile Small:   320px - 480px
+   Mobile Large:   481px - 768px
+   Tablet/Laptop:  769px - 1024px
+   Desktop:        1025px+
+=================================== */
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .form-container {
+    max-width: 540px;
+  }
+
+  .form-header {
+    padding: 1.75rem;
+  }
+
+  .form-content {
+    padding: 1.5rem;
+  }
+
+  .kategori-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .kategori-item {
+    padding: 1.25rem 0.75rem;
+  }
+}
+
+/* Tablet (769px - 1024px) */
+@media (max-width: 1024px) {
+  .form-container {
+    max-width: 500px;
+  }
+
+  .form-header {
+    padding: 1.5rem;
+  }
+
+  .form-content {
+    padding: 1.25rem;
+  }
+
+  .kategori-grid {
+    gap: 0.875rem;
+  }
+}
+
+/* Mobile Large (481px - 768px) */
+@media (max-width: 768px) {
+  .form-overlay {
+    padding: 0.5rem;
+  }
+
+  .form-container {
+    max-width: 100%;
+    max-height: 92vh;
+  }
+
+  .form-header {
+    padding: 1.25rem;
+  }
+
+  .form-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .form-content {
+    padding: 1rem;
+  }
+
+  .section-label {
+    font-size: 0.85rem;
+  }
+
+  .kategori-grid {
+    gap: 0.625rem;
+  }
+
+  .kategori-item {
+    padding: 0.875rem 0.5rem;
+  }
+
+  .kategori-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .kategori-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Mobile Small (320px - 480px) */
 @media (max-width: 480px) {
   .form-overlay {
     padding: 0;
@@ -679,38 +802,65 @@
     font-size: 0.7rem;
   }
 
-  .map-preview {
-    height: 150px;
+  .location-info-box {
+    padding: 0.75rem;
+  }
+
+  .location-info-box p {
+    font-size: 0.75rem;
   }
 
   .foto-upload-content {
     padding: 1.5rem;
   }
-}
 
-/* Desktop optimization */
-@media (min-width: 640px) {
-  .form-container {
-    max-width: 520px;
+  .form-actions {
+    flex-direction: column;
   }
 
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}
+
+/* Extra Small (< 360px) */
+@media (max-width: 360px) {
   .form-header {
-    padding: 1.75rem;
+    padding: 1rem;
+  }
+
+  .form-header h2 {
+    font-size: 1rem;
   }
 
   .form-content {
-    padding: 1.5rem;
+    padding: 0.875rem;
   }
 
   .kategori-grid {
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
   }
 
   .kategori-item {
-    padding: 1.25rem 0.75rem;
+    padding: 0.625rem 0.25rem;
   }
 
-  .map-preview {
-    height: 200px;
+  .kategori-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .kategori-label {
+    font-size: 0.65rem;
+  }
+
+  .section-label {
+    font-size: 0.8rem;
+  }
+
+  .location-info-box p {
+    font-size: 0.7rem;
   }
 }

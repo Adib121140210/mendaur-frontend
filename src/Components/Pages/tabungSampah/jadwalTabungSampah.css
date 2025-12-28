@@ -4,6 +4,8 @@
   box-shadow: var(--shadow-md);
   border-radius: 12px;
   margin-top: 2rem;
+  min-height: 400px; /* Prevent CLS - reserve space for schedule cards */
+  contain: layout style; /* Isolate layout recalculations */
 }
 
 .jadwalHeader {
@@ -267,7 +269,35 @@
   background-color: #059669;
 }
 
-/* Responsive */
+/* ===================================
+   RESPONSIVE - Standard Breakpoints
+=================================== */
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .jadwalCardWrapper {
+    padding: 2rem;
+  }
+
+  .jadwalCardGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Tablet (769px - 1024px) */
+@media (max-width: 1024px) {
+  .jadwalCardWrapper {
+    padding: 1.5rem;
+  }
+
+  .jadwalCardGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
   .jadwalCardWrapper {
     padding: 1rem;
@@ -276,6 +306,7 @@
   .jadwalHeader {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .btnSchedule {
@@ -285,5 +316,63 @@
 
   .jadwalCardGrid {
     grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .jadwalCard {
+    padding: 1rem;
+  }
+}
+
+/* Mobile Small (320px - 480px) */
+@media (max-width: 480px) {
+  .jadwalCardWrapper {
+    padding: 0.75rem;
+  }
+
+  .jadwalHeader h2 {
+    font-size: 1.25rem;
+  }
+
+  .btnSchedule {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .jadwalCard {
+    padding: 0.875rem;
+  }
+
+  .jadwalDateHeader h3 {
+    font-size: 1rem;
+  }
+
+  .locationText {
+    font-size: 0.8rem;
+  }
+
+  .selectButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Extra Small (< 360px) */
+@media (max-width: 360px) {
+  .jadwalCardWrapper {
+    padding: 0.5rem;
+  }
+
+  .jadwalHeader h2 {
+    font-size: 1.1rem;
+  }
+
+  .btnSchedule {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .jadwalCard {
+    padding: 0.75rem;
   }
 }

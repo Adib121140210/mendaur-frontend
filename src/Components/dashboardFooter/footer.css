@@ -5,6 +5,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 90px; /* Prevent CLS - reserve space for footer */
 }
 
 .footerContent {

@@ -1,10 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import {Routes, Route, Navigate} from 'react-router-dom'
 import "./index.css"
 import { useAuth } from './Components/Pages/context/AuthContext'
 import BottomNav from './Components/BottomNav/bottomNav'
 
-// Loading component for Suspense
+// Loading component for Suspense - Optimized with minimal render
 const PageLoader = () => (
   <div style={{ 
     display: 'flex', 
@@ -12,7 +12,8 @@ const PageLoader = () => (
     alignItems: 'center', 
     height: '100vh',
     flexDirection: 'column',
-    gap: '16px'
+    gap: '16px',
+    background: '#f9fafb'
   }}>
     <div style={{
       width: '40px',
@@ -35,15 +36,17 @@ const PageLoader = () => (
 // Auth Pages - Load immediately (small, critical for first paint)
 import Login from "./Components/Pages/login/login"
 
+// Lazy load with prefetch support - User Critical Pages
+const Layout = lazy(() => import("./Components/Pages/home/Layout"))
+const HomeContent = lazy(() => import("./Components/Pages/home/homeContent"))
+
 // Lazy load other pages for faster initial load
 const Landing = lazy(() => import('./Components/Pages/Landing/Landing'))
 const Daftar = lazy(() => import('./Components/Pages/daftar/daftar'))
 const Register = lazy(() => import('./Components/Pages/register/register'))
 const ForgotPassword = lazy(() => import('./Components/Pages/forgotPassword/forgotPassword'))
 
-// User Layout & Pages - Lazy load
-const Layout = lazy(() => import("./Components/Pages/home/Layout"))
-const HomeContent = lazy(() => import("./Components/Pages/home/homeContent"))
+// User Pages - Lazy load with prefetch hints
 const ArtikelPage = lazy(() => import('./Components/Pages/artikel/artikelPage'))
 const ArtikelDetail = lazy(() => import('./Components/Pages/artikelDetail/artikelDetail'))
 const Profil = lazy(() => import("./Components/Pages/profil/profil"))
@@ -64,6 +67,26 @@ const AllRedemptions = lazy(() => import('./Components/Pages/redeemHistory/redee
 
 // Admin Dashboard Component - Lazy load
 const AdminDashboard = lazy(() => import('./Components/Pages/adminDashboard/AdminDashboard'))
+
+// Prefetch critical user routes after initial render
+const prefetchUserRoutes = () => {
+  // Only prefetch if user is likely logged in
+  const token = localStorage.getItem('token');
+  if (token) {
+    // Prefetch common user pages after a short delay
+    setTimeout(() => {
+      import('./Components/Pages/tabungSampah/tabungSampah');
+      import('./Components/Pages/profil/profil');
+      import('./Components/Pages/leaderboard/leaderboard');
+    }, 2000);
+  }
+};
+
+// Call prefetch on module load (runs once)
+if (typeof window !== 'undefined') {
+  // Wait for initial render to complete
+  requestIdleCallback ? requestIdleCallback(prefetchUserRoutes) : setTimeout(prefetchUserRoutes, 3000);
+}
 
 // Protected Route Components
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -92,6 +115,19 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
 const App = () => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  // Prefetch common user pages after login
+  useEffect(() => {
+    if (isAuthenticated && !isAdmin) {
+      // Prefetch common user pages after a short delay for faster navigation
+      const timer = setTimeout(() => {
+        import('./Components/Pages/tabungSampah/tabungSampah');
+        import('./Components/Pages/profil/profil');
+        import('./Components/Pages/leaderboard/leaderboard');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isAdmin]);
 
   if (loading) {
     return <PageLoader />;

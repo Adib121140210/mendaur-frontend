@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import ArtikelCard from "../../lib/artikel";
 import Banner from "../../lib/banner";
 import { API_BASE_URL } from "../../../config/api";
+import { DashboardSkeleton } from "../../Loading/Skeleton";
 import "./homeContent.css";
 
 const HomeContent = () => {
@@ -240,13 +241,7 @@ const HomeContent = () => {
   }
 
   if (loading) {
-    return (
-      <div className="homeContentWrapper">
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <p>Memuat dashboard...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

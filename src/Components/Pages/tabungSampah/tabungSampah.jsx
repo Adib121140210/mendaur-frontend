@@ -4,6 +4,7 @@ import { Recycle, Search } from "lucide-react";
 import KategoriSampahWrapper from "./kategoriSampah";
 import JadwalTabungSampah from "./jadwalTabungSampah";
 import FormSetorSampah from "../../Form/FormSetorSampah";
+import { TableSkeleton } from "../../Loading/Skeleton";
 import { API_BASE_URL } from "../../../config/api";
 import "./tabungSampah.css";
 
@@ -195,8 +196,8 @@ export default function TabungSampah() {
         </div>
 
         {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
-            <p>Memuat harga sampah...</p>
+          <div style={{ padding: '1rem' }}>
+            <TableSkeleton rows={6} cols={3} />
           </div>
         ) : (
           <table className="hargaTable">

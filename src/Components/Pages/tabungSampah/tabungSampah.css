@@ -53,6 +53,7 @@
   position: relative;
   flex: 1;
   min-width: 250px;
+  min-height: 50px; /* Prevent CLS - reserve space for search input */
   display: flex;
   align-items: center;
 }

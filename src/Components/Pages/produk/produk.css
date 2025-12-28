@@ -170,7 +170,42 @@
   font-size: 1.1rem;
 }
 
-/* Responsive */
+/* ===================================
+   RESPONSIVE - Standard Breakpoints
+=================================== */
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .ProdukWrapper {
+    padding: 2.5rem;
+    max-width: 1200px;
+  }
+
+  .produkHeading {
+    font-size: 2.25rem;
+  }
+
+  .searchBox {
+    max-width: 400px;
+  }
+}
+
+/* Tablet (769px - 1024px) */
+@media (max-width: 1024px) {
+  .ProdukWrapper {
+    padding: 2rem 1.5rem;
+  }
+  
+  .produkHeading {
+    font-size: 2rem;
+  }
+
+  .categoryFilters {
+    gap: 0.75rem;
+  }
+}
+
+/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
   .ProdukWrapper {
     padding: 1.5rem 1rem;
@@ -186,10 +221,60 @@
   
   .categoryFilters {
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   
   .filterBtn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+}
+
+/* Mobile Small (320px - 480px) */
+@media (max-width: 480px) {
+  .ProdukWrapper {
+    padding: 1rem 0.75rem;
+  }
+  
+  .produkHeading {
+    font-size: 1.5rem;
+  }
+
+  .searchBox {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .categoryFilters {
+    gap: 0.4rem;
+  }
+
+  .filterBtn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .produkEmpty {
+    padding: 2rem 1rem;
+  }
+
+  .produkEmpty p {
+    font-size: 0.95rem;
+  }
+}
+
+/* Extra Small (< 360px) */
+@media (max-width: 360px) {
+  .ProdukWrapper {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .produkHeading {
+    font-size: 1.35rem;
+  }
+
+  .filterBtn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.7rem;
   }
 }
