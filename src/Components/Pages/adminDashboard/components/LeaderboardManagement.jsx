@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Trophy, RefreshCw, Calendar, Clock, AlertTriangle, CheckCircle, Users, Award, Settings } from 'lucide-react';
+import { API_BASE_URL } from '../../../../config/api';
 import DangerConfirmDialog from './DangerConfirmDialog';
 import '../styles/leaderboardManagement.css';
 
@@ -35,7 +36,7 @@ const LeaderboardManagement = () => {
   const fetchLeaderboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:8000/api/dashboard/leaderboard', {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/leaderboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ const LeaderboardManagement = () => {
   const fetchLeaderboardSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:8000/api/admin/leaderboard/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/leaderboard/settings`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ const LeaderboardManagement = () => {
   const fetchResetHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:8000/api/admin/leaderboard/history', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/leaderboard/history`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -106,7 +107,7 @@ const LeaderboardManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:8000/api/admin/leaderboard/reset', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/leaderboard/reset`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -153,7 +154,7 @@ const LeaderboardManagement = () => {
   const handleUpdateSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:8000/api/admin/leaderboard/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/leaderboard/settings`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

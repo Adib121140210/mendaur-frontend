@@ -20,6 +20,7 @@ import {
 import adminApi from '../../../../services/adminApi';
 import { PermissionGuard } from '../../../PermissionGuard';
 import { useAuth } from '../../context/AuthContext';
+import { getStorageUrl } from '../../../../config/api';
 import DangerConfirmDialog from './DangerConfirmDialog';
 import '../styles/wasteDepositsManagement.css';
 
@@ -289,12 +290,7 @@ export default function WasteDepositsManagement() {
 
   // Helper function untuk image URL dengan storage prefix
   const getImageUrl = (foto) => {
-    if (!foto) return null;
-    // Jika sudah URL lengkap
-    if (foto.startsWith('http')) return foto;
-    // Jika path relatif, tambahkan base URL dan storage prefix jika perlu
-    const cleanPath = foto.startsWith('storage/') ? foto : `storage/${foto}`;
-    return `http://127.0.0.1:8000/${cleanPath}`;
+    return getStorageUrl(foto);
   };
 
   // Action handlers

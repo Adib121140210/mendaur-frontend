@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, Plus, Filter, AlertCircle, CheckCircle, XCircle, Loader } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import CalendarView from "./CalendarView";
 import BookingModal from "./BookingModal";
 import LocationManager from "./LocationManager";
@@ -29,7 +30,7 @@ const JadwalPengambilan = () => {
           throw new Error("Authentication required");
         }
 
-        const response = await fetch(`http://127.0.0.1:8000/api/jadwal-penyetoran`, {
+        const response = await fetch(`${API_BASE_URL}/api/jadwal-penyetoran`, {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,

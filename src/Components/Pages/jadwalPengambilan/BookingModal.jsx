@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Calendar, Clock, MapPin, FileText, AlertCircle, Loader } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api";
 import "./BookingModal.css";
 
 const BookingModal = ({ onClose, onSuccess }) => {
@@ -103,7 +104,7 @@ const BookingModal = ({ onClose, onSuccess }) => {
         status: "pending",
       };
 
-      const response = await fetch("http://127.0.0.1:8000/api/jadwal-penyetoran", {
+      const response = await fetch(`${API_BASE_URL}/api/jadwal-penyetoran`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

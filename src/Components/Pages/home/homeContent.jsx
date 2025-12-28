@@ -127,7 +127,7 @@ const HomeContent = () => {
       // 2. Fetch Penukaran Produk activities
       // Backend endpoint: GET /api/penukaran-produk/user/{userId}
       try {
-        const redeemRes = await fetch(`http://127.0.0.1:8000/api/penukaran-produk/user/${userId}`, { headers });
+        const redeemRes = await fetch(`${API_BASE_URL}/api/penukaran-produk/user/${userId}`, { headers });
         
         if (redeemRes.ok) {
           const redeemData = await redeemRes.json();
@@ -149,7 +149,7 @@ const HomeContent = () => {
       // 3. Fetch Penarikan Tunai activities
       // Backend endpoint: GET /api/penarikan-tunai/user/{userId}
       try {
-        const withdrawRes = await fetch(`http://127.0.0.1:8000/api/penarikan-tunai/user/${userId}`, { headers });
+        const withdrawRes = await fetch(`${API_BASE_URL}/api/penarikan-tunai/user/${userId}`, { headers });
         
         if (withdrawRes.ok) {
           const withdrawData = await withdrawRes.json();
@@ -171,7 +171,7 @@ const HomeContent = () => {
       // 4. Fallback: Try user activity log endpoint if available
       if (allActivities.length === 0) {
         try {
-          const activitiesRes = await fetch(`http://127.0.0.1:8000/api/users/${userId}/aktivitas`, { headers });
+          const activitiesRes = await fetch(`${API_BASE_URL}/api/users/${userId}/aktivitas`, { headers });
           if (activitiesRes.ok) {
             const activitiesData = await activitiesRes.json();
             const logActivities = (activitiesData.data || []).slice(0, 5).map((item, index) => ({
@@ -333,7 +333,7 @@ const HomeContent = () => {
                   if (!icon) return null;
                   if (icon.startsWith('http')) return icon;
                   const cleanPath = icon.startsWith('storage/') ? icon : `storage/${icon}`;
-                  return `http://127.0.0.1:8000/${cleanPath}`;
+                  return `${API_BASE_URL}/${cleanPath}`;
                 };
                 const iconUrl = getBadgeIconUrl(badge.icon || badge.gambar || badge.icon_url);
                 
