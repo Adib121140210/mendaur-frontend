@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import "./artikel.css";
 import Pagination from "../ui/pagination";
 import { Eye } from "lucide-react";
 import { API_BASE_URL, getStorageUrl } from "../../config/api";
+
+// Simple cache for artikel data
+let artikelCache = { data: null, expiry: 0 };
 
 const ArtikelCard = ({
   data = null,
@@ -17,27 +20,26 @@ const ArtikelCard = ({
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if (fetchFromAPI) {
-      fetchArtikel();
-      setCurrentPage(1); // Reset to first page when filters change
-    } else if (data) {
-      setArtikel(data);
+  const fetchArtikel = useCallback(async () => {
+    // Check cache first (5 min TTL)
+    if (artikelCache.data && Date.now() < artikelCache.expiry) {
+      setArtikel(artikelCache.data);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchFromAPI, data, category, searchQuery]);
 
-  const fetchArtikel = async () => {
     try {
       setLoading(true);
-
-      // Fetch all articles from API (backend doesn't support query params)
-      const url = `${API_BASE_URL}/artikel`;
       
-      const response = await fetch(url);
+      // Shorter timeout for artikel
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const response = await fetch(`${API_BASE_URL}/artikel`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        console.error('Failed to fetch artikel:', response.status);
         setArtikel([]);
         return;
       }
@@ -45,42 +47,69 @@ const ArtikelCard = ({
       const result = await response.json();
 
       if (result.status === 'success') {
-        let filteredData = result.data || [];
-
-        // Client-side filtering by category
-        if (category) {
-          filteredData = filteredData.filter(item => 
-            item.kategori && item.kategori.toLowerCase() === category.toLowerCase()
-          );
-        }
-
-        // Client-side filtering by search query
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          filteredData = filteredData.filter(item => 
-            (item.judul && item.judul.toLowerCase().includes(query)) ||
-            (item.konten && item.konten.toLowerCase().includes(query)) ||
-            (item.kategori && item.kategori.toLowerCase().includes(query))
-          );
-        }
-
-        setArtikel(filteredData);
+        const artikelData = result.data || [];
+        // Cache the raw data
+        artikelCache = { data: artikelData, expiry: Date.now() + 300000 };
+        setArtikel(artikelData);
       } else {
         setArtikel([]);
       }
-    } catch (err) {
-      console.error('Error fetching artikel:', err);
-      setArtikel([]);
+    } catch {
+      // Use cached data if available on error
+      if (artikelCache.data) {
+        setArtikel(artikelCache.data);
+      } else {
+        setArtikel([]);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const totalPages = Math.ceil(artikel.length / perPage);
+  useEffect(() => {
+    if (fetchFromAPI) {
+      fetchArtikel();
+      setCurrentPage(1);
+    } else if (data) {
+      setArtikel(data);
+    }
+  }, [fetchFromAPI, data, fetchArtikel]);
 
-  const paginatedArtikel = showPagination
-    ? artikel.slice((currentPage - 1) * perPage, currentPage * perPage)
-    : artikel;
+  // Memoize filtered artikel
+  const filteredArtikel = useMemo(() => {
+    let result = artikel;
+
+    if (category) {
+      result = result.filter(item => 
+        item.kategori && item.kategori.toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(item => 
+        (item.judul && item.judul.toLowerCase().includes(query)) ||
+        (item.konten && item.konten.toLowerCase().includes(query)) ||
+        (item.kategori && item.kategori.toLowerCase().includes(query))
+      );
+    }
+
+    return result;
+  }, [artikel, category, searchQuery]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, searchQuery]);
+
+  const totalPages = Math.ceil(filteredArtikel.length / perPage);
+
+  const paginatedArtikel = useMemo(() => 
+    showPagination
+      ? filteredArtikel.slice((currentPage - 1) * perPage, currentPage * perPage)
+      : filteredArtikel,
+    [filteredArtikel, currentPage, perPage, showPagination]
+  );
 
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);

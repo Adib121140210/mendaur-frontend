@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Recycle, Trophy, Star, TrendingUp, Award, Activity, RefreshCw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,42 @@ import Banner from "../../lib/banner";
 import { API_BASE_URL } from "../../../config/api";
 import { DashboardSkeleton } from "../../Loading/Skeleton";
 import "./homeContent.css";
+
+// Simple in-memory cache with TTL for faster subsequent loads
+const cache = {
+  data: {},
+  set(key, value, ttlMs = 60000) {
+    this.data[key] = { value, expiry: Date.now() + ttlMs };
+  },
+  get(key) {
+    const item = this.data[key];
+    if (!item) return null;
+    if (Date.now() > item.expiry) {
+      delete this.data[key];
+      return null;
+    }
+    return item.value;
+  },
+  clear(key) {
+    if (key) delete this.data[key];
+    else this.data = {};
+  }
+};
+
+// Memoized StatCard to prevent unnecessary re-renders
+const StatCard = memo(function StatCard({ icon, title, value, color }) {
+  return (
+    <div className="statCard">
+      <div className="statIcon" style={{ color }}>
+        {icon}
+      </div>
+      <div className="statInfo">
+        <p className="statTitle">{title}</p>
+        <p className="statValue">{value}</p>
+      </div>
+    </div>
+  );
+});
 
 const HomeContent = () => {
   const { user, isAuthenticated } = useAuth();
@@ -19,206 +55,170 @@ const HomeContent = () => {
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState(false);
 
+  // Memoize headers
+  const getHeaders = useCallback(() => {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+  }, []);
+
+  // Optimized fetch with shorter timeout for non-critical endpoints
+  const fetchWithTimeout = useCallback(async (url, timeout = 8000) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { 
+        headers: getHeaders(),
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }, [getHeaders]);
+
+  // Optimized fetch - ALL 6 API CALLS IN PARALLEL with caching
+  const fetchDashboardData = useCallback(async () => {
+    const userId = user?.user_id || localStorage.getItem('id_user');
+    const token = localStorage.getItem('token');
+
+    if (!token || !userId) {
+      setLoading(false);
+      return;
+    }
+
+    // Check cache first - instant load if available
+    const cachedStats = cache.get(`stats-${userId}`);
+    const cachedLeaderboard = cache.get('leaderboard');
+    const cachedBadges = cache.get(`badges-${userId}`);
+    const cachedActivities = cache.get(`activities-${userId}`);
+
+    if (cachedStats) setUserStats(cachedStats);
+    if (cachedLeaderboard) setLeaderboard(cachedLeaderboard);
+    if (cachedBadges) setUserBadges(cachedBadges);
+    if (cachedActivities) setRecentActivities(cachedActivities);
+
+    // If all cached, skip loading
+    if (cachedStats && cachedLeaderboard && cachedBadges && cachedActivities) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // FETCH ALL 6 ENDPOINTS IN PARALLEL - much faster than sequential
+      const [statsRes, leaderRes, badgesRes, tabungRes, redeemRes, withdrawRes] = await Promise.allSettled([
+        !cachedStats ? fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`, 10000) : Promise.resolve(null),
+        !cachedLeaderboard ? fetchWithTimeout(`${API_BASE_URL}/dashboard/leaderboard`, 10000) : Promise.resolve(null),
+        !cachedBadges ? fetchWithTimeout(`${API_BASE_URL}/users/${userId}/badges`, 8000) : Promise.resolve(null),
+        !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/setor-sampah/user/${userId}`, 6000) : Promise.resolve(null),
+        !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/penukaran-produk/user/${userId}`, 6000) : Promise.resolve(null),
+        !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/penarikan-tunai/user/${userId}`, 6000) : Promise.resolve(null),
+      ]);
+
+      // Process stats
+      if (!cachedStats && statsRes.status === 'fulfilled' && statsRes.value?.ok) {
+        const data = await statsRes.value.json();
+        setUserStats(data.data);
+        cache.set(`stats-${userId}`, data.data, 120000);
+      }
+
+      // Process leaderboard
+      if (!cachedLeaderboard && leaderRes.status === 'fulfilled' && leaderRes.value?.ok) {
+        const data = await leaderRes.value.json();
+        setLeaderboard(data.data || []);
+        cache.set('leaderboard', data.data || [], 60000);
+      }
+
+      // Process badges
+      if (!cachedBadges && badgesRes.status === 'fulfilled' && badgesRes.value?.ok) {
+        const data = await badgesRes.value.json();
+        setUserBadges(data.data || []);
+        cache.set(`badges-${userId}`, data.data || [], 300000);
+      }
+
+      // Process activities in parallel
+      if (!cachedActivities) {
+        const allActivities = [];
+
+        if (tabungRes.status === 'fulfilled' && tabungRes.value?.ok) {
+          const data = await tabungRes.value.json();
+          (data.data || []).slice(0, 10).forEach((item, i) => {
+            allActivities.push({
+              id: `tabung-${item.setor_id || item.id || i}`,
+              tipe_aktivitas: 'tabung_sampah',
+              deskripsi: `Menabung ${item.berat_sampah || item.total_berat || 0} kg ${item.jenis_sampah?.nama_jenis || item.nama_jenis || 'sampah'}`,
+              tanggal: item.tanggal_setor || item.created_at,
+              poin_perubahan: item.poin_diperoleh || item.poin || 0,
+            });
+          });
+        }
+
+        if (redeemRes.status === 'fulfilled' && redeemRes.value?.ok) {
+          const data = await redeemRes.value.json();
+          (data.data || []).slice(0, 10).forEach((item, i) => {
+            allActivities.push({
+              id: `redeem-${item.penukaran_id || item.id || i}`,
+              tipe_aktivitas: 'tukar_poin',
+              deskripsi: `Menukar poin untuk ${item.produk?.nama_produk || item.nama_produk || 'produk'}`,
+              tanggal: item.tanggal_penukaran || item.created_at,
+              poin_perubahan: -(item.poin_digunakan || item.poin || 0),
+            });
+          });
+        }
+
+        if (withdrawRes.status === 'fulfilled' && withdrawRes.value?.ok) {
+          const data = await withdrawRes.value.json();
+          (data.data || []).slice(0, 10).forEach((item, i) => {
+            allActivities.push({
+              id: `withdraw-${item.penarikan_id || item.id || i}`,
+              tipe_aktivitas: 'penarikan_tunai',
+              deskripsi: `Penarikan tunai Rp ${(item.jumlah_rupiah || item.nominal || 0).toLocaleString('id-ID')}`,
+              tanggal: item.tanggal_penarikan || item.created_at,
+              poin_perubahan: -(item.poin_digunakan || 0),
+            });
+          });
+        }
+
+        allActivities.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+        const recentActs = allActivities.slice(0, 5);
+        setRecentActivities(recentActs);
+        cache.set(`activities-${userId}`, recentActs, 60000);
+      }
+    } catch (error) {
+      console.error('Dashboard fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.user_id, fetchWithTimeout]);
+
   useEffect(() => {
     if (isAuthenticated && user?.user_id) {
       fetchDashboardData();
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.user_id]);
+  }, [isAuthenticated, user?.user_id, fetchDashboardData]);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-
-      // Get user ID from user object (backend uses user_id)
-      const userId = user?.user_id || localStorage.getItem('id_user');
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
-
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
-
-      // Fetch with timeout helper - increased to 15s for slow backend endpoints
-      const fetchWithTimeout = async (url, timeout = 15000) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
-        
-        try {
-          const response = await fetch(url, { 
-            headers,
-            signal: controller.signal 
-          });
-          clearTimeout(timeoutId);
-          return response;
-        } catch (error) {
-          clearTimeout(timeoutId);
-          if (error.name === 'AbortError') {
-            console.warn(`Request timeout for ${url}`);
-          }
-          throw error;
-        }
-      };
-
-      // Fetch all data in parallel with timeout protection
-      try {
-        const [statsRes, leaderRes, badgesRes] = await Promise.allSettled([
-          fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`),
-          fetchWithTimeout(`${API_BASE_URL}/dashboard/leaderboard`),
-          fetchWithTimeout(`${API_BASE_URL}/users/${userId}/badges`)
-        ]);
-
-        // Process user stats
-        if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
-          const statsData = await statsRes.value.json();
-          setUserStats(statsData.data);
-        }
-
-        // Process leaderboard
-        if (leaderRes.status === 'fulfilled' && leaderRes.value.ok) {
-          const leaderData = await leaderRes.value.json();
-          setLeaderboard(leaderData.data || []);
-        }
-
-        // Process user badges
-        if (badgesRes.status === 'fulfilled' && badgesRes.value.ok) {
-          const badgesData = await badgesRes.value.json();
-          setUserBadges(badgesData.data || []);
-        }
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      }
-
-      // Fetch recent activities from multiple sources (Tabung Sampah, Penukaran Poin, Penarikan Tunai)
-      const allActivities = [];
-
-      // 1. Fetch Tabung Sampah activities
-      // Backend endpoint: GET /api/setor-sampah/user/{userId}
-      try {
-        const tabungRes = await fetch(`${API_BASE_URL}/setor-sampah/user/${userId}`, { headers });
-        
-        if (tabungRes.ok) {
-          const tabungData = await tabungRes.json();
-          const tabungItems = tabungData.data || [];
-          
-          const tabungActivities = tabungItems.slice(0, 10).map((item, index) => ({
-            id: `tabung-${item.setor_id || item.id || index}`,
-            tipe_aktivitas: 'tabung_sampah',
-            deskripsi: `Menabung ${item.berat_sampah || item.total_berat || 0} kg ${item.jenis_sampah?.nama_jenis || item.nama_jenis || 'sampah'}`,
-            tanggal: item.tanggal_setor || item.created_at,
-            poin_perubahan: item.poin_diperoleh || item.poin || 0,
-          }));
-          allActivities.push(...tabungActivities);
-        }
-      } catch {
-        // Silently skip if fetch fails
-      }
-
-      // 2. Fetch Penukaran Produk activities
-      // Backend endpoint: GET /api/penukaran-produk/user/{userId}
-      try {
-        const redeemRes = await fetch(`${API_BASE_URL}/penukaran-produk/user/${userId}`, { headers });
-        
-        if (redeemRes.ok) {
-          const redeemData = await redeemRes.json();
-          const redeemItems = redeemData.data || [];
-          
-          const redeemActivities = redeemItems.slice(0, 10).map((item, index) => ({
-            id: `redeem-${item.penukaran_id || item.id || index}`,
-            tipe_aktivitas: 'tukar_poin',
-            deskripsi: `Menukar poin untuk ${item.produk?.nama_produk || item.nama_produk || 'produk'}`,
-            tanggal: item.tanggal_penukaran || item.created_at,
-            poin_perubahan: -(item.poin_digunakan || item.poin || 0),
-          }));
-          allActivities.push(...redeemActivities);
-        }
-      } catch {
-        // Silently skip if fetch fails
-      }
-
-      // 3. Fetch Penarikan Tunai activities
-      // Backend endpoint: GET /api/penarikan-tunai/user/{userId}
-      try {
-        const withdrawRes = await fetch(`${API_BASE_URL}/penarikan-tunai/user/${userId}`, { headers });
-        
-        if (withdrawRes.ok) {
-          const withdrawData = await withdrawRes.json();
-          const withdrawItems = withdrawData.data || [];
-          
-          const withdrawActivities = withdrawItems.slice(0, 10).map((item, index) => ({
-            id: `withdraw-${item.penarikan_id || item.id || index}`,
-            tipe_aktivitas: 'penarikan_tunai',
-            deskripsi: `Penarikan tunai Rp ${(item.jumlah_rupiah || item.nominal || 0).toLocaleString('id-ID')}`,
-            tanggal: item.tanggal_penarikan || item.created_at,
-            poin_perubahan: -(item.poin_digunakan || 0),
-          }));
-          allActivities.push(...withdrawActivities);
-        }
-      } catch {
-        // Silently skip if fetch fails
-      }
-
-      // 4. Fallback: Try user activity log endpoint if available
-      if (allActivities.length === 0) {
-        try {
-          const activitiesRes = await fetch(`${API_BASE_URL}/users/${userId}/aktivitas`, { headers });
-          if (activitiesRes.ok) {
-            const activitiesData = await activitiesRes.json();
-            const logActivities = (activitiesData.data || []).slice(0, 5).map((item, index) => ({
-              id: `log-${item.log_user_activity_id || index}`,
-              tipe_aktivitas: item.tipe_aktivitas || 'aktivitas',
-              deskripsi: item.deskripsi || 'Aktivitas',
-              tanggal: item.tanggal || item.created_at,
-              poin_perubahan: item.poin_perubahan || 0,
-            }));
-            allActivities.push(...logActivities);
-          }
-        } catch {
-          // Silently skip if fetch fails
-        }
-      }
-
-      // Sort all activities by date (newest first) and take top 5
-      allActivities.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-      setRecentActivities(allActivities.slice(0, 5));
-    } catch {
-      // Dashboard data fetch failed silently
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Refresh leaderboard function
-  const refreshLeaderboard = async () => {
+  // Refresh leaderboard with cache clear
+  const refreshLeaderboard = useCallback(async () => {
     try {
       setLeaderboardLoading(true);
       setLeaderboardError(false);
-      const token = localStorage.getItem('token');
+      cache.clear('leaderboard');
       
-      const response = await fetch(`${API_BASE_URL}/dashboard/leaderboard`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });
+      const response = await fetchWithTimeout(`${API_BASE_URL}/dashboard/leaderboard`, 10000);
       
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data.data || []);
+        cache.set('leaderboard', data.data || [], 60000);
       } else {
         setLeaderboardError(true);
       }
@@ -227,7 +227,107 @@ const HomeContent = () => {
     } finally {
       setLeaderboardLoading(false);
     }
-  };
+  }, [fetchWithTimeout]);
+
+  // Memoize current user ID
+  const currentUserId = useMemo(() => user?.user_id || localStorage.getItem('id_user'), [user?.user_id]);
+
+  // Memoize badge icon URL helper
+  const getBadgeIconUrl = useCallback((icon) => {
+    if (!icon) return null;
+    if (/^\p{Emoji}/u.test(icon) || icon.length <= 4) return null;
+    if (icon.startsWith('http')) return icon;
+    if (!icon.includes('.') && !icon.includes('/')) return null;
+    const cleanPath = icon.startsWith('storage/') ? icon : `storage/${icon}`;
+    return `${API_BASE_URL}/${cleanPath}`;
+  }, []);
+
+  // Memoize leaderboard items
+  const leaderboardItems = useMemo(() => {
+    if (leaderboardError) {
+      return (
+        <div className="leaderboardError">
+          <p>Gagal memuat leaderboard</p>
+          <button onClick={refreshLeaderboard} className="retryBtn">Coba Lagi</button>
+        </div>
+      );
+    }
+    if (leaderboard.length === 0) {
+      return <p className="emptyState">Belum ada data leaderboard</p>;
+    }
+    return leaderboard.slice(0, 10).map((leader, index) => (
+      <div
+        key={leader.user_id}
+        className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
+      >
+        <span className="leaderRank">#{index + 1}</span>
+        <span className="leaderName">{leader.nama}</span>
+        <span className="leaderPoints">{leader.display_poin || leader.total_poin || leader.poin || 0} pts</span>
+      </div>
+    ));
+  }, [leaderboard, leaderboardError, currentUserId, refreshLeaderboard]);
+
+  // Memoize badge items
+  const badgeItems = useMemo(() => {
+    if (userBadges.length === 0) {
+      return <p className="emptyState">Belum ada badge. Tabung sampah untuk mendapatkan badge!</p>;
+    }
+    return (
+      <div className="badgesList">
+        {userBadges.map((badge) => {
+          const iconUrl = getBadgeIconUrl(badge.icon || badge.gambar || badge.icon_url);
+          return (
+            <div key={badge.badge_id || badge.id} className="badgeItem">
+              <span className="badgeIcon">
+                {iconUrl ? (
+                  <img src={iconUrl} alt={badge.nama_badge || 'Badge'} className="badgeIconImg" loading="lazy"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                ) : null}
+                <span style={{ display: iconUrl ? 'none' : 'block' }}>🏅</span>
+              </span>
+              <div className="badgeInfo">
+                <p className="badgeName">{badge.nama_badge || badge.nama || 'Badge'}</p>
+                <p className="badgeReward">+{badge.reward_poin || badge.poin || 0} poin</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }, [userBadges, getBadgeIconUrl]);
+
+  // Memoize activity items
+  const activityItems = useMemo(() => {
+    if (recentActivities.length === 0) {
+      return <p className="emptyState">Belum ada aktivitas</p>;
+    }
+    return (
+      <div className="activityList">
+        {recentActivities.map((activity, index) => (
+          <div key={activity.id || `activity-${index}`} className="activityItem">
+            <div className="activityIcon">
+              {activity.tipe_aktivitas === 'tabung_sampah' || activity.tipe_aktivitas === 'setor_sampah' ? '♻️' :
+               activity.tipe_aktivitas === 'tukar_poin' || activity.tipe_aktivitas === 'penukaran_produk' ? '🛍️' :
+               activity.tipe_aktivitas === 'penarikan_tunai' || activity.tipe_aktivitas === 'tarik_tunai' ? '💰' : '📋'}
+            </div>
+            <div className="activityContent">
+              <p className="activityDesc">{activity.deskripsi}</p>
+              <p className="activityDate">
+                {new Date(activity.tanggal || activity.created_at).toLocaleDateString('id-ID', {
+                  day: 'numeric', month: 'short', year: 'numeric'
+                })}
+              </p>
+            </div>
+            {activity.poin_perubahan !== 0 && activity.poin_perubahan !== undefined && (
+              <span className={`activityPoints ${activity.poin_perubahan > 0 ? 'positive' : 'negative'}`}>
+                {activity.poin_perubahan > 0 ? '+' : ''}{activity.poin_perubahan} poin
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }, [recentActivities]);
 
   if (!isAuthenticated) {
     return (
@@ -285,32 +385,29 @@ const HomeContent = () => {
       <section className="bannerSection">
         <Banner />
       </section>
-      {/* Stats Grid */}
+
+      {/* Stats Grid - using memoized StatCard */}
       <section className="statsSection">
         <div className="statsGrid">
           <StatCard
-            key="stat-poin"
             icon={<Star />}
             title="Total Poin"
             value={userStats?.actual_poin || user.actual_poin || 0}
             color="#FFB800"
           />
           <StatCard
-            key="stat-sampah"
             icon={<Recycle />}
             title="Sampah Ditabung"
             value={`${userStats?.total_setor_sampah || user.total_setor_sampah || 0} Kg`}
             color="#4CAF50"
           />
           <StatCard
-            key="stat-badge"
             icon={<Award />}
             title="Badge"
             value={userBadges.length}
             color="#9C27B0"
           />
           <StatCard
-            key="stat-rank"
             icon={<TrendingUp />}
             title="Peringkat"
             value={`#${userStats?.rank || userStats?.peringkat || (leaderboard.findIndex(l => l.user_id == user?.user_id) + 1) || '-'}`}
@@ -319,9 +416,8 @@ const HomeContent = () => {
         </div>
       </section>
 
-      {/* Leaderboard & Badges Row */}
+      {/* Leaderboard & Badges Row - using memoized items */}
       <div className="dashboardRow">
-        {/* Leaderboard */}
         <section className="leaderboardSection">
           <div className="sectionTitleWrapper">
             <h2 className="sectionTitle">
@@ -338,120 +434,29 @@ const HomeContent = () => {
             </button>
           </div>
           <div className="leaderboardList">
-            {leaderboardError ? (
-              <div className="leaderboardError">
-                <p>Gagal memuat leaderboard</p>
-                <button onClick={refreshLeaderboard} className="retryBtn">Coba Lagi</button>
-              </div>
-            ) : leaderboard.length > 0 ? (
-              leaderboard.slice(0, 10).map((leader, index) => {
-                const currentUserId = user?.user_id || localStorage.getItem('id_user');
-                return (
-                  <div
-                    key={leader.user_id}
-                    className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
-                  >
-                    <span className="leaderRank">#{index + 1}</span>
-                    <span className="leaderName">{leader.nama}</span>
-                    <span className="leaderPoints">{leader.display_poin || leader.total_poin || leader.poin || 0} pts</span>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="emptyState">Belum ada data leaderboard</p>
-            )}
+            {leaderboardItems}
           </div>
         </section>
 
-        {/* User Badges */}
         <section className="badgesSection">
           <h2 className="sectionTitle">
             <Award size={20} />
             Badges Anda ({userBadges.length})
           </h2>
-          {userBadges.length > 0 ? (
-            <div className="badgesList">
-              {userBadges.map((badge) => {
-                // Get badge icon URL from API - handle emoji and invalid paths
-                const getBadgeIconUrl = (icon) => {
-                  if (!icon) return null;
-                  // Check if icon is an emoji (Unicode emoji range)
-                  if (/^\p{Emoji}/u.test(icon) || icon.length <= 4) return null;
-                  if (icon.startsWith('http')) return icon;
-                  // Skip invalid paths
-                  if (!icon.includes('.') && !icon.includes('/')) return null;
-                  const cleanPath = icon.startsWith('storage/') ? icon : `storage/${icon}`;
-                  return `${API_BASE_URL}/${cleanPath}`;
-                };
-                const iconUrl = getBadgeIconUrl(badge.icon || badge.gambar || badge.icon_url);
-                
-                return (
-                  <div key={badge.badge_id || badge.id} className="badgeItem">
-                    <span className="badgeIcon">
-                      {iconUrl ? (
-                        <img 
-                          src={iconUrl} 
-                          alt={badge.nama_badge || 'Badge'} 
-                          className="badgeIconImg"
-                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
-                        />
-                      ) : null}
-                      <span style={{ display: iconUrl ? 'none' : 'block' }}>🏅</span>
-                    </span>
-                    <div className="badgeInfo">
-                      <p className="badgeName">{badge.nama_badge || badge.nama || 'Badge'}</p>
-                      <p className="badgeReward">+{badge.reward_poin || badge.poin || 0} poin</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="emptyState">Belum ada badge. Tabung sampah untuk mendapatkan badge!</p>
-          )}
+          {badgeItems}
         </section>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity - using memoized items */}
       <section className="activitySection">
         <h2 className="sectionTitle">
           <Activity size={20} />
           Aktivitas Terbaru
         </h2>
-        {recentActivities.length > 0 ? (
-          <div className="activityList">
-            {recentActivities.map((activity, index) => (
-              <div key={activity.id || `activity-${index}`} className="activityItem">
-                <div className="activityIcon">
-                  {activity.tipe_aktivitas === 'tabung_sampah' || activity.tipe_aktivitas === 'setor_sampah' ? '♻️' :
-                   activity.tipe_aktivitas === 'tukar_poin' || activity.tipe_aktivitas === 'penukaran_produk' ? '🛍️' :
-                   activity.tipe_aktivitas === 'penarikan_tunai' || activity.tipe_aktivitas === 'tarik_tunai' ? '💰' : ''}
-                </div>
-                <div className="activityContent">
-                  <p className="activityDesc">{activity.deskripsi}</p>
-                  <p className="activityDate">
-                    {new Date(activity.tanggal || activity.created_at).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-                {activity.poin_perubahan !== 0 && activity.poin_perubahan !== undefined && (
-                  <span className={`activityPoints ${activity.poin_perubahan > 0 ? 'positive' : 'negative'}`}>
-                    {activity.poin_perubahan > 0 ? '+' : ''}{activity.poin_perubahan} poin
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="emptyState">Belum ada aktivitas</p>
-        )}
+        {activityItems}
       </section>
 
-      {/* Banner & Articles */}
-
+      {/* Articles Section */}
       <section className="artikelSection">
         <h2 className="artikelTitle">
           <Recycle size={20} style={{ marginRight: "8px" }} />
@@ -464,19 +469,5 @@ const HomeContent = () => {
     </div>
   );
 };
-
-function StatCard({ icon, title, value, color }) {
-  return (
-    <div className="statCard">
-      <div className="statIcon" style={{ color }}>
-        {icon}
-      </div>
-      <div className="statInfo">
-        <p className="statTitle">{title}</p>
-        <p className="statValue">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 export default HomeContent;
