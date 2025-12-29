@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../../config/api';
+import cache from '../../../utils/cache';
 
 const AuthContext = createContext(null);
 
@@ -85,6 +86,8 @@ export const AuthProvider = ({ children }) => {
     setRole(null);
     setRoleData(null);
     setPermissions([]);
+    // Clear all cached data on logout
+    cache.clearAll();
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('role');

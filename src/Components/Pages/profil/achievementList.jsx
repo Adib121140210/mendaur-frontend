@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiGet } from "../../../services/api";
+import cache from "../../../utils/cache";
 import "./achievementList.css";
 import {
   Medal,
@@ -13,6 +14,11 @@ import {
   Target,
   Zap,
 } from "lucide-react";
+
+const CACHE_TTL = {
+  BADGES: 2 * 60 * 1000,       // 2 minutes
+  TOTAL_REWARDS: 5 * 60 * 1000, // 5 minutes
+};
 
 // Icon mapping by badge type
 const iconMapByType = {
@@ -124,74 +130,82 @@ export default function AchievementList() {
   const [totalRewardsEarned, setTotalRewardsEarned] = useState(0);
   const [totalPossibleRewards, setTotalPossibleRewards] = useState(0);
 
+  // Check for user change (clear stale cache)
   useEffect(() => {
-    if (user?.user_id) {
-      fetchBadges();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.user_id, filter]);
-
-  // Fetch total rewards separately on mount (independent of filter)
-  useEffect(() => {
-    if (user?.user_id) {
-      fetchTotalRewards();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    cache.checkUserChange(user?.user_id);
   }, [user?.user_id]);
 
-  const fetchTotalRewards = async () => {
+  const fetchTotalRewards = useCallback(async () => {
+    if (!user?.user_id) return;
+    
+    const cacheKey = `achievement_total_rewards_${user.user_id}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      setTotalRewardsEarned(cached.earned);
+      setTotalPossibleRewards(cached.possible);
+      return;
+    }
+
     try {
-      // Fetch ALL badges to calculate total rewards
       const result = await apiGet(`/users/${user.user_id}/badges-list?filter=all`);
 
       if (result.status === 'success') {
         const badges = result.data || [];
 
-        // Calculate total rewards earned (only unlocked badges)
         const earned = badges
           .filter(b => b.is_unlocked)
           .reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
 
-        // Calculate total possible rewards (all badges)
         const possible = badges
           .reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
 
         setTotalRewardsEarned(earned);
         setTotalPossibleRewards(possible);
+        cache.set(cacheKey, { earned, possible }, CACHE_TTL.TOTAL_REWARDS);
       }
     } catch {
-      // Silent fail with fallback to default values
-      setTotalRewardsEarned(110); // Mock: 10 + 100 from unlocked badges
-      setTotalPossibleRewards(435); // Mock: 10 + 50 + 75 + 100 + 200
+      setTotalRewardsEarned(110);
+      setTotalPossibleRewards(435);
     }
-  };
+  }, [user?.user_id]);
 
-  const fetchBadges = async () => {
+  const fetchBadges = useCallback(async () => {
+    if (!user?.user_id) return;
+    
+    const cacheKey = `achievement_badges_${user.user_id}_${filter}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      setAllBadges(cached.badges);
+      setUserBadges(cached.userBadges);
+      setCounts(cached.counts);
+      setMessage(cached.message);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Fetch badges with progress using the new optimized endpoint
       const result = await apiGet(`/users/${user.user_id}/badges-list?filter=${filter}`);
 
       if (result.status === 'success') {
         const badges = result.data || [];
 
-        // Update counts from API response
         if (result.counts) {
           setCounts(result.counts);
         }
 
-        // Update message from API response
         if (result.message) {
           setMessage(result.message);
         }
 
-        // Map the new API structure to our component structure
         const badgesWithStatus = badges.map(badge => ({
           ...badge,
           badge_id: badge.badge_id || badge.id,
           nama_badge: badge.nama,
-          icon: badge.icon || null, // Include icon from database
+          icon: badge.icon || null,
           isUnlocked: badge.is_unlocked,
           unlocked_at: badge.unlocked_at,
           progress: badge.current_value || 0,
@@ -203,7 +217,16 @@ export default function AchievementList() {
         }));
 
         setAllBadges(badgesWithStatus);
-        setUserBadges(badges.filter(b => b.is_unlocked));
+        const unlockedBadges = badges.filter(b => b.is_unlocked);
+        setUserBadges(unlockedBadges);
+        
+        // Cache the processed data
+        cache.set(cacheKey, {
+          badges: badgesWithStatus,
+          userBadges: unlockedBadges,
+          counts: result.counts || counts,
+          message: result.message || ''
+        }, CACHE_TTL.BADGES);
       }
     } catch {
       // Use expanded mock data when API is not available
@@ -274,7 +297,21 @@ export default function AchievementList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.user_id, filter, counts]);
+
+  // Fetch badges when user or filter changes
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchBadges();
+    }
+  }, [user?.user_id, filter, fetchBadges]);
+
+  // Fetch total rewards on mount
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchTotalRewards();
+    }
+  }, [user?.user_id, fetchTotalRewards]);
 
   if (loading) {
     return <div style={{ padding: '20px', textAlign: 'center' }}>Loading badges...</div>;

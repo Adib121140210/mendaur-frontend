@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./tukarPoin.css";
 import Pagination from '../../ui/pagination'
 import productApi from "../../../services/productApi";
 import ProdukCard from "../produk/produkCard";
 import { API_BASE_URL, getStorageUrl } from "../../../config/api";
+import cache from "../../../utils/cache";
 
 import {
   Star,
@@ -13,6 +14,8 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+
+const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 export default function TukarPoin() {
   const { user, refreshUser } = useAuth();
@@ -50,27 +53,36 @@ export default function TukarPoin() {
   const [redeemQuantity, setRedeemQuantity] = useState(1);
 
 
-  // Fetch products from backend
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch all products (backend returns only available products)
-      const result = await productApi.getAllProducts();
-
-      if (result.success) {
-        setProducts(result.data);
-      } else {
-        setError(result.message);
-        setProducts([]);
-      }
-      
+  // Fetch products from backend with caching
+  const fetchProducts = useCallback(async () => {
+    const cacheKey = 'tukar_poin_products';
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      setProducts(cached);
       setLoading(false);
-    };
+      return;
+    }
 
-    fetchProducts();
+    setLoading(true);
+    setError(null);
+    
+    const result = await productApi.getAllProducts();
+
+    if (result.success) {
+      setProducts(result.data);
+      cache.set(cacheKey, result.data, CACHE_TTL);
+    } else {
+      setError(result.message);
+      setProducts([]);
+    }
+    
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");

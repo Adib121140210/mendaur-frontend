@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Recycle, Trophy, Star, TrendingUp, Award, Activity, RefreshCw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -6,28 +6,8 @@ import ArtikelCard from "../../lib/artikel";
 import Banner from "../../lib/banner";
 import { API_BASE_URL } from "../../../config/api";
 import { DashboardSkeleton } from "../../Loading/Skeleton";
+import cache from "../../../utils/cache";
 import "./homeContent.css";
-
-// Simple in-memory cache with TTL for faster subsequent loads
-const cache = {
-  data: {},
-  set(key, value, ttlMs = 60000) {
-    this.data[key] = { value, expiry: Date.now() + ttlMs };
-  },
-  get(key) {
-    const item = this.data[key];
-    if (!item) return null;
-    if (Date.now() > item.expiry) {
-      delete this.data[key];
-      return null;
-    }
-    return item.value;
-  },
-  clear(key) {
-    if (key) delete this.data[key];
-    else this.data = {};
-  }
-};
 
 // Memoized StatCard to prevent unnecessary re-renders
 const StatCard = memo(function StatCard({ icon, title, value, color }) {
@@ -54,6 +34,7 @@ const HomeContent = () => {
   const [loading, setLoading] = useState(true);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState(false);
+  const lastFetchedUserId = useRef(null);
 
   // Memoize headers
   const getHeaders = useCallback(() => {
@@ -83,7 +64,7 @@ const HomeContent = () => {
   }, [getHeaders]);
 
   // Optimized fetch - ALL 6 API CALLS IN PARALLEL with caching
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (forceRefresh = false) => {
     const userId = user?.user_id || localStorage.getItem('id_user');
     const token = localStorage.getItem('token');
 
@@ -92,11 +73,20 @@ const HomeContent = () => {
       return;
     }
 
-    // Check cache first - instant load if available
-    const cachedStats = cache.get(`stats-${userId}`);
-    const cachedLeaderboard = cache.get('leaderboard');
-    const cachedBadges = cache.get(`badges-${userId}`);
-    const cachedActivities = cache.get(`activities-${userId}`);
+    // Clear cache if user changed
+    cache.clearUserCache(userId);
+
+    // Force refresh if user changed since last fetch
+    if (lastFetchedUserId.current !== userId) {
+      forceRefresh = true;
+      lastFetchedUserId.current = userId;
+    }
+
+    // Check cache first - instant load if available (skip if forceRefresh)
+    const cachedStats = !forceRefresh ? cache.get(`stats-${userId}`) : null;
+    const cachedLeaderboard = !forceRefresh ? cache.get('leaderboard') : null;
+    const cachedBadges = !forceRefresh ? cache.get(`badges-${userId}`) : null;
+    const cachedActivities = !forceRefresh ? cache.get(`activities-${userId}`) : null;
 
     if (cachedStats) setUserStats(cachedStats);
     if (cachedLeaderboard) setLeaderboard(cachedLeaderboard);

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Search, TrendingUp, Clock, Calendar, Loader2, Trophy, Timer, RefreshCw } from "lucide-react";
 import { API_BASE_URL } from "../../../config/api";
+import cache from "../../../utils/cache";
 import "./leaderboardTable.css";
 import Pagination from "../../ui/pagination";
 
@@ -26,15 +27,13 @@ export default function LeaderboardTable() {
       const month = now.getMonth(); // 0-11
       
       // Define seasons (quarterly - adjust as needed)
-      // Season 1: Jan-Mar, Season 2: Apr-Jun, Season 3: Jul-Sep, Season 4: Oct-Dec
       const seasonNumber = Math.floor(month / 3) + 1;
       const seasonStartMonth = (seasonNumber - 1) * 3;
       const seasonEndMonth = seasonStartMonth + 2;
       
       const seasonStart = new Date(year, seasonStartMonth, 1);
-      const seasonEnd = new Date(year, seasonEndMonth + 1, 0, 23, 59, 59); // Last day of end month
+      const seasonEnd = new Date(year, seasonEndMonth + 1, 0, 23, 59, 59);
       
-      // Calculate time remaining
       const timeRemaining = seasonEnd.getTime() - now.getTime();
       const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
       const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -52,90 +51,99 @@ export default function LeaderboardTable() {
         endFormatted: seasonEnd.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
         daysRemaining,
         hoursRemaining,
-        isEnding: daysRemaining <= 7, // Flag if season ending soon
+        isEnding: daysRemaining <= 7,
       });
     };
     
     calculateSeasonInfo();
-    
-    // Update every hour
     const interval = setInterval(calculateSeasonInfo, 1000 * 60 * 60);
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch leaderboard data from API
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('Anda harus login untuk melihat leaderboard');
-        }
-
-        // Build URL with period filter
-        let url = `${API_BASE_URL}/dashboard/leaderboard`;
-        const params = new URLSearchParams();
-        
-        // Add period filter to API call
-        if (timePeriod !== 'all') {
-          params.append('period', timePeriod);
-        }
-        
-        // Add season dates if season filter is active
-        if (timePeriod === 'season' && seasonInfo) {
-          params.append('start_date', seasonInfo.startDate);
-          params.append('end_date', seasonInfo.endDate);
-        }
-        
-        if (params.toString()) {
-          url += `?${params.toString()}`;
-        }
-
-        // Fetch with timeout for slow backend (15 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error('Gagal mengambil data leaderboard');
-        }
-
-        const result = await response.json();
-
-        // Handle different API response structures
-        const data = result.data || result.leaderboard || result;
-
-        if (Array.isArray(data)) {
-          setLeaderboardData(data);
-        } else {
-          throw new Error('Format data leaderboard tidak valid');
-        }
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          setError('Request timeout - server lambat merespons');
-        } else {
-          setError(err.message);
-        }
-      } finally {
+  // Fetch leaderboard data with caching
+  const fetchLeaderboard = useCallback(async (forceRefresh = false) => {
+    const cacheKey = `leaderboard-${timePeriod}`;
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        setLeaderboardData(cached);
         setLoading(false);
+        return;
       }
-    };
+    }
 
-    fetchLeaderboard();
-  }, [timePeriod, seasonInfo]); // Re-fetch when time period or season changes
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Anda harus login untuk melihat leaderboard');
+      }
+
+      let url = `${API_BASE_URL}/dashboard/leaderboard`;
+      const params = new URLSearchParams();
+      
+      if (timePeriod !== 'all') {
+        params.append('period', timePeriod);
+      }
+      
+      if (timePeriod === 'season' && seasonInfo) {
+        params.append('start_date', seasonInfo.startDate);
+        params.append('end_date', seasonInfo.endDate);
+      }
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil data leaderboard');
+      }
+
+      const result = await response.json();
+      const data = result.data || result.leaderboard || result;
+
+      if (Array.isArray(data)) {
+        setLeaderboardData(data);
+        // Cache for 1 minute
+        cache.set(cacheKey, data, 60000);
+      } else {
+        throw new Error('Format data leaderboard tidak valid');
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setError('Request timeout - server lambat merespons');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [timePeriod, seasonInfo]);
+
+  // Fetch on mount and when period changes
+  useEffect(() => {
+    if (seasonInfo || timePeriod !== 'season') {
+      fetchLeaderboard();
+    }
+  }, [timePeriod, seasonInfo, fetchLeaderboard]);
 
   // Filter and search logic
   const filteredUsers = useMemo(() => {
@@ -187,15 +195,11 @@ export default function LeaderboardTable() {
     { value: 'all', label: 'Semua', icon: <TrendingUp size={16} /> },
   ];
 
-  // Refresh handler
-  const handleRefresh = () => {
-    setLoading(true);
-    setError(null);
-    // Trigger re-fetch by updating a dependency
-    const currentPeriod = timePeriod;
-    setTimePeriod('');
-    setTimeout(() => setTimePeriod(currentPeriod), 100);
-  };
+  // Refresh handler - clear cache and re-fetch
+  const handleRefresh = useCallback(() => {
+    cache.clear(`leaderboard-${timePeriod}`);
+    fetchLeaderboard(true);
+  }, [timePeriod, fetchLeaderboard]);
 
   return (
     <section className="leaderboardContainer">

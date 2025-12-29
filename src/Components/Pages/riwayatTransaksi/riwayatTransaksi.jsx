@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Clock,
   Search,
@@ -16,6 +16,7 @@ import {
   Loader,
 } from "lucide-react";
 import { API_BASE_URL } from "../../../config/api";
+import cache from "../../../utils/cache";
 import "./riwayatTransaksi.css";
 
 export default function RiwayatTransaksi() {
@@ -28,125 +29,99 @@ export default function RiwayatTransaksi() {
 
   const statusOptions = ["semua", "pending", "diproses", "selesai", "ditolak"];
 
-  // Fetch transactions from API
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  // Optimized fetch with parallel requests and caching
+  const fetchTransactions = useCallback(async (forceRefresh = false) => {
+    const userId = localStorage.getItem('id_user');
+    const token = localStorage.getItem('token');
+    const cacheKey = `transactions-${userId}`;
 
-  async function fetchTransactions() {
+    // Check cache first
+    if (!forceRefresh) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        setTransactions(cached);
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('id_user');
-
-      // Fetch cash withdrawals
-      const withdrawalsResponse = await fetch(`${API_BASE_URL}/penarikan-tunai`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+      // Fetch ALL 3 endpoints in PARALLEL
+      const [withdrawalsRes, wasteRes, productRes] = await Promise.allSettled([
+        fetch(`${API_BASE_URL}/penarikan-tunai`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+        }),
+        fetch(`${API_BASE_URL}/users/${userId}/tabung-sampah`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+        }),
+        fetch(`${API_BASE_URL}/penukaran-produk`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+        }),
+      ]);
 
       let withdrawals = [];
-      if (withdrawalsResponse.ok) {
-        const withdrawalsData = await withdrawalsResponse.json();
-        
-        // Filter only withdrawals for current user
-        const allWithdrawals = withdrawalsData.data?.data || withdrawalsData.data || [];
-        const userWithdrawals = allWithdrawals.filter(item => 
-          item.user_id?.toString() === userId?.toString()
-        );
-        
-        withdrawals = userWithdrawals.map(item => ({
-          id: `withdrawal-${item.penarikan_tunai_id}`,
-          type: 'tarik_tunai',
-          kategori: 'penukaran',
-          deskripsi: `Penarikan Tunai ke ${item.nama_bank}`,
-          detail: `-${item.jumlah_poin} poin`,
-          points: -item.jumlah_poin,
-          amount: item.jumlah_rupiah,
-          status: item.status, // pending, approved, rejected
-          timestamp: item.created_at,
-          bankName: item.nama_bank,
-          accountNumber: item.nomor_rekening,
-          accountName: item.nama_penerima,
-          adminNote: item.catatan_admin,
-          processedAt: item.processed_at,
+      let wasteDeposits = [];
+      let productRedemptions = [];
+
+      // Process withdrawals
+      if (withdrawalsRes.status === 'fulfilled' && withdrawalsRes.value.ok) {
+        const data = await withdrawalsRes.value.json();
+        const allWithdrawals = data.data?.data || data.data || [];
+        withdrawals = allWithdrawals
+          .filter(item => item.user_id?.toString() === userId?.toString())
+          .map(item => ({
+            id: `withdrawal-${item.penarikan_tunai_id}`,
+            type: 'tarik_tunai',
+            kategori: 'penukaran',
+            deskripsi: `Penarikan Tunai ke ${item.nama_bank}`,
+            detail: `-${item.jumlah_poin} poin`,
+            points: -item.jumlah_poin,
+            amount: item.jumlah_rupiah,
+            status: item.status,
+            timestamp: item.created_at,
+            bankName: item.nama_bank,
+            accountNumber: item.nomor_rekening,
+            accountName: item.nama_penerima,
+            adminNote: item.catatan_admin,
+            processedAt: item.processed_at,
+          }));
+      }
+
+      // Process waste deposits
+      if (wasteRes.status === 'fulfilled' && wasteRes.value.ok) {
+        const data = await wasteRes.value.json();
+        wasteDeposits = (data.data || []).map(item => ({
+          id: `waste-${item.tabung_sampah_id}`,
+          type: 'tabung_sampah',
+          kategori: 'tabung',
+          deskripsi: `Tabung ${item.jenis_sampah}`,
+          detail: `+${item.poin_diperoleh || 0} poin`,
+          points: item.poin_diperoleh || 0,
+          status: item.status || 'approved',
+          timestamp: item.tanggal_setor || item.created_at,
+          wasteType: item.jenis_sampah,
+          weight: item.berat,
+          location: item.titik_lokasi || item.lokasi,
         }));
       }
 
-      // Fetch waste deposits (tabung sampah)
-      let wasteDeposits = [];
-      try {
-        // Get user ID from localStorage
-        const userId = localStorage.getItem('id_user');
-
-        if (userId) {
-          const wasteResponse = await fetch(`${API_BASE_URL}/users/${userId}/tabung-sampah`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json',
-            },
-          });
-
-          if (wasteResponse.ok) {
-            const wasteData = await wasteResponse.json();
-
-            // Response format: { status: 'success', data: [...] }
-            const wasteArray = wasteData.data || [];
-
-            wasteDeposits = wasteArray.map(item => ({
-              id: `waste-${item.tabung_sampah_id}`,
-              type: 'tabung_sampah',
-              kategori: 'tabung',
-              deskripsi: `Tabung ${item.jenis_sampah}`,
-              detail: `+${item.poin_diperoleh || 0} poin`,
-              points: item.poin_diperoleh || 0,
-              status: item.status || 'approved',
-              timestamp: item.tanggal_setor || item.created_at,
-              wasteType: item.jenis_sampah,
-              weight: item.berat,
-              location: item.titik_lokasi || item.lokasi,
-            }));
-          }
-        }
-      } catch {
-        // Continue even if waste deposits fail
-      }
-
-      // Fetch product redemptions
-      let productRedemptions = [];
-      try {
-        const productResponse = await fetch(`${API_BASE_URL}/penukaran-produk`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        });
-
-        if (productResponse.ok) {
-          const productData = await productResponse.json();
-
-          // Handle both array and object with data property
-          const allRedemptions = Array.isArray(productData)
-            ? productData
-            : (productData.data?.data || productData.data || []);
-
-          // Filter only redemptions for current user
-          const userRedemptions = allRedemptions.filter(item => 
-            item.user_id?.toString() === userId?.toString()
-          );
-
-          productRedemptions = userRedemptions.map(item => ({
+      // Process product redemptions
+      if (productRes.status === 'fulfilled' && productRes.value.ok) {
+        const data = await productRes.value.json();
+        const allRedemptions = Array.isArray(data) ? data : (data.data?.data || data.data || []);
+        productRedemptions = allRedemptions
+          .filter(item => item.user_id?.toString() === userId?.toString())
+          .map(item => ({
             id: `product-${item.penukaran_produk_id}`,
             type: 'tukar_produk',
             kategori: 'penukaran',
             deskripsi: `Penukaran ${item.nama_produk || item.produk?.nama || 'Produk'}`,
             detail: `-${item.poin_digunakan || item.jumlah_poin || 0} poin`,
             points: -(item.poin_digunakan || item.jumlah_poin || 0),
-            status: item.status || 'pending', // pending, approved, claimed, rejected
+            status: item.status || 'pending',
             timestamp: item.created_at,
             productName: item.nama_produk || item.produk?.nama,
             productId: item.produk_id,
@@ -157,28 +132,26 @@ export default function RiwayatTransaksi() {
             claimedAt: item.claimed_at,
             rejectedAt: item.rejected_at,
           }));
-        }
-      } catch {
-        // Continue even if product redemptions fail
       }
 
-      // Combine all transactions
-      const allTransactions = [
-        ...withdrawals,
-        ...wasteDeposits,
-        ...productRedemptions,
-      ];
-
-      // Sort by date (newest first)
+      // Combine and sort
+      const allTransactions = [...withdrawals, ...wasteDeposits, ...productRedemptions];
       allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
       setTransactions(allTransactions);
+      // Cache for 1 minute
+      cache.set(cacheKey, allTransactions, 60000);
     } catch {
       setError('Gagal memuat riwayat transaksi. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const getStatusIcon = (status) => {
     switch (status) {

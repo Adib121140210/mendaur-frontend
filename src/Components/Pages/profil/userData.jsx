@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import "../profil/userData.css";
 import { getUser, getUserActivity, getUserBadges } from "../../../services/api";
+import cache from "../../../utils/cache";
 
 import { Recycle, Star, ArrowLeftRight, Calendar, Trophy, MapPin, Phone, Gift, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+
+const CACHE_TTL = {
+  USER_DETAIL: 3 * 60 * 1000, // 3 minutes
+  ACTIVITY: 2 * 60 * 1000,    // 2 minutes  
+  BADGES: 3 * 60 * 1000,      // 3 minutes
+};
 
 export default function UserData() {
   const { user } = useAuth();
@@ -11,60 +18,103 @@ export default function UserData() {
   const [badgeCount, setBadgeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userCreatedAt, setUserCreatedAt] = useState(null);
-
   const [totalBadgeRewards, setTotalBadgeRewards] = useState(0);
 
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
+  // Check for user change (clear stale cache)
+  useEffect(() => {
+    cache.checkUserChange(user?.user_id);
+  }, [user?.user_id]);
 
-      // Fetch user detail to get created_at
-      try {
-        const userDetail = await getUser(user.user_id);
-        if (userDetail.data && userDetail.data.created_at) {
-          setUserCreatedAt(userDetail.data.created_at);
-        }
-      } catch {
-        // User detail API not available yet
-      }
+  const fetchUserData = useCallback(async () => {
+    if (!user?.user_id) return;
+    
+    const cacheKeyUser = `userData_detail_${user.user_id}`;
+    const cacheKeyActivity = `userData_activity_${user.user_id}`;
+    const cacheKeyBadges = `userData_badges_${user.user_id}`;
 
-      // Fetch activity logs
-      try {
-        const aktResult = await getUserActivity(user.user_id);
-        if (aktResult.status === 'success') {
-          setAktivitas(aktResult.data || []);
-        }
-      } catch {
-        // Activity logs API not available yet
-      }
+    // Check cache first
+    const cachedUser = cache.get(cacheKeyUser);
+    const cachedActivity = cache.get(cacheKeyActivity);
+    const cachedBadges = cache.get(cacheKeyBadges);
 
-      // Fetch badges count and calculate total rewards
-      try {
-        const badgeResult = await getUserBadges(user.user_id);
-        if (badgeResult.status === 'success') {
-          const badges = badgeResult.data || [];
-          setBadgeCount(badges.length);
-
-          // Calculate total badge rewards earned
-          const totalRewards = badges.reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
-          setTotalBadgeRewards(totalRewards);
-        }
-      } catch {
-        // Badges API not available yet
-      }
-    } catch {
-      // Some user data APIs not available yet
-    } finally {
+    // If all cached, use cached data immediately
+    if (cachedUser && cachedActivity && cachedBadges) {
+      setUserCreatedAt(cachedUser);
+      setAktivitas(cachedActivity);
+      setBadgeCount(cachedBadges.count);
+      setTotalBadgeRewards(cachedBadges.rewards);
       setLoading(false);
+      return;
     }
-  };
+
+    setLoading(true);
+
+    // Parallel fetch all data with timeout
+    const createFetchWithTimeout = (promise, timeoutMs = 8000) => {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+        )
+      ]);
+    };
+
+    const [userResult, activityResult, badgesResult] = await Promise.allSettled([
+      cachedUser ? Promise.resolve({ cached: true, data: cachedUser }) :
+        createFetchWithTimeout(getUser(user.user_id)),
+      cachedActivity ? Promise.resolve({ cached: true, data: cachedActivity }) :
+        createFetchWithTimeout(getUserActivity(user.user_id)),
+      cachedBadges ? Promise.resolve({ cached: true, data: cachedBadges }) :
+        createFetchWithTimeout(getUserBadges(user.user_id))
+    ]);
+
+    // Process user detail
+    if (userResult.status === 'fulfilled') {
+      const result = userResult.value;
+      if (result.cached) {
+        setUserCreatedAt(result.data);
+      } else if (result.data?.created_at) {
+        setUserCreatedAt(result.data.created_at);
+        cache.set(cacheKeyUser, result.data.created_at, CACHE_TTL.USER_DETAIL);
+      }
+    }
+
+    // Process activity
+    if (activityResult.status === 'fulfilled') {
+      const result = activityResult.value;
+      if (result.cached) {
+        setAktivitas(result.data);
+      } else if (result.status === 'success') {
+        const activityData = result.data || [];
+        setAktivitas(activityData);
+        cache.set(cacheKeyActivity, activityData, CACHE_TTL.ACTIVITY);
+      }
+    }
+
+    // Process badges
+    if (badgesResult.status === 'fulfilled') {
+      const result = badgesResult.value;
+      if (result.cached) {
+        setBadgeCount(result.data.count);
+        setTotalBadgeRewards(result.data.rewards);
+      } else if (result.status === 'success') {
+        const badges = result.data || [];
+        const count = badges.length;
+        const rewards = badges.reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
+        setBadgeCount(count);
+        setTotalBadgeRewards(rewards);
+        cache.set(cacheKeyBadges, { count, rewards }, CACHE_TTL.BADGES);
+      }
+    }
+
+    setLoading(false);
+  }, [user?.user_id]);
 
   useEffect(() => {
     if (user?.user_id) {
       fetchUserData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.user_id]);
+  }, [user?.user_id, fetchUserData]);
 
   const formatDate = (dateString) => {
     if (!dateString) {

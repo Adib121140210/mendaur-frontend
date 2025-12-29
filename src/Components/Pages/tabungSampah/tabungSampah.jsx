@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Recycle, Search } from "lucide-react";
 import KategoriSampahWrapper from "./kategoriSampah";
@@ -6,6 +6,10 @@ import JadwalTabungSampah from "./jadwalTabungSampah";
 import FormSetorSampah from "../../Form/FormSetorSampah";
 import { TableSkeleton } from "../../Loading/Skeleton";
 import { API_BASE_URL } from "../../../config/api";
+import cache from "../../../utils/cache";
+import "./tabungSampah.css";
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes for waste prices (rarely change)
 import "./tabungSampah.css";
 
 export default function TabungSampah() {
@@ -28,7 +32,17 @@ export default function TabungSampah() {
   }, []);
 
   // Fetch waste prices from jenis-sampah API and kategori-sampah
-  useEffect(() => {
+  const fetchWastePrices = useCallback(async () => {
+    const cacheKey = 'waste_prices_data';
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      setSampahData(cached.data);
+      setLastUpdated(cached.lastUpdated);
+      setLoading(false);
+      return;
+    }
+
     // Color mapping for categories
     const categoryColorMap = {
       'Plastik': '#2196F3',       // Light Blue
@@ -42,18 +56,17 @@ export default function TabungSampah() {
       'Campuran': '#607D8B',      // Blue Gray
     };
 
-    const fetchWastePrices = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const fetchOptions = {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            ...(token && { 'Authorization': `Bearer ${token}` }),
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const fetchOptions = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
           },
           cache: 'no-store',
         };
@@ -113,6 +126,8 @@ export default function TabungSampah() {
             // Set the last updated timestamp
             if (mostRecentUpdate) {
               setLastUpdated(mostRecentUpdate);
+              // Cache the fetched data
+              cache.set(cacheKey, { data: allWasteTypes, lastUpdated: mostRecentUpdate }, CACHE_TTL);
             }
 
             setSampahData(allWasteTypes);
@@ -130,9 +145,12 @@ export default function TabungSampah() {
       } finally {
         setLoading(false);
       }
-    };
-    fetchWastePrices();
   }, []);
+
+  // Trigger fetch on mount
+  useEffect(() => {
+    fetchWastePrices();
+  }, [fetchWastePrices]);
 
   // Filter and search logic
   const filteredSampah = sampahData.filter((item) => {

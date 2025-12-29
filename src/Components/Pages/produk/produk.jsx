@@ -3,6 +3,9 @@ import ProdukCard from "./produkCard";
 import { ProductGridSkeleton } from "../../Loading/Skeleton";
 import "./produk.css";
 import productApi from "../../../services/productApi";
+import cache from "../../../utils/cache";
+
+const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 export default function Produk() {
   const [products, setProducts] = useState([]);
@@ -15,6 +18,15 @@ export default function Produk() {
 
   // Fetch products from backend
   const fetchProducts = useCallback(async () => {
+    const cacheKey = `products_${filter.kategori}_${filter.search}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      setProducts(cached);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -25,6 +37,7 @@ export default function Produk() {
 
     if (result.success) {
       setProducts(result.data);
+      cache.set(cacheKey, result.data, CACHE_TTL);
     } else {
       setError(result.message);
     }
