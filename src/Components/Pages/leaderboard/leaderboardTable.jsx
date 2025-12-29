@@ -347,8 +347,8 @@ export default function LeaderboardTable() {
                       {isCurrentUser && <span className="youBadge">Anda</span>}
                     </div>
                     <div className="cardStats">
-                      <span className="cardWaste">🗑️ {userWaste.toLocaleString('id-ID')} Kg</span>
-                      <span className="cardPoints">⭐ {userPoints.toLocaleString('id-ID')} Poin</span>
+                      <span className="cardWaste">{userWaste.toLocaleString('id-ID')} Kg<span className="statLabel">Total Tabung</span></span>
+                      <span className="cardPoints">{userPoints.toLocaleString('id-ID')} Poin<span className="statLabel">Poin Season</span></span>
                     </div>
                   </div>
                 </div>

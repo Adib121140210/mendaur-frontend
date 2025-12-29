@@ -237,6 +237,7 @@ export default function TukarPoin() {
     try {
       const payload = {
         jumlah_poin: points,
+        metode_penarikan: "transfer",
         nomor_rekening: bankAccount,
         nama_bank: bankName,
         nama_penerima: accountName,
@@ -430,30 +431,21 @@ export default function TukarPoin() {
     <div className="tukarPoinContainer">
       {/* Header Section */}
       <header className="tukarPoinHeader">
-        <h1 className="pageTitle">Tukar Poin</h1>
         <p className="pageSubtitle">Tukar poin Anda dengan berbagai manfaat berkelanjutan</p>
       </header>
 
       {/* Banner Poin */}
       <section className="userPointsSection">
         <div className="userPointsCard">
-          <span className="pointsLabel">
-            <Coins color="#FFD700" />
-            Saldo Poin Anda
-          </span>
+          <div className="pointsLabelRow">
+            <Coins size={20} color="#FFD700" />
+            <span className="pointsLabel">SALDO POIN ANDA</span>
+          </div>
 
           <div className="pointsRow">
-            <div>
+            <div className="pointsValueWrapper">
               <p className="pointsValue">{total_poin.toLocaleString('id-ID')} Poin</p>
               <span className="pointsNote">Poin tersedia untuk ditukar</span>
-            </div>
-
-            <div className="pointsActionWrapper">
-              <span className="tukarButton">
-                <Star className="starIcon" />
-                Member Aktif
-              </span>
-              <span className="pointsExpiry">Berlaku hingga 31 Desember 2025</span>
             </div>
           </div>
         </div>
