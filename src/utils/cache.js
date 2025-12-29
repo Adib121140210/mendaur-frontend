@@ -31,6 +31,11 @@ const cache = {
     this.lastUserId = userId;
   },
   
+  // Alias for clearUserCache - check if user changed and clear cache
+  checkUserChange(userId) {
+    this.clearUserCache(userId);
+  },
+  
   // Force clear all cache
   clearAll() {
     this.data = {};
