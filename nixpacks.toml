@@ -10,4 +10,4 @@ cmds = ["pnpm install"]
 cmds = ["pnpm build"]
 
 [start]
-cmd = "npx serve -s dist -l ${PORT:-3000} --single"
+cmd = "node server.js"
