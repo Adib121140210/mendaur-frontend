@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Eye,
   Edit2,
@@ -17,6 +17,7 @@ import {
   CheckCircle,
   XCircle,
   ShoppingCart,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
@@ -122,7 +123,7 @@ export default function ProductRedemptionManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Separated fetch function (Session 2 pattern)
-  const loadProductRedemptions = async () => {
+  const loadProductRedemptions = useCallback(async () => {
     setLoading(true);
     try {
       const result = await adminApi.getProductRedemptions();
@@ -152,12 +153,12 @@ export default function ProductRedemptionManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load redemptions on component mount
   useEffect(() => {
     loadProductRedemptions();
-  }, []);
+  }, [loadProductRedemptions]);
 
   // Filter logic
   const filteredRedemptions = redemptions.filter((redemption) => {
@@ -403,8 +404,34 @@ export default function ProductRedemptionManagement() {
     <div className="product-redemption-management">
       {/* Header */}
       <div className="management-header">
-        <h2>Kelola Penukaran Produk</h2>
-        <p>Kelola dan persetujui semua permintaan penukaran produk dari nasabah</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2>Kelola Penukaran Produk</h2>
+            <p>Kelola dan persetujui semua permintaan penukaran produk dari nasabah</p>
+          </div>
+          <button 
+            className="btn-refresh"
+            onClick={loadProductRedemptions}
+            disabled={loading}
+            title="Refresh data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}

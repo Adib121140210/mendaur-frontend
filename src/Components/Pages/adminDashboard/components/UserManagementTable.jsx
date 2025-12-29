@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Search, Loader, AlertCircle, Edit2, Trash2 } from 'lucide-react'
+import { Search, Loader, AlertCircle, Edit2, Trash2, RefreshCw } from 'lucide-react'
 import adminApi from '../../../../services/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { PermissionGuard } from '../../../PermissionGuard'
@@ -444,6 +444,28 @@ function UserManagementTable() {
       <div className="users-header">
         <h2>User Management</h2>
         <div className="header-actions">
+          <button 
+            className="btn-refresh"
+            onClick={loadUsers}
+            disabled={loading}
+            title="Refresh data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
           <div className="search-box">
             <Search size={20} />
             <input

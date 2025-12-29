@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   Recycle,
@@ -9,7 +9,8 @@ import {
   Calendar,
   Package,
   Eye,
-  X
+  X,
+  RefreshCw
 } from "lucide-react";
 import useScrollTop from "../../lib/useScrollTop";
 import { API_BASE_URL, getStorageUrl } from "../../../config/api";
@@ -31,14 +32,7 @@ const RiwayatTabung = () => {
     rejected: 0
   });
 
-  useEffect(() => {
-    if (user?.user_id) {
-      fetchDeposits();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.user_id, statusFilter]);
-
-  const fetchDeposits = async () => {
+  const fetchDeposits = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -114,7 +108,14 @@ const RiwayatTabung = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.user_id, statusFilter]);
+
+  // Fetch on mount and when dependencies change
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchDeposits();
+    }
+  }, [user?.user_id, statusFilter, fetchDeposits]);
 
   const calculateStats = (allDeposits) => {
     setStats({
@@ -189,6 +190,11 @@ const RiwayatTabung = () => {
     }
   };
 
+  // Handle refresh
+  const handleRefresh = useCallback(() => {
+    fetchDeposits();
+  }, [fetchDeposits]);
+
   if (loading) {
     return (
       <div className="riwayatTabungWrapper">
@@ -207,6 +213,14 @@ const RiwayatTabung = () => {
           <Recycle size={28} className="headerIcon" />
           <h1 className="headerText">Riwayat Tabung Sampah</h1>
         </div>
+        <button 
+          className="refreshButton" 
+          onClick={handleRefresh} 
+          disabled={loading}
+          title="Refresh data"
+        >
+          <RefreshCw size={20} className={loading ? 'spinning' : ''} />
+        </button>
       </div>
       <div className="riwayatTabungContent">
         {/* Stats Info */}

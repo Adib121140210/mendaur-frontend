@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Truck,
   RefreshCcw,
+  RefreshCw,
   XCircle,
   DollarSign,
   Package,
@@ -200,11 +201,30 @@ export default function RiwayatTransaksi() {
     return matchKategori && matchStatus && matchSearch;
   });
 
+  // Handle refresh
+  const handleRefresh = useCallback(() => {
+    const userId = localStorage.getItem('id_user');
+    cache.clear(`transactions-${userId}`);
+    fetchTransactions(true);
+  }, [fetchTransactions]);
+
   return (
     <div className="riwayatContainer">
       <header className="riwayatHeader">
-        <h1>Riwayat Aktivitas</h1>
-        <p>Jejak kontribusi dan penukaran Anda di Mendaur</p>
+        <div className="headerTitleRow">
+          <div>
+            <h1>Riwayat Aktivitas</h1>
+            <p>Jejak kontribusi dan penukaran Anda di Mendaur</p>
+          </div>
+          <button 
+            className="refreshButton" 
+            onClick={handleRefresh} 
+            disabled={loading}
+            title="Refresh data"
+          >
+            <RefreshCw size={20} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
       </header>
 
       {/* Search & Status Filter */}

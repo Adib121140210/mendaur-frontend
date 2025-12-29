@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Eye,
   Edit2,
@@ -16,6 +16,7 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  RefreshCw,
 } from 'lucide-react';
 import adminApi from '../../../../services/adminApi';
 import { PermissionGuard } from '../../../PermissionGuard';
@@ -113,15 +114,14 @@ export default function WasteDepositsManagement() {
   // Load deposits on component mount and when filters change
   useEffect(() => {
     loadDeposits();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, searchQuery, wasteTypeFilter]);
+  }, [loadDeposits]);
 
   // Load statistics
   useEffect(() => {
     loadStatistics();
   }, []);
 
-  const loadDeposits = async () => {
+  const loadDeposits = useCallback(async () => {
     setLoading(true);
     try {
       const filters = {};
@@ -154,7 +154,7 @@ export default function WasteDepositsManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, wasteTypeFilter, searchQuery]);
 
   const loadStatistics = async () => {
     try {
@@ -474,8 +474,34 @@ export default function WasteDepositsManagement() {
     <div className="waste-deposits-management">
       {/* Header */}
       <div className="management-header">
-        <h2>Kelola Penyetoran Sampah</h2>
-        <p>Kelola dan persetujui semua penyetoran sampah dari nasabah</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2>Kelola Penyetoran Sampah</h2>
+            <p>Kelola dan persetujui semua penyetoran sampah dari nasabah</p>
+          </div>
+          <button 
+            className="btn-refresh"
+            onClick={loadDeposits}
+            disabled={loading}
+            title="Refresh data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}

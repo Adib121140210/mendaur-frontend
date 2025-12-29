@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Plus, Eye, Edit2, Trash2, Search, X, Loader, Upload } from 'lucide-react'
+import { Plus, Eye, Edit2, Trash2, Search, X, Loader, Upload, RefreshCw } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import adminApi from '../../../../services/adminApi'
 import '../styles/contentManagement.css'
@@ -305,8 +305,34 @@ export default function ProductManagement() {
     <div className="product-management">
       {/* Header */}
       <div className="management-header">
-        <h2>Manajemen Produk</h2>
-        <p>Kelola semua produk dan inventaris</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2>Manajemen Produk</h2>
+            <p>Kelola semua produk dan inventaris</p>
+          </div>
+          <button 
+            className="btn-refresh"
+            onClick={loadProducts}
+            disabled={loading}
+            title="Refresh data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

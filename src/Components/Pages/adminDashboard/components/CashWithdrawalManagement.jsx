@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Eye,
   Download,
@@ -14,6 +14,7 @@ import {
   CheckCircle,
   XCircle,
   CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import adminApi from '../../../../services/adminApi';
@@ -100,7 +101,7 @@ export default function CashWithdrawalManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Separated fetch function (Session 2 pattern)
-  const loadCashWithdrawals = async () => {
+  const loadCashWithdrawals = useCallback(async () => {
     setLoading(true);
     try {
       const result = await adminApi.getCashWithdrawals();
@@ -128,12 +129,12 @@ export default function CashWithdrawalManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load withdrawals on component mount
   useEffect(() => {
     loadCashWithdrawals();
-  }, []);
+  }, [loadCashWithdrawals]);
 
   const filteredWithdrawals = withdrawals.filter((w) => {
     if (statusFilter !== 'all' && w.status !== statusFilter) return false;
@@ -305,8 +306,34 @@ export default function CashWithdrawalManagement() {
   return (
     <div className="cash-withdrawal-management">
       <div className="management-header">
-        <h2>Kelola Penarikan Tunai</h2>
-        <p>Kelola dan persetujui semua permintaan penarikan tunai dari nasabah</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2>Kelola Penarikan Tunai</h2>
+            <p>Kelola dan persetujui semua permintaan penarikan tunai dari nasabah</p>
+          </div>
+          <button 
+            className="btn-refresh"
+            onClick={loadCashWithdrawals}
+            disabled={loading}
+            title="Refresh data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+          </button>
+        </div>
       </div>
 
       <div className="stats-grid">
