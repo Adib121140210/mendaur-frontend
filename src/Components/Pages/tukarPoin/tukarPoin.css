@@ -79,7 +79,7 @@
 
 /* MENU PENUKARAN SECTION */
 .menuTukarPoin {
-  background: var(--color-primary-dark);
+  background: white;
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -92,13 +92,13 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .menuHeader h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: #111827;
 }
 
 .sortDropdown {
@@ -208,7 +208,7 @@
 .produkPilihanSection {
   margin-top: 0;
   padding: 2rem;
-  background: var(--color-primary-dark);
+  background: linear-gradient(180deg, #065f46 0%, #064e3b 100%);
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
