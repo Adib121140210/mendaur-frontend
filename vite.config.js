@@ -14,6 +14,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'robots.txt'],
+      // Force immediate update of service worker
+      devOptions: {
+        enabled: false // Disable SW in dev mode
+      },
       manifest: {
         name: 'Mendaur - Kelola Sampah',
         short_name: 'Mendaur',
@@ -42,6 +46,11 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Skip waiting to immediately activate new service worker
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean old caches
+        cleanupOutdatedCaches: true,
         // Cache strategies for different resource types
         runtimeCaching: [
           {
@@ -85,15 +94,16 @@ export default defineConfig({
             }
           },
           {
-            // Cache static assets
+            // Cache static assets - use NetworkFirst to always get latest
             urlPattern: /\.(?:js|css|woff2?)$/i,
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'static-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-              }
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              },
+              networkTimeoutSeconds: 3
             }
           }
         ]
