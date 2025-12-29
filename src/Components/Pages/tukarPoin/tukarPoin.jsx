@@ -585,7 +585,7 @@ export default function TukarPoin() {
         <div className="modalOverlay" onClick={closeRedeemModal}>
           <div className="cashModalContent" onClick={(e) => e.stopPropagation()}>
             <div className="cashModalHeader">
-              <h3>🛍️ Konfirmasi Penukaran</h3>
+              <h3>Konfirmasi Penukaran</h3>
               <button className="closeModalBtn" onClick={closeRedeemModal}>
                 <X size={22} />
               </button>

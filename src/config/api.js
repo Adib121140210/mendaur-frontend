@@ -15,6 +15,22 @@ export const STORAGE_URL = baseUrl || PRODUCTION_URL;
 // Helper to get full storage URL for images
 export const getStorageUrl = (path) => {
   if (!path) return null;
+  // Already a full URL (Cloudinary, etc.)
   if (path.startsWith('http')) return path;
-  return `${STORAGE_URL}/storage/${path}`;
+  
+  // Clean up the path - remove leading slashes
+  const cleanPath = path.replace(/^\/+/, '');
+  
+  // If path already starts with 'uploads/', don't add 'storage/' prefix
+  if (cleanPath.startsWith('uploads/')) {
+    return `${STORAGE_URL}/${cleanPath}`;
+  }
+  
+  // If path starts with 'storage/', don't add it again
+  if (cleanPath.startsWith('storage/')) {
+    return `${STORAGE_URL}/${cleanPath}`;
+  }
+  
+  // Default: add storage prefix for other paths (like 'produk/xxx.jpg')
+  return `${STORAGE_URL}/storage/${cleanPath}`;
 };
