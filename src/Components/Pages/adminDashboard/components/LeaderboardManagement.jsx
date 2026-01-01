@@ -45,6 +45,11 @@ const LeaderboardManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        // Debug: log data structure to see available fields
+        console.log('Leaderboard API response:', data);
+        if (data.data && data.data.length > 0) {
+          console.log('Sample user data:', data.data[0]);
+        }
         setLeaderboardData(data.data || []);
       }
     } catch (error) {
@@ -328,13 +333,26 @@ const LeaderboardManagement = () => {
   /* Calculate stats - gunakan overviewStats jika tersedia, fallback ke perhitungan manual */
   const totalPeserta = overviewStats?.total_peserta ?? leaderboardData.length;
   const totalPoints = overviewStats?.total_poin ?? leaderboardData.reduce((sum, user) => 
-    sum + (user.display_poin ?? user.poin_season ?? user.actual_poin ?? user.poin ?? 0), 0
+    sum + (user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0), 0
   );
+  
   // Gunakan total_sampah_formatted dari API untuk menghindari angka panjang
-  const totalSampahFormatted = overviewStats?.total_sampah_formatted ?? 
-    `${leaderboardData.reduce((sum, user) =>
-      sum + (user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? 0), 0
-    ).toLocaleString('id-ID')} Kg`;
+  // Jika tidak ada, hitung manual dengan format yang benar
+  const calculateTotalSampah = () => {
+    // Prioritas 1: gunakan formatted string dari API
+    if (overviewStats?.total_sampah_formatted && 
+        typeof overviewStats.total_sampah_formatted === 'string' &&
+        !overviewStats.total_sampah_formatted.includes('.00.00')) {
+      return overviewStats.total_sampah_formatted;
+    }
+    
+    // Prioritas 2: hitung manual dari data leaderboard
+    const total = leaderboardData.reduce((sum, user) =>
+      sum + (parseFloat(user.total_sampah) || parseFloat(user.total_setor_sampah) || parseFloat(user.sampah_terkumpul) || 0), 0
+    );
+    return `${total.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Kg`;
+  };
+  const totalSampahFormatted = calculateTotalSampah();
   const daysToReset = overviewStats?.days_to_reset ?? getDaysUntilReset();
 
   return (
@@ -578,8 +596,11 @@ const LeaderboardManagement = () => {
                 </thead>
                 <tbody>
                   {leaderboardData.slice(0, 10).map((user, index) => {
-                    const points = user.display_poin ?? user.poin_season ?? user.actual_poin ?? user.poin ?? 0;
-                    const sampah = user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? 0;
+                    // Expanded fallback chain - cek semua kemungkinan field poin
+                    const points = user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? 
+                                   user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0;
+                    const sampah = parseFloat(user.total_sampah) || parseFloat(user.total_setor_sampah) || 
+                                   parseFloat(user.sampah_terkumpul) || 0;
                     return (
                       <tr key={user.user_id || index} className={index < 3 ? `rank-${index + 1}` : ''}>
                         <td className="rank-cell">
@@ -587,7 +608,7 @@ const LeaderboardManagement = () => {
                         </td>
                         <td className="name-cell">{user.nama || user.nama_user || 'Unknown'}</td>
                         <td className="points-cell">{points.toLocaleString('id-ID')} pts</td>
-                        <td className="waste-cell">{sampah.toLocaleString('id-ID')} Kg</td>
+                        <td className="waste-cell">{sampah.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Kg</td>
                       </tr>
                     );
                   })}
