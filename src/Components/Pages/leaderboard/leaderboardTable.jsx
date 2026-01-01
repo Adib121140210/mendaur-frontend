@@ -139,6 +139,14 @@ export default function LeaderboardTable() {
       const result = await response.json();
       const data = result.data || result.leaderboard || result;
 
+      // DEBUG: Log struktur data dari API (hapus setelah debug selesai)
+      if (Array.isArray(data) && data.length > 0) {
+        console.log('Leaderboard API response sample:', {
+          firstUser: data[0],
+          availableFields: Object.keys(data[0])
+        });
+      }
+
       if (Array.isArray(data)) {
         setLeaderboardData(data);
         // Cache for 1 minute
@@ -208,9 +216,9 @@ export default function LeaderboardTable() {
 
     // Sort by points (backend should do this, but ensure it's sorted)
     filtered.sort((a, b) => {
-      // Prioritize display_poin for sorting
-      const pointsA = a.display_poin ?? a.poin_season ?? a.actual_poin ?? a.poin ?? a.points ?? 0;
-      const pointsB = b.display_poin ?? b.poin_season ?? b.actual_poin ?? b.poin ?? b.points ?? 0;
+      // Prioritas: display_poin > poin_tercatat > poin_season > actual_poin
+      const pointsA = a.display_poin ?? a.poin_tercatat ?? a.poin_season ?? a.actual_poin ?? a.total_poin ?? a.poin ?? a.points ?? 0;
+      const pointsB = b.display_poin ?? b.poin_tercatat ?? b.poin_season ?? b.actual_poin ?? b.total_poin ?? b.poin ?? b.points ?? 0;
       return pointsB - pointsA;
     });
 
@@ -325,8 +333,10 @@ export default function LeaderboardTable() {
               const globalIndex = startIndex + index;
               const isCurrentUser = String(user.user_id) === String(currentUserId);
               const userName = user.nama || user.nama_user || user.name || 'Unknown';
-              const userWaste = user.total_sampah || user.sampah_terkumpul || user.waste_collected || 0;
-              const userPoints = user.display_poin ?? user.poin_season ?? user.actual_poin ?? user.poin ?? user.points ?? 0;
+              /* Fallback chain untuk sampah - gunakan ?? untuk handle 0 */
+              const userWaste = user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? user.waste_collected ?? 0;
+              /* Fallback chain untuk poin - prioritas: display_poin > poin_tercatat > actual_poin */
+              const userPoints = user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0;
 
               const rankEmoji = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : null;
               const rankClass = globalIndex === 0 ? 'gold' : globalIndex === 1 ? 'silver' : globalIndex === 2 ? 'bronze' : '';
