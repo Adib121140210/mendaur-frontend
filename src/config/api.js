@@ -31,6 +31,12 @@ export const getStorageUrl = (path) => {
     return `${STORAGE_URL}/${cleanPath}`;
   }
   
+  // If path starts with 'avatars/', add 'storage/' prefix 
+  // (Laravel stores avatars in storage/app/public/avatars)
+  if (cleanPath.startsWith('avatars/')) {
+    return `${STORAGE_URL}/storage/${cleanPath}`;
+  }
+  
   // Default: add storage prefix for other paths (like 'produk/xxx.jpg')
   return `${STORAGE_URL}/storage/${cleanPath}`;
 };

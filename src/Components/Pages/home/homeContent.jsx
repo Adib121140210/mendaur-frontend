@@ -245,16 +245,20 @@ const HomeContent = () => {
     if (leaderboard.length === 0) {
       return <p className="emptyState">Belum ada data leaderboard</p>;
     }
-    return leaderboard.slice(0, 10).map((leader, index) => (
-      <div
-        key={leader.user_id}
-        className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
-      >
-        <span className="leaderRank">#{index + 1}</span>
-        <span className="leaderName">{leader.nama}</span>
-        <span className="leaderPoints">{leader.display_poin ?? leader.poin_season ?? leader.actual_poin ?? leader.poin ?? 0} pts</span>
-      </div>
-    ));
+    return leaderboard.slice(0, 6).map((leader, index) => {
+      /* Fallback chain poin - sesuaikan dengan leaderboardTable.jsx */
+      const points = leader.display_poin ?? leader.poin_tercatat ?? leader.poin_season ?? leader.actual_poin ?? leader.total_poin ?? leader.poin ?? leader.points ?? 0;
+      return (
+        <div
+          key={leader.user_id}
+          className={`leaderboardItem ${leader.user_id == currentUserId ? 'currentUser' : ''}`}
+        >
+          <span className="leaderRank">#{index + 1}</span>
+          <span className="leaderName">{leader.nama ?? leader.nama_user ?? leader.name ?? 'Unknown'}</span>
+          <span className="leaderPoints">{points.toLocaleString('id-ID')} pts</span>
+        </div>
+      );
+    });
   }, [leaderboard, leaderboardError, currentUserId, refreshLeaderboard]);
 
   // Memoize badge items
