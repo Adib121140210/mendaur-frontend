@@ -164,6 +164,35 @@ export default function LeaderboardTable() {
     }
   }, [timePeriod, seasonInfo, fetchLeaderboard]);
 
+  // Listen for leaderboard reset events from admin
+  useEffect(() => {
+    const handleLeaderboardReset = () => {
+      console.log('Leaderboard reset detected, clearing cache and refreshing...');
+      // Clear all leaderboard cache entries
+      cache.clear(`leaderboard-season`);
+      cache.clear(`leaderboard-monthly`);
+      cache.clear(`leaderboard-weekly`);
+      cache.clear(`leaderboard-all`);
+      cache.clear('leaderboard');
+      // Force refresh
+      fetchLeaderboard(true);
+    };
+
+    window.addEventListener('leaderboard-reset', handleLeaderboardReset);
+
+    // Also check localStorage for reset timestamp on mount
+    const lastReset = localStorage.getItem('leaderboard_last_reset');
+    const lastCheck = sessionStorage.getItem('leaderboard_last_check');
+    if (lastReset && lastReset !== lastCheck) {
+      sessionStorage.setItem('leaderboard_last_check', lastReset);
+      handleLeaderboardReset();
+    }
+
+    return () => {
+      window.removeEventListener('leaderboard-reset', handleLeaderboardReset);
+    };
+  }, [fetchLeaderboard]);
+
   // Filter and search logic
   const filteredUsers = useMemo(() => {
     let filtered = [...leaderboardData];

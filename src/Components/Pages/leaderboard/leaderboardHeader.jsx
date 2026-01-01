@@ -96,12 +96,16 @@ const LeaderboardHeader = () => {
         let userRank = null;
         const currentUserId = parseInt(userId, 10);
 
+        /* Ambil data dari user stats */
         if (userStatsData?.user) {
-          userPoints = userStatsData.user.display_poin || userStatsData.user.actual_poin || userStatsData.user.poin || 0;
-          userWaste = userStatsData.user.total_setor_sampah || userStatsData.user.sampah || 0;
+          userPoints = userStatsData.user.display_poin ?? userStatsData.user.poin_season ?? userStatsData.user.actual_poin ?? userStatsData.user.poin ?? 0;
+          userWaste = userStatsData.user.total_sampah ?? userStatsData.user.total_setor_sampah ?? userStatsData.user.sampah ?? 0;
         } else if (userStatsData?.statistics) {
-          userPoints = userStatsData.statistics.display_poin || userStatsData.statistics.actual_poin || userStatsData.statistics.poin || 0;
-          userWaste = userStatsData.statistics.total_setor_sampah || userStatsData.statistics.sampah || 0;
+          userPoints = userStatsData.statistics.display_poin ?? userStatsData.statistics.poin_season ?? userStatsData.statistics.actual_poin ?? userStatsData.statistics.poin ?? 0;
+          userWaste = userStatsData.statistics.total_sampah ?? userStatsData.statistics.total_setor_sampah ?? userStatsData.statistics.sampah ?? 0;
+        } else if (userStatsData?.data) {
+          userPoints = userStatsData.data.display_poin ?? userStatsData.data.poin_season ?? userStatsData.data.actual_poin ?? userStatsData.data.poin ?? 0;
+          userWaste = userStatsData.data.total_sampah ?? userStatsData.data.total_setor_sampah ?? userStatsData.data.sampah ?? 0;
         }
 
         let leaderboard = [];
@@ -113,27 +117,28 @@ const LeaderboardHeader = () => {
 
         const totalPeserta = Array.isArray(leaderboard) ? leaderboard.length : 0;
 
+        /* Cari rank user dari leaderboard */
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
-          const currentUser = leaderboard.find(user => {
+          const userIndex = leaderboard.findIndex(user => {
             const leaderboardUserId = parseInt(user.user_id || user.id, 10);
             return leaderboardUserId === currentUserId;
           });
 
-          if (currentUser) {
-            userRank = currentUser.rank || null;
+          if (userIndex !== -1) {
+            const currentUser = leaderboard[userIndex];
+            userRank = userIndex + 1; // Rank dimulai dari 1
+            
+            /* Ambil data dari leaderboard jika stats kosong */
             if (userPoints === 0) {
-              userPoints = currentUser.display_poin || currentUser.actual_poin || currentUser.poin || 0;
+              userPoints = currentUser.display_poin ?? currentUser.poin_season ?? currentUser.actual_poin ?? currentUser.poin ?? 0;
             }
             if (userWaste === 0) {
-              userWaste = currentUser.total_setor_sampah || 0;
+              userWaste = currentUser.total_sampah ?? currentUser.total_setor_sampah ?? currentUser.sampah_terkumpul ?? 0;
             }
           }
         }
 
-        let peringkat = '—';
-        if (userRank) {
-          peringkat = `#${userRank}`;
-        }
+        const peringkat = userRank ? `#${userRank}` : '—';
 
         setStats({
           poin: userPoints,
