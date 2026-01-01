@@ -252,7 +252,7 @@ const HomeContent = () => {
       >
         <span className="leaderRank">#{index + 1}</span>
         <span className="leaderName">{leader.nama}</span>
-        <span className="leaderPoints">{leader.display_poin || leader.total_poin || leader.poin || 0} pts</span>
+        <span className="leaderPoints">{leader.display_poin ?? leader.poin_season ?? leader.actual_poin ?? leader.poin ?? 0} pts</span>
       </div>
     ));
   }, [leaderboard, leaderboardError, currentUserId, refreshLeaderboard]);
@@ -381,14 +381,14 @@ const HomeContent = () => {
         <div className="statsGrid">
           <StatCard
             icon={<Star />}
-            title="Total Poin"
-            value={userStats?.actual_poin || user.actual_poin || 0}
+            title="Saldo Poin"
+            value={userStats?.actual_poin ?? user.actual_poin ?? 0}
             color="#FFB800"
           />
           <StatCard
             icon={<Recycle />}
             title="Sampah Ditabung"
-            value={`${userStats?.total_setor_sampah || user.total_setor_sampah || 0} Kg`}
+            value={`${userStats?.total_setor_sampah ?? userStats?.total_sampah ?? user.total_setor_sampah ?? 0} Kg`}
             color="#4CAF50"
           />
           <StatCard
@@ -400,7 +400,7 @@ const HomeContent = () => {
           <StatCard
             icon={<TrendingUp />}
             title="Peringkat"
-            value={`#${userStats?.rank || userStats?.peringkat || (leaderboard.findIndex(l => l.user_id == user?.user_id) + 1) || '-'}`}
+            value={`#${userStats?.rank ?? userStats?.peringkat ?? ((leaderboard.findIndex(l => l.user_id == user?.user_id) + 1) || '-')}`}
             color="#2196F3"
           />
         </div>

@@ -200,8 +200,8 @@ export const exportToPDF = (report, reportType, dateInfo) => {
 
     const pointsTableData = Object.entries(report.points.by_source).map(([source, data]) => [
       source,
-      formatNumber(data.total_poin),
-      formatNumber(data.count)
+      formatNumber(data.total_poin ?? data.poin ?? 0),
+      formatNumber(data.count ?? 0)
     ])
 
     autoTable(doc, {
@@ -388,7 +388,7 @@ export const exportToExcel = (report, reportType, dateInfo) => {
     ]
 
     Object.entries(report.points.by_source).forEach(([source, data]) => {
-      pointsData.push([source, data.total_poin, data.count])
+      pointsData.push([source, data.total_poin ?? data.poin ?? 0, data.count ?? 0])
     })
 
     // Add totals
@@ -458,7 +458,7 @@ export const exportUsersToExcel = (users) => {
     ['DAFTAR PENGGUNA BANK SAMPAH INDUK NUSA'],
     ['Diekspor pada: ' + formatDate(new Date())],
     [''],
-    ['No', 'Nama', 'Email', 'No. HP', 'Role', 'Status', 'Total Sampah (kg)', 'Total Poin', 'Tanggal Daftar']
+    ['No', 'Nama', 'Email', 'No. HP', 'Role', 'Status', 'Total Sampah (kg)', 'Saldo Poin', 'Tanggal Daftar']
   ]
 
   users.forEach((user, index) => {
@@ -469,8 +469,8 @@ export const exportUsersToExcel = (users) => {
       user.no_hp || user.phone || '-',
       user.role?.nama_role || user.role || '-',
       user.status || 'active',
-      user.total_sampah || 0,
-      user.total_poin || 0,
+      user.total_sampah ?? user.total_setor_sampah ?? 0,
+      user.actual_poin ?? user.display_poin ?? 0,
       user.created_at ? formatDate(user.created_at) : '-'
     ])
   })

@@ -250,8 +250,11 @@ export default function ProfilHeader() {
               <Star size={24} />
             </div>
             <div className="pointsInfo">
-              <span className="pointsLabel">Total Poin</span>
-              <span className="pointsValue">{(user.actual_poin || 0).toLocaleString('id-ID')}</span>
+              <span className="pointsLabel">Saldo Poin</span>
+              <span className="pointsValue">{(user.actual_poin ?? 0).toLocaleString('id-ID')}</span>
+              <span className="pointsSubLabel" style={{ fontSize: '11px', color: '#94a3b8' }}>
+                Poin terkumpul: {(user.display_poin ?? user.actual_poin ?? 0).toLocaleString('id-ID')}
+              </span>
             </div>
           </div>
         </div>

@@ -140,11 +140,13 @@ export default function UserData() {
     }
   };
 
+  // display_poin = untuk ranking/pencapaian (tidak pernah turun)
+  // actual_poin = saldo yang bisa digunakan untuk transaksi
   const stats = [
-    { title: "Total Poin", value: `${user.actual_poin || 0}`, icon: <Star size={20} /> },
-    { title: "Total Sampah", value: `${user.total_setor_sampah || 0} Kg`, icon: <Recycle size={20} /> },
+    { title: "Saldo Poin", value: `${user.actual_poin ?? 0}`, icon: <Star size={20} />, tooltip: "Poin yang bisa digunakan untuk transaksi" },
+    { title: "Poin Terkumpul", value: `${user.display_poin ?? user.actual_poin ?? 0}`, icon: <Trophy size={20} />, tooltip: "Total poin yang pernah didapat (untuk ranking)" },
+    { title: "Total Sampah", value: `${user.total_setor_sampah ?? user.total_sampah ?? 0} Kg`, icon: <Recycle size={20} /> },
     { title: "Badge Rewards", value: `${totalBadgeRewards} Poin`, icon: <Trophy size={20} />},
-    { title: "Level", value: user.level || "Member", icon: <Trophy size={20} /> },
     { title: "Badge Terklaim", value: `${badgeCount}`, icon: <Trophy size={20} /> },
     { title: "Bergabung", value: formatDate(userCreatedAt), icon: <Calendar size={20} /> },
   ];
