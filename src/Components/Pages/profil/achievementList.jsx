@@ -125,6 +125,7 @@ export default function AchievementList() {
   const [userBadges, setUserBadges] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true); // Loading awal saja
   const [counts, setCounts] = useState({ all: 0, unlocked: 0, locked: 0 });
   const [message, setMessage] = useState("");
   const [totalRewardsEarned, setTotalRewardsEarned] = useState(0);
@@ -296,6 +297,7 @@ export default function AchievementList() {
       setMessage('Menggunakan data simulasi - API sedang bermasalah');
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [user?.user_id, filter, counts]);
 
@@ -313,14 +315,15 @@ export default function AchievementList() {
     }
   }, [user?.user_id, fetchTotalRewards]);
 
-  if (loading) {
+  // Hanya tampilkan loading penuh saat pertama kali load
+  if (initialLoading) {
     return <div style={{ padding: '20px', textAlign: 'center' }}>Loading badges...</div>;
   }
 
   return (
     <>
-      {/* Badge Rewards Summary */}
-      {counts.unlocked > 0 && (
+      {/* Badge Rewards Summary - Selalu tampil */}
+      {counts.all > 0 && (
         <div className="badgeRewardsSummary">
           <div className="rewardsSummaryCard">
             <div className="summaryIcon">🏆</div>
@@ -387,9 +390,14 @@ export default function AchievementList() {
         </p>
       </div>
 
-      {/* Badge List */}
+      {/* Badge List - Loading state hanya untuk cards */}
       <div className="achievementList">
-        {allBadges.length === 0 ? (
+        {loading ? (
+          <div className="badgeCardsLoading">
+            <div className="loadingSpinner"></div>
+            <p>Memuat badge...</p>
+          </div>
+        ) : allBadges.length === 0 ? (
           <div className="emptyState">
             <div className="emptyIcon">
               {filter === 'unlocked' ? '🎯' : filter === 'locked' ? '🎉' : '🔍'}

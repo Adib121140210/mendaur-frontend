@@ -23,10 +23,12 @@ const LeaderboardManagement = () => {
   const [savingSettings, setSavingSettings] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [overviewStats, setOverviewStats] = useState(null); // Stats dari endpoint baru
   const [seasonSettings, setSeasonSettings] = useState({
-    resetPeriod: 'quarterly',
+    resetPeriod: 'monthly',
     autoReset: true,
     nextResetDate: null,
+    customResetDate: '', // Untuk tanggal custom
   });
 
   // Fetch leaderboard data
@@ -49,6 +51,37 @@ const LeaderboardManagement = () => {
       console.error('Error fetching leaderboard:', error);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Fetch overview stats dari endpoint baru
+  const fetchOverviewStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/leaderboard/overview`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          setOverviewStats(data.data);
+          // Update season settings dari overview jika ada
+          if (data.data.reset_period) {
+            setSeasonSettings(prev => ({
+              ...prev,
+              resetPeriod: data.data.reset_period,
+              autoReset: data.data.auto_reset ?? prev.autoReset,
+              nextResetDate: data.data.next_reset_date || null,
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching overview stats:', error);
     }
   }, []);
 
@@ -102,9 +135,10 @@ const LeaderboardManagement = () => {
   // Initial data load
   useEffect(() => {
     fetchLeaderboardData();
+    fetchOverviewStats();
     fetchLeaderboardSettings();
     fetchResetHistory();
-  }, [fetchLeaderboardData, fetchLeaderboardSettings, fetchResetHistory]);
+  }, [fetchLeaderboardData, fetchOverviewStats, fetchLeaderboardSettings, fetchResetHistory]);
 
   // Auto-hide message after 5 seconds
   useEffect(() => {
@@ -168,6 +202,18 @@ const LeaderboardManagement = () => {
     setSavingSettings(true);
     try {
       const token = localStorage.getItem('token');
+      
+      // Prepare request body
+      const requestBody = {
+        reset_period: seasonSettings.resetPeriod,
+        auto_reset: seasonSettings.autoReset,
+      };
+      
+      // Tambah custom_reset_date jika period adalah custom
+      if (seasonSettings.resetPeriod === 'custom' && seasonSettings.customResetDate) {
+        requestBody.custom_reset_date = seasonSettings.customResetDate;
+      }
+      
       const response = await fetch(`${API_BASE_URL}/admin/leaderboard/settings`, {
         method: 'PUT',
         headers: {
@@ -175,10 +221,7 @@ const LeaderboardManagement = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          reset_period: seasonSettings.resetPeriod,
-          auto_reset: seasonSettings.autoReset,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const contentType = response.headers.get('content-type');
@@ -190,6 +233,8 @@ const LeaderboardManagement = () => {
 
       if (response.ok) {
         setMessage({ type: 'success', text: '✓ Pengaturan berhasil disimpan!' });
+        // Refresh overview stats
+        fetchOverviewStats();
       } else {
         setMessage({ type: 'error', text: data.message || 'Gagal menyimpan pengaturan' });
       }
@@ -275,17 +320,22 @@ const LeaderboardManagement = () => {
       monthly: 'Bulanan',
       quarterly: 'Per Kuartal',
       yearly: 'Tahunan',
+      custom: 'Tanggal Custom',
     };
     return labels[period] || period;
   };
 
-  /* Calculate stats */
-  const totalPoints = leaderboardData.reduce((sum, user) => 
+  /* Calculate stats - gunakan overviewStats jika tersedia, fallback ke perhitungan manual */
+  const totalPeserta = overviewStats?.total_peserta ?? leaderboardData.length;
+  const totalPoints = overviewStats?.total_poin ?? leaderboardData.reduce((sum, user) => 
     sum + (user.display_poin ?? user.poin_season ?? user.actual_poin ?? user.poin ?? 0), 0
   );
-  const totalSampah = leaderboardData.reduce((sum, user) =>
-    sum + (user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? 0), 0
-  );
+  // Gunakan total_sampah_formatted dari API untuk menghindari angka panjang
+  const totalSampahFormatted = overviewStats?.total_sampah_formatted ?? 
+    `${leaderboardData.reduce((sum, user) =>
+      sum + (user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? 0), 0
+    ).toLocaleString('id-ID')} Kg`;
+  const daysToReset = overviewStats?.days_to_reset ?? getDaysUntilReset();
 
   return (
     <div className="leaderboard-management">
@@ -326,7 +376,7 @@ const LeaderboardManagement = () => {
             <Users size={24} />
           </div>
           <div className="lm-stat-info">
-            <span className="lm-stat-value">{leaderboardData.length}</span>
+            <span className="lm-stat-value">{totalPeserta}</span>
             <span className="lm-stat-label">Total Peserta</span>
           </div>
         </div>
@@ -346,7 +396,7 @@ const LeaderboardManagement = () => {
             <TrendingUp size={24} />
           </div>
           <div className="lm-stat-info">
-            <span className="lm-stat-value">{totalSampah.toLocaleString('id-ID')} Kg</span>
+            <span className="lm-stat-value">{totalSampahFormatted}</span>
             <span className="lm-stat-label">Total Sampah</span>
           </div>
         </div>
@@ -356,7 +406,7 @@ const LeaderboardManagement = () => {
             <Clock size={24} />
           </div>
           <div className="lm-stat-info">
-            <span className="lm-stat-value">{getDaysUntilReset()}</span>
+            <span className="lm-stat-value">{daysToReset}</span>
             <span className="lm-stat-label">Hari Menuju Reset</span>
           </div>
         </div>
@@ -409,8 +459,26 @@ const LeaderboardManagement = () => {
                 <option value="monthly">Bulanan</option>
                 <option value="quarterly">Per Kuartal (3 Bulan)</option>
                 <option value="yearly">Tahunan</option>
+                <option value="custom">Tanggal Custom</option>
               </select>
             </div>
+
+            {/* Date Picker untuk Custom Reset Date */}
+            {seasonSettings.resetPeriod === 'custom' && (
+              <div className="lm-form-group">
+                <label>Tanggal Reset Custom</label>
+                <input
+                  type="date"
+                  value={seasonSettings.customResetDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setSeasonSettings(prev => ({ ...prev, customResetDate: e.target.value }))}
+                  className="lm-date-input"
+                />
+                <p className="lm-help-text">
+                  Pilih tanggal spesifik untuk reset leaderboard
+                </p>
+              </div>
+            )}
 
             <div className="lm-form-group">
               <label className="lm-checkbox-wrapper">

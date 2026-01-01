@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Plus, Eye, Edit2, Trash2, Search, X, Loader } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Plus, Eye, Edit2, Trash2, Search, X, Loader, Package, Layers, TrendingUp, DollarSign } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import adminApi from '../../../../services/adminApi'
+import { API_BASE_URL } from '../../../../config/api'
 import '../styles/contentManagement.css'
 
 // Mock data
@@ -44,6 +45,15 @@ export default function WasteListManagement() {
   const [filterCategory, setFilterCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
+  
+  // Stats dari endpoint baru /api/jenis-sampah/stats
+  const [wasteStats, setWasteStats] = useState({
+    total_jenis: 0,
+    total_kategori: 0,
+    harga_tertinggi: 0,
+    harga_terendah: 0,
+    harga_rata_rata: 0,
+  })
 
   // Dialog states
   const [viewDialog, setViewDialog] = useState({ open: false, data: null })
@@ -59,6 +69,29 @@ export default function WasteListManagement() {
     kode: '',
     is_active: true,
   })
+
+  // Fetch waste stats dari endpoint baru
+  const loadWasteStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${API_BASE_URL}/jenis-sampah/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setWasteStats(result.data)
+        }
+      }
+    } catch (error) {
+      console.warn('Error fetching waste stats:', error)
+      // Fallback ke perhitungan manual dari wasteItems
+    }
+  }, [])
 
   // Separated fetch function (Session 2 pattern)
   const loadWasteItems = async () => {
@@ -84,7 +117,8 @@ export default function WasteListManagement() {
   // Load waste items on component mount
   useEffect(() => {
     loadWasteItems()
-  }, [])
+    loadWasteStats()
+  }, [loadWasteStats])
 
   // Filter waste items
   useEffect(() => {
@@ -269,33 +303,45 @@ export default function WasteListManagement() {
         <p>Kelola jenis sampah dan harga penebukannya</p>
       </div>
 
-      {/* Stats */}
+      {/* Stats - Gunakan data dari API jika tersedia */}
       <div className="stats-grid" style={{ marginBottom: '30px' }}>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
+            <Package size={24} />
+          </div>
           <div className="stat-content">
             <span className="stat-label">Total Jenis Sampah</span>
-            <span className="stat-value">{wasteItems.length}</span>
+            <span className="stat-value">{wasteStats.total_jenis || wasteItems.length}</span>
           </div>
         </div>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+            <Layers size={24} />
+          </div>
           <div className="stat-content">
             <span className="stat-label">Kategori</span>
-            <span className="stat-value">{categories.length}</span>
+            <span className="stat-value">{wasteStats.total_kategori || categories.length}</span>
           </div>
         </div>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+            <TrendingUp size={24} />
+          </div>
           <div className="stat-content">
             <span className="stat-label">Harga Tertinggi</span>
             <span className="stat-value">
-              {formatCurrency(Math.max(...wasteItems.map(item => item.harga_per_kg), 0))}
+              {formatCurrency(wasteStats.harga_tertinggi || Math.max(...wasteItems.map(item => item.harga_per_kg), 0))}
             </span>
           </div>
         </div>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+            <DollarSign size={24} />
+          </div>
           <div className="stat-content">
             <span className="stat-label">Harga Rata-rata</span>
             <span className="stat-value">
-              {formatCurrency(wasteItems.length > 0 ? Math.round(wasteItems.reduce((sum, item) => sum + item.harga_per_kg, 0) / wasteItems.length) : 0)}
+              {formatCurrency(wasteStats.harga_rata_rata || (wasteItems.length > 0 ? Math.round(wasteItems.reduce((sum, item) => sum + item.harga_per_kg, 0) / wasteItems.length) : 0))}
             </span>
           </div>
         </div>

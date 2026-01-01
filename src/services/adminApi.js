@@ -544,15 +544,22 @@ export const adminApi = {
   /**
    * Reject a waste deposit with reason
    * PATCH /api/admin/penyetoran-sampah/{id}/reject
-   * Field: alasan (optional)
+   * Field: alasan_penolakan (REQUIRED - must have rejection reason)
    */
   rejectWasteDeposit: async (depositId, alasanPenolakan) => {
     try {
+      if (!alasanPenolakan || !alasanPenolakan.trim()) {
+        return {
+          success: false,
+          message: 'Alasan penolakan wajib diisi'
+        }
+      }
+      
       const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({
-          alasan: alasanPenolakan || ''
+          alasan_penolakan: alasanPenolakan.trim()
         })
       })
 

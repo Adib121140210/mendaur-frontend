@@ -309,6 +309,25 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
+/* Date Input for Custom Reset */
+.lm-date-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1f2937;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lm-date-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
 .lm-checkbox-wrapper {
   display: flex;
   align-items: center;
