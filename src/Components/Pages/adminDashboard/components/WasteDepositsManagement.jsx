@@ -111,16 +111,7 @@ export default function WasteDepositsManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWeightCorrectionConfirm, setShowWeightCorrectionConfirm] = useState(false);
 
-  // Load deposits on component mount and when filters change
-  useEffect(() => {
-    loadDeposits();
-  }, [loadDeposits]);
-
-  // Load statistics
-  useEffect(() => {
-    loadStatistics();
-  }, []);
-
+  // Define loadDeposits BEFORE using it in useEffect
   const loadDeposits = useCallback(async () => {
     setLoading(true);
     try {
@@ -193,6 +184,16 @@ export default function WasteDepositsManagement() {
       });
     }
   };
+
+  // Load deposits on component mount and when filters change
+  useEffect(() => {
+    loadDeposits();
+  }, [loadDeposits]);
+
+  // Load statistics
+  useEffect(() => {
+    loadStatistics();
+  }, []);
 
   // Filter and search deposits locally
   const filteredDeposits = deposits.filter((deposit) => {
