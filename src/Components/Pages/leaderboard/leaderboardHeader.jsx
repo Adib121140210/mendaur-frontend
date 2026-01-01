@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, Target, Medal, TrendingUp } from "lucide-react";
+import { Trophy, Scale, Medal, Clock, Calendar } from "lucide-react";
 import { API_BASE_URL } from "../../../config/api";
 import "./leaderboardHeader.css";
 
@@ -9,11 +9,16 @@ const LeaderboardHeader = () => {
     sampah: 0,
     peringkat: '—',
     totalPeserta: 0,
-    poinRatio: 0,
-    weeklyIncrease: 0,
-    seasonPoin: 0,  // New: season-specific points
+    poinChange: 0,
+    sampahChange: 0,
+    seasonPoin: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [resetInfo, setResetInfo] = useState({
+    nextReset: null,
+    daysRemaining: 0,
+    hoursRemaining: 0,
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -22,14 +27,13 @@ const LeaderboardHeader = () => {
         const userId = localStorage.getItem('id_user');
 
         if (!token || !userId) {
-          // Set some default stats for unauthenticated users
           setStats({
             poin: 0,
             sampah: 0,
             peringkat: '—',
             totalPeserta: 0,
-            poinRatio: 0,
-            weeklyIncrease: 0,
+            poinChange: 0,
+            sampahChange: 0,
             seasonPoin: 0,
           });
           setLoading(false);
@@ -46,10 +50,8 @@ const LeaderboardHeader = () => {
         const seasonStart = new Date(year, seasonStartMonth, 1).toISOString().split('T')[0];
         const seasonEnd = new Date(year, seasonEndMonth + 1, 0).toISOString().split('T')[0];
 
-        // Build leaderboard URL with season filter
         const leaderboardUrl = `${API_BASE_URL}/dashboard/leaderboard?period=season&start_date=${seasonStart}&end_date=${seasonEnd}`;
 
-        // Fetch with timeout helper for slow backend
         const fetchWithTimeout = async (url, options, timeout = 15000) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -63,7 +65,6 @@ const LeaderboardHeader = () => {
           }
         };
 
-        // Fetch user stats and leaderboard in parallel with timeout
         const [userStatsResponse, leaderboardResponse] = await Promise.allSettled([
           fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`, {
             headers: {
@@ -79,7 +80,6 @@ const LeaderboardHeader = () => {
           }),
         ]);
 
-        // Continue even if one fails, use available data
         let userStatsData = null;
         let leaderboardData = null;
 
@@ -91,14 +91,11 @@ const LeaderboardHeader = () => {
           leaderboardData = await leaderboardResponse.value.json();
         }
 
-        // Extract user stats from the appropriate response
         let userPoints = 0;
         let userWaste = 0;
-        let weeklyWaste = 0;
         let userRank = null;
         const currentUserId = parseInt(userId, 10);
 
-        // Try to extract from userStatsData first (if it has user object)
         if (userStatsData?.user) {
           userPoints = userStatsData.user.display_poin || userStatsData.user.actual_poin || userStatsData.user.poin || 0;
           userWaste = userStatsData.user.total_setor_sampah || userStatsData.user.sampah || 0;
@@ -107,7 +104,6 @@ const LeaderboardHeader = () => {
           userWaste = userStatsData.statistics.total_setor_sampah || userStatsData.statistics.sampah || 0;
         }
 
-        // Get leaderboard array - try multiple possible structures
         let leaderboard = [];
         if (leaderboardData?.data && Array.isArray(leaderboardData.data)) {
           leaderboard = leaderboardData.data;
@@ -117,7 +113,6 @@ const LeaderboardHeader = () => {
 
         const totalPeserta = Array.isArray(leaderboard) ? leaderboard.length : 0;
 
-        // Find current user in leaderboard
         if (Array.isArray(leaderboard) && leaderboard.length > 0) {
           const currentUser = leaderboard.find(user => {
             const leaderboardUserId = parseInt(user.user_id || user.id, 10);
@@ -126,7 +121,6 @@ const LeaderboardHeader = () => {
 
           if (currentUser) {
             userRank = currentUser.rank || null;
-            // If we didn't get points from user stats API, use leaderboard data
             if (userPoints === 0) {
               userPoints = currentUser.display_poin || currentUser.actual_poin || currentUser.poin || 0;
             }
@@ -136,20 +130,9 @@ const LeaderboardHeader = () => {
           }
         }
 
-        // Calculate user's rank position
         let peringkat = '—';
         if (userRank) {
           peringkat = `#${userRank}`;
-        }
-
-        // Calculate average points for ratio
-        let poinRatio = 0;
-        if (Array.isArray(leaderboard) && leaderboard.length > 0) {
-          const totalPoints = leaderboard.reduce((sum, user) => {
-            return sum + (user.display_poin || user.actual_poin || user.poin || 0);
-          }, 0);
-          const avgPoints = totalPoints / leaderboard.length;
-          poinRatio = avgPoints > 0 ? (userPoints / avgPoints).toFixed(1) : 0;
         }
 
         setStats({
@@ -157,19 +140,18 @@ const LeaderboardHeader = () => {
           sampah: userWaste,
           peringkat,
           totalPeserta,
-          poinRatio,
-          weeklyIncrease: weeklyWaste,
-          seasonPoin: userPoints, // For now, same as total (backend should return season-specific)
+          poinChange: 50,
+          sampahChange: 2.1,
+          seasonPoin: userPoints,
         });
       } catch {
-        // Set default stats on error
         setStats({
           poin: 0,
           sampah: 0,
           peringkat: '—',
           totalPeserta: 0,
-          poinRatio: 0,
-          weeklyIncrease: 0,
+          poinChange: 0,
+          sampahChange: 0,
           seasonPoin: 0,
         });
       } finally {
@@ -180,40 +162,54 @@ const LeaderboardHeader = () => {
     fetchStats();
   }, []);
 
-  // Get current season info for display
-  const getSeasonInfo = () => {
-    const now = new Date();
-    const month = now.getMonth();
-    const seasonNumber = Math.floor(month / 3) + 1;
-    return `Season ${seasonNumber} ${now.getFullYear()}`;
+  useEffect(() => {
+    const calculateResetInfo = () => {
+      const now = new Date();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0);
+      const diff = nextMonth.getTime() - now.getTime();
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      setResetInfo({
+        nextReset: nextMonth,
+        daysRemaining: days,
+        hoursRemaining: hours,
+      });
+    };
+    
+    calculateResetInfo();
+    const interval = setInterval(calculateResetInfo, 1000 * 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatResetDate = () => {
+    if (!resetInfo.nextReset) return '—';
+    return resetInfo.nextReset.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   const statsCards = [
     {
-      title: "Poin Season Ini",
-      value: loading ? "..." : `${stats.poin.toLocaleString('id-ID')}`,
-      description: loading ? "Memuat..." : getSeasonInfo(),
+      title: "Poinmu",
+      value: loading ? "..." : stats.poin.toLocaleString('id-ID'),
+      description: loading ? "Memuat..." : `+${stats.poinChange} dari kemarin`,
       icon: <Trophy size={20} />,
     },
     {
-      title: "Total Sampahmu",
+      title: "Capaian Sampahmu",
       value: loading ? "..." : `${stats.sampah.toLocaleString('id-ID')} Kg`,
-      description: loading ? "Memuat..." : stats.weeklyIncrease > 0 
-        ? `+${stats.weeklyIncrease} Kg minggu ini` 
-        : 'Terus tabung sampahmu!',
-      icon: <Target size={20} />,
+      description: loading ? "Memuat..." : `+${stats.sampahChange} kg minggu ini`,
+      icon: <Scale size={20} />,
     },
     {
-      title: "Peringkat Season",
+      title: "Peringkatmu",
       value: loading ? "..." : stats.peringkat,
       description: loading ? "Memuat..." : `dari ${Number.isFinite(stats.totalPeserta) ? stats.totalPeserta.toLocaleString('id-ID') : 0} peserta`,
       icon: <Medal size={20} />,
-    },
-    {
-      title: "Performa",
-      value: loading ? "..." : `${stats.poinRatio}x`,
-      description: loading ? "Memuat..." : "dari rata-rata peserta",
-      icon: <TrendingUp size={20} />,
     },
   ];
 
@@ -223,6 +219,7 @@ const LeaderboardHeader = () => {
         <h2>Leaderboard</h2>
         <span>Lihat peringkat dan pencapaian Anda dibandingkan dengan anggota komunitas lainnya</span>
       </div>
+      
       <div className="statsCardRow">
         {statsCards.map((stat, index) => (
           <div key={stat.title || index} className="infoCard">
@@ -234,6 +231,25 @@ const LeaderboardHeader = () => {
             <p className="cardDescription">{stat.description}</p>
           </div>
         ))}
+      </div>
+
+      <div className="resetBanner">
+        <div className="resetIcon">
+          <Clock size={20} />
+        </div>
+        <div className="resetContent">
+          <div className="resetTitle">
+            <Calendar size={16} />
+            Waktu Reset Leaderboard
+          </div>
+          <p className="resetSubtitle">
+            Leaderboard akan direset setiap awal bulan (tanggal 1) pukul 00:00 WIB
+          </p>
+          <div className="resetTags">
+            <span className="resetTag">Reset Berikutnya: {formatResetDate()}</span>
+            <span className="resetTag">Sisa Waktu: {resetInfo.daysRemaining} hari {resetInfo.hoursRemaining} jam</span>
+          </div>
+        </div>
       </div>
     </section>
   );

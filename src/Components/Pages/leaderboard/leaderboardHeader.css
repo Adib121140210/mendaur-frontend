@@ -1,6 +1,6 @@
 /* ========================================
-   LEADERBOARD HEADER - MINIMALIST DESIGN
-   Inspired by TabungSampah styling
+   LEADERBOARD HEADER - CLEAN CARD DESIGN
+   Based on Reference Design
    ======================================== */
 
 /* === WRAPPER UTAMA === */
@@ -17,22 +17,24 @@
 }
 
 .user-info-header h2 {
-  font-size: var(--font-title);
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
-  color: var(--color-primary-dark);
+  margin-bottom: 0.375rem;
+  color: #1f2937;
 }
 
 .user-info-header span {
   font-size: 0.875rem;
   color: #6b7280;
+  line-height: 1.4;
 }
 
 /* === ROW KARTU === */
 .statsCardRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 /* === KARTU INDIVIDU === */
@@ -40,21 +42,21 @@
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 .infoCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* === BAGIAN ATAS KARTU === */
 .cardTop {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .cardTitle {
@@ -66,8 +68,8 @@
 
 /* === IKON KARTU === */
 .cardIcon {
-  background-color: rgba(2, 61, 45, 0.1);
-  padding: 0.4rem;
+  background-color: rgba(2, 61, 45, 0.08);
+  padding: 0.5rem;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -82,17 +84,94 @@
 
 /* === NILAI UTAMA === */
 .cardValue {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #023d2d;
-  margin: 0.5rem 0 0 0;
+  color: #059669;
+  margin: 0.25rem 0 0 0;
+  line-height: 1.2;
 }
 
-/* === DESKRIPSI TAMBAHAN === */
+/* === DESKRIPSI TAMBAHAN (trend indicator) === */
 .cardDescription {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.75rem;
-  color: #9ca3af;
-  margin: 0.25rem 0 0 0;
+  color: #10b981;
+  margin: 0.375rem 0 0 0;
+}
+
+.cardDescription::before {
+  content: '↗';
+  font-size: 0.875rem;
+}
+
+/* === RESET BANNER === */
+.resetBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+}
+
+.resetIcon {
+  width: 40px;
+  height: 40px;
+  background-color: #10b981;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.resetIcon svg {
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+}
+
+.resetContent {
+  flex: 1;
+}
+
+.resetTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #065f46;
+  margin-bottom: 0.25rem;
+}
+
+.resetSubtitle {
+  font-size: 0.8rem;
+  color: #047857;
+  margin-bottom: 0.5rem;
+}
+
+.resetTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.resetTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #065f46;
 }
 
 /* ========================================
@@ -102,53 +181,61 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .statsCardRow {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
   }
 }
 
 /* Mobile */
 @media (max-width: 768px) {
   .user-info-header {
-    text-align: center;
     margin-bottom: 1rem;
   }
 
   .user-info-header h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .user-info-header span {
     font-size: 0.8rem;
+    display: block;
   }
 
   .statsCardRow {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 0.75rem;
   }
 
   .infoCard {
-    padding: 0.875rem;
-  }
-
-  .cardTitle {
-    font-size: 0.75rem;
+    padding: 1rem;
   }
 
   .cardValue {
-    font-size: 1.25rem;
-    margin-top: 0.375rem;
+    font-size: 1.5rem;
   }
 
-  .cardDescription {
-    font-size: 0.7rem;
+  .resetBanner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .resetTags {
+    width: 100%;
+  }
+
+  .resetTag {
+    flex: 1;
+    justify-content: center;
   }
 }
 
 /* Small Mobile */
 @media (max-width: 480px) {
   .user-info-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 
   .user-info-header span {
@@ -156,21 +243,17 @@
     line-height: 1.3;
   }
 
-  .statsCardRow {
-    gap: 0.625rem;
-  }
-
   .infoCard {
-    padding: 0.75rem;
+    padding: 0.875rem;
     border-radius: 10px;
   }
 
   .cardTitle {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .cardIcon {
-    padding: 0.3rem;
+    padding: 0.375rem;
   }
 
   .cardIcon svg {
@@ -179,39 +262,49 @@
   }
 
   .cardValue {
-    font-size: 1.1rem;
-    margin-top: 0.25rem;
+    font-size: 1.25rem;
   }
 
   .cardDescription {
-    font-size: 0.65rem;
-    margin-top: 0.15rem;
+    font-size: 0.7rem;
+  }
+
+  .resetBanner {
+    padding: 0.875rem;
+    border-radius: 10px;
+  }
+
+  .resetIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .resetTitle {
+    font-size: 0.85rem;
+  }
+
+  .resetSubtitle {
+    font-size: 0.75rem;
+  }
+
+  .resetTag {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
   }
 }
 
 /* Extra Small */
 @media (max-width: 360px) {
   .user-info-header h2 {
-    font-size: 1.1rem;
-  }
-
-  .statsCardRow {
-    gap: 0.5rem;
-  }
-
-  .infoCard {
-    padding: 0.625rem;
-  }
-
-  .cardTitle {
-    font-size: 0.65rem;
-  }
-
-  .cardValue {
     font-size: 1rem;
   }
 
-  .cardDescription {
-    font-size: 0.6rem;
+  .cardValue {
+    font-size: 1.1rem;
+  }
+
+  .resetIcon {
+    width: 32px;
+    height: 32px;
   }
 }

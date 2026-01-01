@@ -1,9 +1,28 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Search, TrendingUp, Clock, Calendar, Loader2, Trophy, Timer, RefreshCw } from "lucide-react";
+import { Search, TrendingUp, Clock, Calendar, Loader2, Trophy, RefreshCw } from "lucide-react";
 import { API_BASE_URL } from "../../../config/api";
 import cache from "../../../utils/cache";
 import "./leaderboardTable.css";
 import Pagination from "../../ui/pagination";
+
+// Tier calculation based on points
+const getTier = (points, rank) => {
+  if (rank === 1) return { name: 'Champion', class: 'champion' };
+  if (rank === 2) return { name: 'Expert', class: 'expert' };
+  if (rank === 3) return { name: 'Master', class: 'master' };
+  if (points >= 50000) return { name: 'Pro', class: 'pro' };
+  if (points >= 30000) return { name: 'Advanced', class: 'advanced' };
+  if (points >= 10000) return { name: 'Intermediate', class: 'intermediate' };
+  return { name: 'Beginner', class: 'beginner' };
+};
+
+// Get initials from name
+const getInitials = (name) => {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
 
 export default function LeaderboardTable() {
   // State Management
@@ -179,15 +198,6 @@ export default function LeaderboardTable() {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // Find current user's rank in full leaderboard
-  const currentUserRank = useMemo(() => {
-    if (!currentUserId) return null;
-    const index = filteredUsers.findIndex(user =>
-      String(user.user_id) === String(currentUserId)
-    );
-    return index >= 0 ? index + 1 : null;
-  }, [filteredUsers, currentUserId]);
-
   // Time period filter buttons
   const timePeriods = [
     { value: 'season', label: 'Season', icon: <Trophy size={16} /> },
@@ -206,41 +216,12 @@ export default function LeaderboardTable() {
     <section className="leaderboardContainer">
       <div className="leaderboardHeader">
         <div className="titleRow">
-          <h1 className="leaderboardTitle">Peringkat Pengguna</h1>
+          <Trophy size={20} className="titleIcon" />
+          <h1 className="leaderboardTitle">Leaderboard</h1>
           <button className="refreshButton" onClick={handleRefresh} disabled={loading}>
-            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
           </button>
         </div>
-        <p className="leaderboardSubtitle">
-          Kompetisi poin direset setiap 3 bulan. Raih peringkat tertinggi dan dapatkan hadiah!
-        </p>
-
-        {/* Season Banner */}
-        {timePeriod === 'season' && seasonInfo && (
-          <div className={`seasonBanner ${seasonInfo.isEnding ? 'ending' : ''}`}>
-            <div className="seasonInfo">
-              <Trophy className="seasonIcon" size={24} />
-              <div className="seasonDetails">
-                <span className="seasonName">{seasonInfo.name}</span>
-                <span className="seasonDates">{seasonInfo.startFormatted} - {seasonInfo.endFormatted}</span>
-              </div>
-            </div>
-            <div className="seasonCountdown">
-              <Timer size={16} />
-              <span>
-                {seasonInfo.daysRemaining > 0 
-                  ? `${seasonInfo.daysRemaining} hari ${seasonInfo.hoursRemaining} jam tersisa`
-                  : 'Season berakhir hari ini!'
-                }
-              </span>
-            </div>
-            {seasonInfo.isEnding && (
-              <div className="seasonWarning">
-                ⚠️ Season akan segera berakhir! Raih poinmu sekarang!
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Time Period Filters */}
         <div className="timePeriodFilters">
@@ -258,7 +239,7 @@ export default function LeaderboardTable() {
 
         {/* Search Bar */}
         <div className="searchBarContainer">
-          <Search className="searchIcon" size={20} />
+          <Search className="searchIcon" size={18} />
           <input
             type="text"
             className="searchInput"
@@ -276,19 +257,12 @@ export default function LeaderboardTable() {
             </button>
           )}
         </div>
-
-        {/* Current User Position Badge */}
-        {currentUserRank && (
-          <div className="currentUserBadge">
-            🏆 Peringkat Anda: <strong>#{currentUserRank}</strong> dari {filteredUsers.length} peserta
-          </div>
-        )}
       </div>
 
       {/* Loading State */}
       {loading && (
         <div className="loadingContainer">
-          <Loader2 className="spinner" size={40} />
+          <Loader2 className="spinner" size={36} />
           <p>Memuat leaderboard...</p>
         </div>
       )}
@@ -297,10 +271,7 @@ export default function LeaderboardTable() {
       {error && (
         <div className="errorContainer">
           <p className="errorMessage">❌ {error}</p>
-          <button
-            className="retryButton"
-            onClick={handleRefresh}
-          >
+          <button className="retryButton" onClick={handleRefresh}>
             Coba Lagi
           </button>
         </div>
@@ -312,28 +283,26 @@ export default function LeaderboardTable() {
           <p className="emptyMessage">
             {searchQuery
               ? `Tidak ada pengguna dengan nama "${searchQuery}"`
-              : timePeriod === 'season' 
-                ? 'Belum ada aktivitas di season ini. Jadilah yang pertama!'
-                : 'Belum ada data leaderboard'}
+              : 'Belum ada data leaderboard'}
           </p>
         </div>
       )}
 
-      {/* Leaderboard Content - Data loaded once, rendered by page */}
+      {/* Leaderboard Cards */}
       {!loading && !error && filteredUsers.length > 0 && (
         <>
-          {/* Card View - Desktop & Mobile */}
           <div className="leaderboardCardList">
             {currentUsers.map((user, index) => {
               const globalIndex = startIndex + index;
               const isCurrentUser = String(user.user_id) === String(currentUserId);
               const userName = user.nama || user.nama_user || user.name || 'Unknown';
               const userWaste = user.total_sampah || user.sampah_terkumpul || user.waste_collected || 0;
-              // Prioritize display_poin for leaderboard display
               const userPoints = user.display_poin ?? user.poin_season ?? user.actual_poin ?? user.poin ?? user.points ?? 0;
 
               const rankEmoji = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : null;
               const rankClass = globalIndex === 0 ? 'gold' : globalIndex === 1 ? 'silver' : globalIndex === 2 ? 'bronze' : '';
+              const tier = getTier(userPoints, globalIndex + 1);
+              const initials = getInitials(userName);
 
               return (
                 <div 
@@ -343,14 +312,24 @@ export default function LeaderboardTable() {
                   <div className="cardRank">
                     {rankEmoji || <span className="rankNumber">#{globalIndex + 1}</span>}
                   </div>
+                  <div className="cardAvatar">{initials}</div>
                   <div className="cardContent">
-                    <div className="cardName">
-                      {userName}
-                      {isCurrentUser && <span className="youBadge">Anda</span>}
+                    <div className="cardInfo">
+                      <div className="cardName">
+                        {userName}
+                        {isCurrentUser && <span className="youBadge">Anda</span>}
+                      </div>
+                      <span className={`tierBadge ${tier.class}`}>{tier.name}</span>
                     </div>
                     <div className="cardStats">
-                      <span className="cardWaste">{userWaste.toLocaleString('id-ID')} Kg<span className="statLabel">Total Tabung</span></span>
-                      <span className="cardPoints">{userPoints.toLocaleString('id-ID')} Poin<span className="statLabel">Poin Season</span></span>
+                      <div className="cardWaste">
+                        <span className="statLabel">Sampah</span>
+                        <span className="statValue">{userWaste.toLocaleString('id-ID')} Kg</span>
+                      </div>
+                      <div className="cardPoints">
+                        <span className="statLabel">Poin</span>
+                        <span className="statValue">{userPoints.toLocaleString('id-ID')} poin</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -358,7 +337,7 @@ export default function LeaderboardTable() {
             })}
           </div>
 
-          {/* Pagination - Total users info + navigation */}
+          {/* Pagination */}
           <div className="paginationInfo">
             Menampilkan {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredUsers.length)} dari {filteredUsers.length} pengguna
           </div>
