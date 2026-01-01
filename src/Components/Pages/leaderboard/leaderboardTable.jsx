@@ -216,9 +216,9 @@ export default function LeaderboardTable() {
 
     // Sort by points (backend should do this, but ensure it's sorted)
     filtered.sort((a, b) => {
-      // Prioritas: display_poin > poin_tercatat > poin_season > actual_poin
-      const pointsA = a.display_poin ?? a.poin_tercatat ?? a.poin_season ?? a.actual_poin ?? a.total_poin ?? a.poin ?? a.points ?? 0;
-      const pointsB = b.display_poin ?? b.poin_tercatat ?? b.poin_season ?? b.actual_poin ?? b.total_poin ?? b.poin ?? b.points ?? 0;
+      // Prioritas: total_poin (dari API) > display_poin > poin_tercatat > actual_poin
+      const pointsA = a.total_poin ?? a.display_poin ?? a.poin_tercatat ?? a.poin_season ?? a.actual_poin ?? a.poin ?? a.points ?? 0;
+      const pointsB = b.total_poin ?? b.display_poin ?? b.poin_tercatat ?? b.poin_season ?? b.actual_poin ?? b.poin ?? b.points ?? 0;
       return pointsB - pointsA;
     });
 
@@ -333,10 +333,11 @@ export default function LeaderboardTable() {
               const globalIndex = startIndex + index;
               const isCurrentUser = String(user.user_id) === String(currentUserId);
               const userName = user.nama || user.nama_user || user.name || 'Unknown';
-              /* Fallback chain untuk sampah - gunakan ?? untuk handle 0 */
-              const userWaste = user.total_sampah ?? user.total_setor_sampah ?? user.sampah_terkumpul ?? user.waste_collected ?? 0;
-              /* Fallback chain untuk poin - prioritas: display_poin > poin_tercatat > actual_poin */
-              const userPoints = user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0;
+              /* Fallback chain untuk sampah - total_setor_sampah adalah field dari API (string) */
+              const userWaste = parseFloat(user.total_setor_sampah) || parseFloat(user.total_sampah) || 
+                                parseFloat(user.sampah_terkumpul) || parseFloat(user.waste_collected) || 0;
+              /* Fallback chain untuk poin - prioritas: total_poin (dari API) > display_poin > actual_poin */
+              const userPoints = user.total_poin ?? user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? user.actual_poin ?? user.poin ?? user.points ?? 0;
 
               const rankEmoji = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : null;
               const rankClass = globalIndex === 0 ? 'gold' : globalIndex === 1 ? 'silver' : globalIndex === 2 ? 'bronze' : '';

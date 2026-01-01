@@ -332,24 +332,36 @@ const LeaderboardManagement = () => {
 
   /* Calculate stats - gunakan overviewStats jika tersedia, fallback ke perhitungan manual */
   const totalPeserta = overviewStats?.total_peserta ?? leaderboardData.length;
+  
+  // Helper function untuk get poin dari user object
+  // Prioritas: total_poin (dari API leaderboard) > display_poin > poin_tercatat > dll
+  const getUserPoin = (user) => {
+    return user.total_poin ?? user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? 
+           user.actual_poin ?? user.poin ?? user.points ?? 0;
+  };
+  
   const totalPoints = overviewStats?.total_poin ?? leaderboardData.reduce((sum, user) => 
-    sum + (user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0), 0
+    sum + getUserPoin(user), 0
   );
   
   // Gunakan total_sampah_formatted dari API untuk menghindari angka panjang
   // Jika tidak ada, hitung manual dengan format yang benar
   const calculateTotalSampah = () => {
-    // Prioritas 1: gunakan formatted string dari API
+    // Prioritas 1: gunakan formatted string dari API (jika valid)
     if (overviewStats?.total_sampah_formatted && 
         typeof overviewStats.total_sampah_formatted === 'string' &&
-        !overviewStats.total_sampah_formatted.includes('.00.00')) {
+        !overviewStats.total_sampah_formatted.includes('.00.00') &&
+        !overviewStats.total_sampah_formatted.includes('000.000')) {
       return overviewStats.total_sampah_formatted;
     }
     
     // Prioritas 2: hitung manual dari data leaderboard
-    const total = leaderboardData.reduce((sum, user) =>
-      sum + (parseFloat(user.total_sampah) || parseFloat(user.total_setor_sampah) || parseFloat(user.sampah_terkumpul) || 0), 0
-    );
+    // Field dari API adalah total_setor_sampah (string)
+    const total = leaderboardData.reduce((sum, user) => {
+      const sampah = parseFloat(user.total_setor_sampah) || parseFloat(user.total_sampah) || 
+                     parseFloat(user.sampah_terkumpul) || 0;
+      return sum + sampah;
+    }, 0);
     return `${total.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Kg`;
   };
   const totalSampahFormatted = calculateTotalSampah();
@@ -596,10 +608,9 @@ const LeaderboardManagement = () => {
                 </thead>
                 <tbody>
                   {leaderboardData.slice(0, 10).map((user, index) => {
-                    // Expanded fallback chain - cek semua kemungkinan field poin
-                    const points = user.display_poin ?? user.poin_tercatat ?? user.poin_season ?? 
-                                   user.actual_poin ?? user.total_poin ?? user.poin ?? user.points ?? 0;
-                    const sampah = parseFloat(user.total_sampah) || parseFloat(user.total_setor_sampah) || 
+                    // Prioritas: total_poin (dari API) > display_poin > lainnya
+                    const points = getUserPoin(user);
+                    const sampah = parseFloat(user.total_setor_sampah) || parseFloat(user.total_sampah) || 
                                    parseFloat(user.sampah_terkumpul) || 0;
                     return (
                       <tr key={user.user_id || index} className={index < 3 ? `rank-${index + 1}` : ''}>

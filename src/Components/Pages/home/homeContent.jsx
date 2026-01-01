@@ -246,8 +246,8 @@ const HomeContent = () => {
       return <p className="emptyState">Belum ada data leaderboard</p>;
     }
     return leaderboard.slice(0, 6).map((leader, index) => {
-      /* Fallback chain poin - sesuaikan dengan leaderboardTable.jsx */
-      const points = leader.display_poin ?? leader.poin_tercatat ?? leader.poin_season ?? leader.actual_poin ?? leader.total_poin ?? leader.poin ?? leader.points ?? 0;
+      /* Fallback chain poin - prioritas: total_poin (dari API) > display_poin > actual_poin */
+      const points = leader.total_poin ?? leader.display_poin ?? leader.poin_tercatat ?? leader.poin_season ?? leader.actual_poin ?? leader.poin ?? leader.points ?? 0;
       return (
         <div
           key={leader.user_id}
