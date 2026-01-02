@@ -303,14 +303,21 @@ export default function ProductRedemptionManagement() {
     }
     setIsSubmitting(true);
     try {
-      const result = await adminApi.approveRedemption(selectedRedemption.id, {
-        catatan_admin: approvalData.notes,
-      });
+      // Get user_id and product name for notification
+      const userId = selectedRedemption?.user_id;
+      const productName = selectedRedemption?.nama_produk || selectedRedemption?.product_name;
+      
+      const result = await adminApi.approveRedemption(
+        selectedRedemption.id, 
+        { catatan_admin: approvalData.notes },
+        userId, // Pass userId for auto-notification
+        productName // Pass productName for notification message
+      );
       if (result.success) {
         // Refresh data from server
         await loadProductRedemptions();
         setShowApprovalModal(false);
-        alert('✅ Penukaran disetujui! Nasabah dapat mengambil produk.');
+        alert('✅ Penukaran disetujui! Notifikasi terkirim ke nasabah.');
       } else {
         alert(`❌ ${result.message || 'Gagal menyetujui penukaran'}`);
       }
@@ -335,15 +342,21 @@ export default function ProductRedemptionManagement() {
 
     setIsSubmitting(true);
     try {
-      const result = await adminApi.rejectRedemption(selectedRedemption.id, {
-        reason: rejectionData.reason,
-        notes: rejectionData.notes,
-      });
+      // Get user_id and product name for notification
+      const userId = selectedRedemption?.user_id;
+      const productName = selectedRedemption?.nama_produk || selectedRedemption?.product_name;
+      
+      const result = await adminApi.rejectRedemption(
+        selectedRedemption.id, 
+        { reason: rejectionData.reason, notes: rejectionData.notes },
+        userId, // Pass userId for auto-notification
+        productName // Pass productName for notification message
+      );
       if (result.success) {
         // Refresh data from server
         await loadProductRedemptions();
         setShowRejectionModal(false);
-        alert('❌ Penukaran ditolak. Poin telah dikembalikan ke nasabah.');
+        alert('❌ Penukaran ditolak. Poin dikembalikan & notifikasi terkirim ke nasabah.');
       } else {
         alert(`❌ ${result.message || 'Gagal menolak penukaran'}`);
       }

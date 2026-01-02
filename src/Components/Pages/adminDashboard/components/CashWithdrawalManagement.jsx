@@ -235,14 +235,21 @@ export default function CashWithdrawalManagement() {
     }
     setIsSubmitting(true);
     try {
-      const result = await adminApi.approveCashWithdrawal(selectedWithdrawal.id, {
-        notes: approvalData.notes,
-      });
+      // Get user_id and amount for notification
+      const userId = selectedWithdrawal?.user_id;
+      const amount = selectedWithdrawal?.jumlah_rupiah;
+      
+      const result = await adminApi.approveCashWithdrawal(
+        selectedWithdrawal.id, 
+        approvalData.notes,
+        userId, // Pass userId for auto-notification
+        amount // Pass amount for notification message
+      );
       if (result.success) {
         // Refresh data from server
         await loadCashWithdrawals();
         setShowApprovalModal(false);
-        alert('✅ Penarikan disetujui! Persiapkan transfer dana.');
+        alert('✅ Penarikan disetujui! Notifikasi terkirim ke nasabah.');
       } else {
         alert(`❌ ${result.message || 'Gagal menyetujui penarikan'}`);
       }
@@ -266,15 +273,19 @@ export default function CashWithdrawalManagement() {
     }
     setIsSubmitting(true);
     try {
-      const result = await adminApi.rejectCashWithdrawal(selectedWithdrawal.id, {
-        reason: rejectionData.reason,
-        notes: rejectionData.notes,
-      });
+      // Get user_id for notification
+      const userId = selectedWithdrawal?.user_id;
+      
+      const result = await adminApi.rejectCashWithdrawal(
+        selectedWithdrawal.id, 
+        { reason: rejectionData.reason, notes: rejectionData.notes },
+        userId // Pass userId for auto-notification
+      );
       if (result.success) {
         // Refresh data from server
         await loadCashWithdrawals();
         setShowRejectionModal(false);
-        alert('❌ Penarikan ditolak. Poin telah dikembalikan ke nasabah.');
+        alert('❌ Penarikan ditolak. Poin dikembalikan & notifikasi terkirim ke nasabah.');
       } else {
         alert(`❌ ${result.message || 'Gagal menolak penarikan'}`);
       }

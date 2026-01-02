@@ -364,11 +364,15 @@ export default function WasteDepositsManagement() {
   const executeApproval = async () => {
     setIsSubmitting(true);
     try {
+      // Get user_id from selectedDeposit for notification
+      const userId = selectedDeposit?.user_id;
+      
       const result = await adminApi.approvePenyetoranSampah(
         selectedDepositId, 
         parseInt(approvalData.points),
         parseFloat(approvalData.weight),
-        null // No notes field anymore
+        null, // No notes field anymore
+        userId // Pass userId for auto-notification
       );
 
       if (result.success) {
@@ -387,7 +391,7 @@ export default function WasteDepositsManagement() {
         setDeposits(updatedDeposits);
         setShowApprovalModal(false);
         setShowWeightCorrectionConfirm(false);
-        alert('Penyetoran disetujui! Poin telah diberikan ke nasabah.');
+        alert('Penyetoran disetujui! Poin telah diberikan dan notifikasi terkirim ke nasabah.');
         // Refresh both deposits and statistics for consistency
         await loadDeposits();
         await loadStatistics();
@@ -415,7 +419,14 @@ export default function WasteDepositsManagement() {
 
     setIsSubmitting(true);
     try {
-      const result = await adminApi.rejectPenyetoranSampah(selectedDepositId, rejectionData.reason, rejectionData.notes);
+      // Get user_id from selectedDeposit for notification
+      const userId = selectedDeposit?.user_id;
+      
+      const result = await adminApi.rejectPenyetoranSampah(
+        selectedDepositId, 
+        rejectionData.reason, 
+        userId // Pass userId for auto-notification
+      );
 
       if (result.success) {
         // Update local state

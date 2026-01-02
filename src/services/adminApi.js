@@ -63,6 +63,44 @@ const handleError = (error, defaultMessage = 'An error occurred') => {
 }
 
 /**
+ * Helper: Send notification to user (internal use)
+ * Called automatically after approve/reject transactions
+ */
+const sendTransactionNotification = async (userId, judul, pesan, tipe = 'info', relatedId = null, relatedType = null) => {
+  try {
+    if (!userId) {
+      console.warn('[Notification] No user_id provided, skipping notification')
+      return { success: false, message: 'No user_id' }
+    }
+
+    const response = await fetch(`${API_BASE_URL}/admin/notifications`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify({
+        user_id: parseInt(userId),
+        judul,
+        pesan,
+        tipe,
+        related_id: relatedId,
+        related_type: relatedType
+      })
+    })
+
+    if (!response.ok) {
+      console.warn('[Notification] Failed to send:', response.status)
+      return { success: false, message: `HTTP ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[Notification] Sent successfully to user:', userId)
+    return { success: true, data }
+  } catch (error) {
+    console.warn('[Notification] Error sending:', error.message)
+    return { success: false, message: error.message, data: null }
+  }
+}
+
+/**
  * Dashboard Overview - GET /api/admin/dashboard/overview
  */
 export const adminApi = {
@@ -501,8 +539,9 @@ export const adminApi = {
    * Approve a waste deposit and assign poin
    * PATCH /api/admin/penyetoran-sampah/{id}/approve
    * Optional: poin_didapat (will be calculated automatically if not provided)
+   * Auto-sends notification to user after approval
    */
-  approveWasteDeposit: async (depositId, poinDiberikan, beratKg = null, catatanAdmin = null) => {
+  approveWasteDeposit: async (depositId, poinDiberikan, beratKg = null, catatanAdmin = null, userId = null) => {
     try {
       const payload = {
         poin_diberikan: parseInt(poinDiberikan)
@@ -531,6 +570,19 @@ export const adminApi = {
 
       const data = await response.json()
       
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        const beratInfo = beratKg ? `${beratKg} kg` : ''
+        await sendTransactionNotification(
+          userId,
+          'Penyetoran Sampah Disetujui ✅',
+          `Penyetoran sampah Anda${beratInfo ? ` seberat ${beratInfo}` : ''} telah disetujui. Anda mendapatkan ${poinDiberikan} poin!`,
+          'success',
+          depositId,
+          'penyetoran_sampah'
+        )
+      }
+      
       return {
         success: true,
         message: 'Deposit approved successfully',
@@ -545,8 +597,9 @@ export const adminApi = {
    * Reject a waste deposit with reason
    * PATCH /api/admin/penyetoran-sampah/{id}/reject
    * Field: alasan_penolakan (REQUIRED - must have rejection reason)
+   * Auto-sends notification to user after rejection
    */
-  rejectWasteDeposit: async (depositId, alasanPenolakan) => {
+  rejectWasteDeposit: async (depositId, alasanPenolakan, userId = null) => {
     try {
       if (!alasanPenolakan || !alasanPenolakan.trim()) {
         return {
@@ -569,6 +622,18 @@ export const adminApi = {
       }
 
       const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        await sendTransactionNotification(
+          userId,
+          'Penyetoran Sampah Ditolak ❌',
+          `Maaf, penyetoran sampah Anda ditolak. Alasan: ${alasanPenolakan.trim()}`,
+          'warning',
+          depositId,
+          'penyetoran_sampah'
+        )
+      }
       
       return {
         success: true,
@@ -1183,8 +1248,9 @@ export const adminApi = {
   /**
    * Approve product redemption
    * PATCH /api/admin/penukar-produk/{id}/approve
+   * Auto-sends notification to user after approval
    */
-  approveRedemption: async (redemptionId, approvalData) => {
+  approveRedemption: async (redemptionId, approvalData, userId = null, productName = null) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/approve`, {
         method: 'PATCH',
@@ -1193,6 +1259,18 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        await sendTransactionNotification(
+          userId,
+          'Penukaran Produk Disetujui ✅',
+          `Penukaran produk${productName ? ` "${productName}"` : ''} Anda telah disetujui. Silakan ambil produk Anda di lokasi yang ditentukan.`,
+          'success',
+          redemptionId,
+          'penukaran_produk'
+        )
+      }
       
       return { success: true, data: data.data || data }
     } catch (error) {
@@ -1204,8 +1282,9 @@ export const adminApi = {
    * Reject product redemption
    * PATCH /api/admin/penukar-produk/{id}/reject
    * Field: alasan (optional)
+   * Auto-sends notification to user after rejection
    */
-  rejectRedemption: async (redemptionId, rejectionData) => {
+  rejectRedemption: async (redemptionId, rejectionData, userId = null, productName = null) => {
     try {
       // Support both object format and string for backward compatibility
       const alasan = typeof rejectionData === 'object'
@@ -1222,6 +1301,18 @@ export const adminApi = {
         throw new Error(errorData.message || `HTTP ${response.status}`)
       }
       const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        await sendTransactionNotification(
+          userId,
+          'Penukaran Produk Ditolak ❌',
+          `Maaf, penukaran produk${productName ? ` "${productName}"` : ''} Anda ditolak.${alasan ? ` Alasan: ${alasan}` : ''} Poin Anda akan dikembalikan.`,
+          'warning',
+          redemptionId,
+          'penukaran_produk'
+        )
+      }
       
       return { success: true, data: data.data || data }
     } catch (error) {
@@ -1818,8 +1909,9 @@ export const adminApi = {
   /**
    * Approve cash withdrawal
    * PATCH /api/admin/penarikan-tunai/{id}/approve
+   * Auto-sends notification to user after approval
    */
-  approveCashWithdrawal: async (id, notes = '') => {
+  approveCashWithdrawal: async (id, notes = '', userId = null, amount = null) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/approve`, {
         method: 'PATCH',
@@ -1828,6 +1920,20 @@ export const adminApi = {
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        const amountInfo = amount ? `Rp ${parseInt(amount).toLocaleString('id-ID')}` : ''
+        await sendTransactionNotification(
+          userId,
+          'Penarikan Tunai Disetujui ✅',
+          `Penarikan tunai${amountInfo ? ` sebesar ${amountInfo}` : ''} Anda telah disetujui. Dana akan segera ditransfer ke rekening Anda.`,
+          'success',
+          id,
+          'penarikan_tunai'
+        )
+      }
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to approve cash withdrawal')
@@ -1838,8 +1944,9 @@ export const adminApi = {
    * Reject cash withdrawal
    * PATCH /api/admin/penarikan-tunai/{id}/reject
    * Field: catatan_admin (required - alasan penolakan)
+   * Auto-sends notification to user after rejection
    */
-  rejectCashWithdrawal: async (id, rejectionData) => {
+  rejectCashWithdrawal: async (id, rejectionData, userId = null) => {
     try {
       // Support both object format and string for backward compatibility
       const catatan_admin = typeof rejectionData === 'object'
@@ -1856,6 +1963,19 @@ export const adminApi = {
         throw new Error(errorData.message || `HTTP ${response.status}`)
       }
       const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        await sendTransactionNotification(
+          userId,
+          'Penarikan Tunai Ditolak ❌',
+          `Maaf, penarikan tunai Anda ditolak.${catatan_admin ? ` Alasan: ${catatan_admin}` : ''} Poin Anda akan dikembalikan.`,
+          'warning',
+          id,
+          'penarikan_tunai'
+        )
+      }
+      
       return { success: true, data: data.data || data }
     } catch (error) {
       return handleError(error, 'Failed to reject cash withdrawal')
