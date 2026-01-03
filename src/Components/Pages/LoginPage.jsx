@@ -54,13 +54,13 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>🌱 Mendaur</h1>
+          <h1>Mendaur</h1>
           <p>Admin Login</p>
         </div>
 
         {error && (
           <div className="login-error">
-            <span>⚠️</span>
+            <span></span>
             <p>{error}</p>
           </div>
         )}
@@ -98,7 +98,7 @@ const LoginPage = () => {
                 disabled={loading}
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
+                {showPassword ? '' : ''}
               </button>
             </div>
           </div>
