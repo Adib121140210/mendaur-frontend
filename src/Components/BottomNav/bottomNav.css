@@ -1,24 +1,15 @@
-/* ============================================================================
-   BOTTOM NAVIGATION - RESPONSIVE MOBILE & TABLET
-   ============================================================================ */
+/* Bottom Nav - Mobile & Tablet */
 
 .bottom-nav-container {
-  display: none; /* Hidden by default */
+  display: none;
 }
 
-/* ============================================================================
-   FLOATING PROFIL BUTTON
-   ============================================================================ */
-
+/* Floating Profile Button */
 .floating-profil-btn {
-  display: none; /* Hidden by default on desktop */
+  display: none;
 }
 
-/* ============================================================================
-   MOBILE & TABLET BREAKPOINTS (Show Bottom Nav)
-   ============================================================================ */
-
-/* TABLET: 641px - 1024px */
+/* Tablet: 641px - 1024px */
 @media (max-width: 1024px) {
   .bottom-nav-container {
     display: block;
@@ -330,10 +321,7 @@
   }
 }
 
-/* ============================================================================
-   SAFARI & IPHONE SPECIFIC FIXES
-   ============================================================================ */
-
+/* Safari & iPhone Safe Area */
 @supports (padding: max(0px)) {
   @media (max-width: 1024px) {
     .bottom-nav-container {
@@ -393,10 +381,7 @@
   }
 }
 
-/* ============================================================================
-   DARK MODE SUPPORT (Optional)
-   ============================================================================ */
-
+/* Dark Mode */
 @media (prefers-color-scheme: dark) {
   @media (max-width: 1024px) {
     .bottom-nav-container {
@@ -418,10 +403,7 @@
   }
 }
 
-/* ============================================================================
-   ACCESSIBILITY
-   ============================================================================ */
-
+/* Accessibility */
 .bottom-nav-item {
   font-family: inherit;
 }
@@ -431,7 +413,6 @@
   outline-offset: -2px;
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .bottom-nav-item {
     transition: none;
@@ -442,12 +423,8 @@
   }
 }
 
-/* ============================================================================
-   OVERLAY FIX (Make sure content doesn't hide under bottom nav)
-   ============================================================================ */
-
+/* Content padding for bottom nav */
 @media (max-width: 1024px) {
-  /* Main content should have bottom padding to avoid hiding under bottom nav */
   body {
     padding-bottom: 70px;
   }

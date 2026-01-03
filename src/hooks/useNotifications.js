@@ -1,10 +1,7 @@
 import { useState, useCallback } from 'react'
 import { notificationService } from '../services/notificationService'
 
-/**
- * Custom hook for managing notifications
- * Provides easy access to notification operations
- */
+// Hook for notification operations
 export const useNotifications = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)

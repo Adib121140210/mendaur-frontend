@@ -1,17 +1,8 @@
-/**
- * Authentication Service
- * Handles login, logout, token management, and user role checking
- */
+// Auth Service - login, logout, token management
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api';
 
 export const authService = {
-  /**
-   * Login user with email and password
-   * @param {string} email - User email
-   * @param {string} password - User password
-   * @returns {Promise<{success: boolean, data: object, message: string}>}
-   */
   login: async (email, password) => {
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
@@ -38,7 +29,7 @@ export const authService = {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
-        // Determine and store user role based on level
+        // Determine role from user level
         const userLevel = data.data.user?.level?.toLowerCase() || 'nasabah';
         let role = 'nasabah';
         if (userLevel.includes('superadmin')) role = 'superadmin';
@@ -61,9 +52,6 @@ export const authService = {
     }
   },
 
-  /**
-   * Logout user - clear all stored data
-   */
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -72,85 +60,45 @@ export const authService = {
     return { success: true, message: 'Logged out successfully' };
   },
 
-  /**
-   * Get current authentication token
-   * @returns {string|null}
-   */
   getToken: () => {
     return localStorage.getItem('token');
   },
 
-  /**
-   * Get current user data
-   * @returns {object|null}
-   */
   getUser: () => {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
 
-  /**
-   * Get current user ID
-   * @returns {number|null}
-   */
   getUserId: () => {
     const id = localStorage.getItem('userId');
     return id ? parseInt(id) : null;
   },
 
-  /**
-   * Get current user role
-   * @returns {string} - 'nasabah', 'admin', or 'superadmin'
-   */
   getUserRole: () => {
     return localStorage.getItem('userRole') || 'nasabah';
   },
 
-  /**
-   * Check if user is authenticated
-   * @returns {boolean}
-   */
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
   },
 
-  /**
-   * Check if user is Nasabah
-   * @returns {boolean}
-   */
   isNasabah: () => {
     return authService.getUserRole() === 'nasabah';
   },
 
-  /**
-   * Check if user is Admin (or higher)
-   * @returns {boolean}
-   */
   isAdmin: () => {
     const role = authService.getUserRole();
     return role === 'admin' || role === 'superadmin';
   },
 
-  /**
-   * Check if user is Superadmin
-   * @returns {boolean}
-   */
   isSuperAdmin: () => {
     return authService.getUserRole() === 'superadmin';
   },
 
-  /**
-   * Check if user can access admin panel
-   * @returns {boolean}
-   */
   canAccessAdmin: () => {
     return authService.isAdmin() || authService.isSuperAdmin();
   },
 
-  /**
-   * Refresh token (if backend supports it)
-   * @returns {Promise<{success: boolean, token: string}>}
-   */
   refreshToken: async () => {
     try {
       const token = authService.getToken();

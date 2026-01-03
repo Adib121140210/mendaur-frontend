@@ -1,7 +1,4 @@
-/**
- * Backup Service
- * Handles all database backup operations (Superadmin only)
- */
+// Backup Service - Superadmin only
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api'
 
@@ -15,7 +12,7 @@ const getAuthHeader = () => {
 }
 
 const handleError = (error, defaultMessage = 'An error occurred') => {
-  console.error('🔴 Backup Service Error:', error)
+  console.error('Backup Service Error:', error)
   return {
     success: false,
     message: error.message || defaultMessage,
@@ -24,10 +21,7 @@ const handleError = (error, defaultMessage = 'An error occurred') => {
 }
 
 export const backupService = {
-  /**
-   * Trigger database backup
-   * Creates a new backup of the entire database
-   */
+  // Create database backup
   create: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/superadmin/backup/create`, {
@@ -59,9 +53,7 @@ export const backupService = {
     }
   },
 
-  /**
-   * Get all backups with metadata
-   */
+  // Get all backups
   getAll: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/superadmin/backup/list`, {
@@ -92,9 +84,7 @@ export const backupService = {
     }
   },
 
-  /**
-   * Get backup details by ID
-   */
+  // Get backup by ID
   getOne: async (backupId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/superadmin/backup/${backupId}`, {
@@ -130,9 +120,7 @@ export const backupService = {
     }
   },
 
-  /**
-   * Download backup file
-   */
+  // Download backup file
   download: async (backupId) => {
     try {
       const response = await fetch(
@@ -168,7 +156,6 @@ export const backupService = {
         ? contentDisposition.split('filename=')[1]?.replace(/['"]/g, '')
         : `backup-${backupId}.sql`
 
-      // Create download link
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -177,7 +164,6 @@ export const backupService = {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-
 
       return {
         success: true,
@@ -188,10 +174,7 @@ export const backupService = {
     }
   },
 
-  /**
-   * Restore database from backup
-   * WARNING: This will restore the entire database state
-   */
+  // Restore database from backup (destructive!)
   restore: async (backupId, confirmRestore = false) => {
     try {
       if (!confirmRestore) {
@@ -237,9 +220,7 @@ export const backupService = {
     }
   },
 
-  /**
-   * Delete backup file
-   */
+  // Delete backup
   delete: async (backupId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/superadmin/backup/${backupId}`, {

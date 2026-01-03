@@ -1,14 +1,9 @@
-/**
- * API Client Service
- * Centralized API request handler with interceptors, error handling, and auth
- */
+// API Client - Centralized request handler
 
 import authService from './authService.js';
 import { API_BASE_URL } from '../config/api.js';
 
-/**
- * Request interceptor - Add auth header and prepare request
- */
+// Add auth header to request
 const requestInterceptor = (options = {}) => {
   const token = authService.getToken();
 
@@ -23,18 +18,14 @@ const requestInterceptor = (options = {}) => {
   };
 };
 
-/**
- * Response interceptor - Handle errors and parse response
- */
+// Handle response errors
 const responseInterceptor = async (response) => {
   const data = await response.json();
 
-  // Handle 401 Unauthorized - Token expired or invalid
+  // Handle 401 - Token expired
   if (response.status === 401) {
-    // Try to refresh token
     const refreshResult = await authService.refreshToken();
     if (!refreshResult.success) {
-      // Token refresh failed, clear auth and redirect to login
       authService.logout();
       window.location.href = '/login';
     }
@@ -47,12 +38,7 @@ const responseInterceptor = async (response) => {
   };
 };
 
-/**
- * Main API call function
- * @param {string} endpoint - API endpoint (e.g., '/admin/users')
- * @param {object} options - Request options (method, body, headers, etc.)
- * @returns {Promise<object>} - API response
- */
+// Main API call function
 export const apiCall = async (endpoint, options = {}) => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -61,7 +47,6 @@ export const apiCall = async (endpoint, options = {}) => {
     const response = await fetch(url, requestOptions);
     const result = await responseInterceptor(response);
 
-    // If not OK, throw error with details
     if (!result.ok) {
       const error = new Error(result.data?.message || `HTTP ${result.status}`);
       error.status = result.status;
@@ -76,25 +61,11 @@ export const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-/**
- * API Helper Methods
- */
-
+// API Helper Methods
 export const api = {
-  /**
-   * GET request
-   * @param {string} endpoint
-   * @param {object} options
-   */
   get: (endpoint, options = {}) =>
     apiCall(endpoint, { method: 'GET', ...options }),
 
-  /**
-   * POST request
-   * @param {string} endpoint
-   * @param {object} body
-   * @param {object} options
-   */
   post: (endpoint, body = {}, options = {}) =>
     apiCall(endpoint, {
       method: 'POST',
@@ -102,12 +73,6 @@ export const api = {
       ...options,
     }),
 
-  /**
-   * PATCH request
-   * @param {string} endpoint
-   * @param {object} body
-   * @param {object} options
-   */
   patch: (endpoint, body = {}, options = {}) =>
     apiCall(endpoint, {
       method: 'PATCH',
@@ -115,12 +80,6 @@ export const api = {
       ...options,
     }),
 
-  /**
-   * PUT request
-   * @param {string} endpoint
-   * @param {object} body
-   * @param {object} options
-   */
   put: (endpoint, body = {}, options = {}) =>
     apiCall(endpoint, {
       method: 'PUT',
@@ -128,11 +87,6 @@ export const api = {
       ...options,
     }),
 
-  /**
-   * DELETE request
-   * @param {string} endpoint
-   * @param {object} options
-   */
   delete: (endpoint, options = {}) =>
     apiCall(endpoint, { method: 'DELETE', ...options }),
 };

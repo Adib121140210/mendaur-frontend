@@ -1,7 +1,4 @@
-/**
- * Badge Service
- * Handles all badge management API calls (Admin/Superadmin only)
- */
+// Badge Service - Admin/Superadmin only
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api'
 
@@ -15,7 +12,7 @@ const getAuthHeader = () => {
 }
 
 const handleError = (error, defaultMessage = 'An error occurred') => {
-  console.error('🔴 Badge Service Error:', error)
+  console.error('Badge Service Error:', error)
   return {
     success: false,
     message: error.message || defaultMessage,
@@ -24,9 +21,7 @@ const handleError = (error, defaultMessage = 'An error occurred') => {
 }
 
 export const badgeService = {
-  /**
-   * Get all badges with pagination
-   */
+  // Get all badges with pagination
   getAll: async (perPage = 20, page = 1) => {
     try {
       const params = new URLSearchParams({ per_page: perPage, page })
@@ -51,9 +46,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Get single badge by ID
-   */
+  // Get single badge by ID
   getOne: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/badges/${id}`, {
@@ -83,9 +76,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Create new badge
-   */
+  // Create new badge
   create: async (badgeData) => {
     try {
       const { nama, deskripsi, icon, persyaratan, aktif } = badgeData
@@ -131,9 +122,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Update badge
-   */
+  // Update badge
   update: async (id, badgeData) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/badges/${id}`, {
@@ -171,9 +160,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Delete badge
-   */
+  // Delete badge
   delete: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/badges/${id}`, {
@@ -210,9 +197,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Assign badge to user
-   */
+  // Assign badge to user
   assignToUser: async (badgeId, userId) => {
     try {
       if (!badgeId || !userId) {
@@ -257,9 +242,7 @@ export const badgeService = {
     }
   },
 
-  /**
-   * Revoke badge from user
-   */
+  // Revoke badge from user
   revokeFromUser: async (badgeId, userId) => {
     try {
       if (!badgeId || !userId) {

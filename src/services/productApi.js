@@ -1,12 +1,8 @@
-// Product API Service - Public product endpoints for customers
+// Product API - Public product endpoints
 import { API_BASE_URL } from '../config/api';
 
-// Default timeout for slow backend (15 seconds)
 const DEFAULT_TIMEOUT = 15000;
 
-/**
- * Fetch with timeout helper
- */
 const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -23,9 +19,6 @@ const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) =>
   }
 };
 
-/**
- * Get auth header with Bearer token
- */
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return {
@@ -35,9 +28,6 @@ const getAuthHeader = () => {
   };
 };
 
-/**
- * Error handler
- */
 const handleError = (error) => {
   return {
     success: false,
@@ -47,10 +37,7 @@ const handleError = (error) => {
 };
 
 const productApi = {
-  /**
-   * Get all products (public)
-   * GET /api/produk
-   */
+  // Get all products - GET /api/produk
   getAllProducts: async (filters = {}) => {
     try {
       const params = new URLSearchParams();
@@ -82,10 +69,7 @@ const productApi = {
     }
   },
 
-  /**
-   * Get product by ID
-   * GET /api/produk/{id}
-   */
+  // Get product by ID - GET /api/produk/{id}
   getProductById: async (productId) => {
     try {
       const url = `${API_BASE_URL}/produk/${productId}`;
@@ -110,10 +94,7 @@ const productApi = {
     }
   },
 
-  /**
-   * Redeem product (exchange points for product)
-   * POST /api/penukaran-produk
-   */
+  // Redeem product - POST /api/penukaran-produk
   redeemProduct: async (redemptionData) => {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/penukaran-produk`, {
@@ -139,10 +120,7 @@ const productApi = {
     }
   },
 
-  /**
-   * Get user's product redemption history
-   * GET /api/penukaran-produk
-   */
+  // Get redemption history - GET /api/penukaran-produk
   getRedemptionHistory: async (userId) => {
     try {
       const params = new URLSearchParams();

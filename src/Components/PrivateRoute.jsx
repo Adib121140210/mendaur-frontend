@@ -1,29 +1,17 @@
-/**
- * PrivateRoute / Protected Route Component
- * Restricts access to authenticated users and specific roles
- */
+// Protected Route - auth & role check
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import authService from '../services/authService.js';
 
-/**
- * PrivateRoute - Protects routes that require authentication
- * @param {object} props
- * @param {React.Component} props.component - Component to render
- * @param {string} props.requiredRole - Required role ('nasabah', 'admin', 'superadmin')
- * @returns {React.Component}
- */
 const PrivateRoute = ({ component, requiredRole = null }) => {
   const isAuthenticated = authService.isAuthenticated();
   const userRole = authService.getUserRole();
 
-  // Not authenticated - redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check role-based access
   if (requiredRole) {
     const roleHierarchy = {
       'nasabah': 1,
@@ -34,7 +22,6 @@ const PrivateRoute = ({ component, requiredRole = null }) => {
     const userLevel = roleHierarchy[userRole] || 0;
     const requiredLevel = roleHierarchy[requiredRole] || 0;
 
-    // User doesn't have required role level
     if (userLevel < requiredLevel) {
       return (
         <div className="access-denied-container">
@@ -50,7 +37,6 @@ const PrivateRoute = ({ component, requiredRole = null }) => {
     }
   }
 
-  // Authenticated and authorized - render component
   return React.createElement(component);
 };
 

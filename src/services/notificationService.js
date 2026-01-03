@@ -1,7 +1,4 @@
-/**
- * Notification Service
- * Handles all notification API calls
- */
+// Notification Service
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api'
 
@@ -15,7 +12,6 @@ const getAuthHeader = () => {
 }
 
 const handleError = (error, defaultMessage = 'An error occurred') => {
-  
   return {
     success: false,
     message: error.message || defaultMessage,
@@ -24,9 +20,7 @@ const handleError = (error, defaultMessage = 'An error occurred') => {
 }
 
 export const notificationService = {
-  /**
-   * Get all notifications with pagination
-   */
+  // Get all notifications with pagination
   getAll: async (perPage = 20, page = 1) => {
     try {
       const params = new URLSearchParams({ per_page: perPage, page })
@@ -51,9 +45,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Get unread notification count
-   */
+  // Get unread count
   getUnreadCount: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
@@ -75,9 +67,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Get unread notifications only
-   */
+  // Get unread notifications only
   getUnread: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/unread`, {
@@ -101,9 +91,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Get single notification by ID
-   */
+  // Get single notification by ID
   getOne: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
@@ -133,9 +121,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Mark notification as read
-   */
+  // Mark notification as read
   markAsRead: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
@@ -159,9 +145,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Mark all notifications as read
-   */
+  // Mark all notifications as read
   markAllAsRead: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
@@ -185,9 +169,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Delete notification
-   */
+  // Delete notification
   delete: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
@@ -210,9 +192,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Create notification (Admin only)
-   */
+  // Create notification (Admin only)
   create: async (notificationData) => {
     try {
       const { user_id, judul, pesan, tipe, related_id, related_type } = notificationData

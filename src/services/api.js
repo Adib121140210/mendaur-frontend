@@ -1,15 +1,7 @@
-// API Helper - Utility for making authenticated API calls
+// API Helper
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api';
-
-// Default timeout for API requests (15 seconds - increased for slow backend)
 const DEFAULT_TIMEOUT = 15000;
 
-/**
- * Fetch with timeout
- * @param {string} url - URL to fetch
- * @param {object} options - Fetch options
- * @param {number} timeout - Timeout in milliseconds
- */
 const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -30,12 +22,6 @@ const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) =>
   }
 };
 
-/**
- * Make an authenticated API call with Bearer token
- * @param {string} endpoint - API endpoint path (e.g., '/users/1')
- * @param {object} options - Fetch options (method, body, headers, etc.)
- * @returns {Promise<object>} - Parsed JSON response
- */
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const fullUrl = `${API_BASE_URL}${endpoint}`;
@@ -60,7 +46,7 @@ export const apiCall = async (endpoint, options = {}) => {
         errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
       } catch {
-        // Response was not JSON - silent fail
+        // Response not JSON
       }
       
       const error = new Error(errorMessage);
@@ -80,7 +66,6 @@ export const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-// Helper functions
 export const apiGet = (endpoint, options = {}) =>
   apiCall(endpoint, { method: 'GET', ...options });
 
@@ -101,7 +86,7 @@ export const apiPut = (endpoint, body, options = {}) =>
 export const apiDelete = (endpoint, options = {}) =>
   apiCall(endpoint, { method: 'DELETE', ...options });
 
-// Specific API endpoints
+// Specific endpoints
 export const getUser = (userId) => apiGet(`/users/${userId}`);
 export const getUserBadges = (userId) => apiGet(`/users/${userId}/badges`);
 export const getUnlockedBadges = (userId) => apiGet(`/users/${userId}/unlocked-badges`);
@@ -116,14 +101,7 @@ export const getArticle = (id) => apiGet(`/articles/${id}`);
 export const login = (email, password) => apiPost('/login', { email, password }, { headers: {} });
 export const register = (data) => apiPost('/register', data, { headers: {} });
 
-/**
- * Update user profile - tries multiple endpoints
- * Backend endpoints (in priority order):
- * 1. PUT /api/profile (primary)
- * 2. POST /api/profile/update (alternative)
- * @param {number} userId - User ID
- * @param {object} data - Profile data to update
- */
+// Update profile - tries PUT /api/profile first, falls back to POST /api/profile/update
 export const updateUserProfile = async (userId, data) => {
   const token = localStorage.getItem('token');
   const headers = {
@@ -132,7 +110,7 @@ export const updateUserProfile = async (userId, data) => {
     'Accept': 'application/json',
   };
 
-  // 1. Try primary PUT /api/profile endpoint first
+  // Primary endpoint
   try {
     const response = await fetch(`${API_BASE_URL}/profile`, {
       method: 'PUT',
@@ -144,10 +122,10 @@ export const updateUserProfile = async (userId, data) => {
       return await response.json();
     }
   } catch {
-    // PUT failed, try POST endpoint
+    // Fallback to POST
   }
 
-  // 2. Try POST /api/profile/update endpoint
+  // Fallback endpoint
   const response = await fetch(`${API_BASE_URL}/profile/update`, {
     method: 'POST',
     headers,
@@ -158,7 +136,6 @@ export const updateUserProfile = async (userId, data) => {
     return await response.json();
   }
   
-  // If we get here, throw the error
   const errorData = await response.json().catch(() => ({}));
   throw new Error(errorData.message || 'Gagal memperbarui profil');
 };
@@ -169,17 +146,7 @@ export const fetchRiwayat = async () => {
   return res.json();
 };
 
-// ============================================
-// AVATAR UPLOAD ENDPOINTS
-// ============================================
-
-/**
- * Upload user avatar with file validation
- * POST /api/users/{id}/avatar
- * @param {number} userId - User ID
- * @param {File} avatarFile - Avatar image file
- * @returns {Promise<object>} - Upload response with path and URL
- */
+// Avatar Upload - POST /api/users/{id}/avatar
 export const uploadUserAvatar = async (userId, avatarFile) => {
   try {
     const token = localStorage.getItem('token');
@@ -195,12 +162,11 @@ export const uploadUserAvatar = async (userId, avatarFile) => {
     }
 
     // Validate file size (max 2MB)
-    const maxSize = 2 * 1024 * 1024; // 2MB
+    const maxSize = 2 * 1024 * 1024;
     if (avatarFile.size > maxSize) {
       throw new Error('File size must not exceed 2MB');
     }
 
-    // Create FormData for multipart file upload
     const formData = new FormData();
     formData.append('avatar', avatarFile);
 
@@ -208,7 +174,6 @@ export const uploadUserAvatar = async (userId, avatarFile) => {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        ...{} // Don't set Content-Type, let browser set it for FormData
       },
       body: formData
     });
@@ -219,7 +184,7 @@ export const uploadUserAvatar = async (userId, avatarFile) => {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
       } catch {
-        // Response was not JSON
+        // Response not JSON
       }
       const error = new Error(errorMessage);
       error.status = response.status;

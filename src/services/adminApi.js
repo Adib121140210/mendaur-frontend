@@ -1,17 +1,10 @@
-/**
- * Admin Dashboard API Service
- * Handles all API calls untuk admin dashboard features
- */
+// Admin API Service
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api'
 
-/**
- * Get authorization header dengan token
- */
 const getAuthHeader = (isFormData = false) => {
   const token = localStorage.getItem('token')
   
-  // For FormData, don't set Content-Type (browser will set it with boundary)
   if (isFormData) {
     return {
       'Authorization': `Bearer ${token}`,
@@ -26,11 +19,6 @@ const getAuthHeader = (isFormData = false) => {
   }
 }
 
-/**
- * Build FormData from object (for file uploads)
- * @param {Object} data - Object containing field values
- * @param {Array} fileFields - Array of field names that are files
- */
 const buildFormData = (data, fileFields = []) => {
   const formData = new FormData()
   
@@ -51,9 +39,6 @@ const buildFormData = (data, fileFields = []) => {
   return formData
 }
 
-/**
- * Handle API response error
- */
 const handleError = (error, defaultMessage = 'An error occurred') => {
   return {
     success: false,
@@ -62,10 +47,7 @@ const handleError = (error, defaultMessage = 'An error occurred') => {
   }
 }
 
-/**
- * Helper: Send notification to user (internal use)
- * Called automatically after approve/reject transactions
- */
+// Send notification to user after transaction
 const sendTransactionNotification = async (userId, judul, pesan, tipe = 'info', relatedId = null, relatedType = null) => {
   try {
     if (!userId) {
@@ -213,11 +195,7 @@ export const adminApi = {
     }
   },
 
-  /**
-   * Create a new user
-   * POST /api/admin/users
-   * Note: Backend may not support this endpoint yet (returns 405)
-   */
+  // Create user (backend may return 405)
   createUser: async (userData) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/users`, {
@@ -227,7 +205,6 @@ export const adminApi = {
       })
 
       if (!response.ok) {
-        // Special handling for 405 Method Not Allowed
         if (response.status === 405) {
           throw new Error('Backend does not support user creation yet. Please contact the backend team to implement POST /api/admin/users endpoint.')
         }
@@ -245,7 +222,7 @@ export const adminApi = {
     }
   },
 
-  // Phase 2 Analytics Functions - Temporarily Disabled for Clean Deployment
+  // Phase 2 Analytics - Disabled
   /* 
   // Analytics - Waste
   getWasteAnalytics: async (period = 'monthly', filters = {}) => {

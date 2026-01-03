@@ -1,16 +1,10 @@
-/**
- * Export Utilities for Reports
- * Handles PDF and Excel export functionality
- */
+// Export Utilities for PDF/Excel reports
 
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
-/**
- * Format date to Indonesian locale
- */
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -19,23 +13,14 @@ const formatDate = (date) => {
   })
 }
 
-/**
- * Format number with thousand separator
- */
 const formatNumber = (num) => {
   return new Intl.NumberFormat('id-ID').format(num || 0)
 }
 
-/**
- * Generate PDF Report
- * @param {Object} report - Report data object
- * @param {string} reportType - 'daily' or 'monthly'
- * @param {Object} dateInfo - { year, month, day }
- */
+// Generate PDF Report
 export const exportToPDF = (report, reportType, dateInfo) => {
   const { year, month, day } = dateInfo
   
-  // Create PDF document (A4 size)
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -47,16 +32,14 @@ export const exportToPDF = (report, reportType, dateInfo) => {
   const margin = 20
   let yPos = margin
 
-  // Colors
-  const primaryColor = [34, 197, 94] // Green (#22c55e)
-  const darkColor = [31, 41, 55] // Dark gray (#1f2937)
-  const lightGray = [107, 114, 128] // Gray (#6b7280)
+  const primaryColor = [34, 197, 94]
+  const darkColor = [31, 41, 55]
+  const lightGray = [107, 114, 128]
 
-  // Header Background
+  // Header
   doc.setFillColor(...primaryColor)
   doc.rect(0, 0, pageWidth, 45, 'F')
 
-  // Company Logo/Title
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(22)
@@ -66,7 +49,6 @@ export const exportToPDF = (report, reportType, dateInfo) => {
   doc.setFont('helvetica', 'normal')
   doc.text('Platform Digital Pengelolaan Sampah Terintegrasi', pageWidth / 2, 28, { align: 'center' })
 
-  // Report Title
   doc.setFontSize(10)
   const reportTitle = reportType === 'daily' 
     ? `Laporan Harian: ${day}/${month}/${year}`
@@ -75,7 +57,7 @@ export const exportToPDF = (report, reportType, dateInfo) => {
 
   yPos = 55
 
-  // Report Info Box
+  // Info box
   doc.setFillColor(249, 250, 251)
   doc.roundedRect(margin, yPos, pageWidth - (margin * 2), 20, 3, 3, 'F')
   
@@ -88,7 +70,7 @@ export const exportToPDF = (report, reportType, dateInfo) => {
 
   yPos = 85
 
-  // === SECTION 1: Summary Statistics ===
+  // Section: Summary Statistics
   doc.setFillColor(...primaryColor)
   doc.roundedRect(margin, yPos, pageWidth - (margin * 2), 8, 2, 2, 'F')
   doc.setTextColor(255, 255, 255)
