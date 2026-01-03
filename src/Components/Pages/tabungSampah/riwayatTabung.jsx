@@ -20,7 +20,7 @@ const RiwayatTabung = () => {
   useScrollTop();
   const { user } = useAuth();
 
-  const [deposits, setDeposits] = useState([]);
+  const [allDeposits, setAllDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedDeposit, setSelectedDeposit] = useState(null);
@@ -36,22 +36,16 @@ const RiwayatTabung = () => {
     try {
       setLoading(true);
 
-      // Security: Validate user is authenticated
       if (!user?.user_id) {
         console.error("User ID not found - user not authenticated");
-        setDeposits([]);
+        setAllDeposits([]);
         return;
       }
 
-      const params = new URLSearchParams();
-      if (statusFilter !== "all") {
-        params.append("status", statusFilter);
-      }
-
-      const url = `${API_BASE_URL}/users/${user.user_id}/tabung-sampah${params.toString() ? '?' + params.toString() : ''}`;
-
-      // Get auth token from localStorage
-      const token = localStorage.getItem('token');      const response = await fetch(url, {
+      const url = `${API_BASE_URL}/users/${user.user_id}/tabung-sampah`;
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -62,67 +56,61 @@ const RiwayatTabung = () => {
       // Handle different HTTP status codes
       if (response.status === 401) {
         console.error("Unauthorized: Session expired or token invalid");
-        // Token might be expired, clear and redirect to login if needed
         localStorage.removeItem('token');
-        setDeposits([]);
+        setAllDeposits([]);
         return;
       }
 
       if (response.status === 403) {
         console.error("Forbidden: Cannot access other user's deposit data");
-        // Security: User trying to access data that doesn't belong to them
-        setDeposits([]);
+        setAllDeposits([]);
         return;
       }
 
       if (!response.ok) {
         console.warn(`Tabung Sampah API error: ${response.status} ${response.statusText}`);
-        setDeposits([]);
+        setAllDeposits([]);
         return;
       }
 
       const result = await response.json();
 
-      // Validate response format and content
       if (result.status === "success" && Array.isArray(result.data)) {
-        // Security: Verify all returned data belongs to current user
         const validData = result.data.filter(deposit => {
           return deposit.user_id === user.user_id;
         });
 
-        setDeposits(validData);
-
-        // Calculate stats from filtered data
-        if (result.stats) {
-          setStats(result.stats);
-        } else {
-          // Calculate manually if not provided
-          calculateStats(validData);
-        }
+        setAllDeposits(validData);
+        calculateStats(validData);
       } else {
-        setDeposits([]);
+        setAllDeposits([]);
       }
     } catch (error) {
       console.error("Error fetching tabung sampah:", error.message);
-      setDeposits([]);
+      setAllDeposits([]);
     } finally {
       setLoading(false);
     }
-  }, [user?.user_id, statusFilter]);
+  }, [user?.user_id]);
 
-  // Fetch on mount and when dependencies change
+  // Fetch on mount
   useEffect(() => {
     if (user?.user_id) {
       fetchDeposits();
     }
-  }, [user?.user_id, statusFilter, fetchDeposits]);
+  }, [user?.user_id, fetchDeposits]);
 
-  const calculateStats = (allDeposits) => {
+  // Client-side filtering
+  const filteredDeposits = statusFilter === "all" 
+    ? allDeposits 
+    : allDeposits.filter(d => d.status === statusFilter);
+
+  const calculateStats = (deposits) => {
     setStats({
-      total: allDeposits.length,
-      pending: allDeposits.filter(d => d.status === "pending").length,
-      approved: allDeposits.filter(d => d.status === "approved").length,
-      rejected: allDeposits.filter(d => d.status === "rejected").length
+      total: deposits.length,
+      pending: deposits.filter(d => d.status === "pending").length,
+      approved: deposits.filter(d => d.status === "approved").length,
+      rejected: deposits.filter(d => d.status === "rejected").length
     });
   };
 
@@ -279,7 +267,7 @@ const RiwayatTabung = () => {
 
       {/* Deposits List */}
       <div className="depositsContainer">
-        {deposits.length === 0 ? (
+        {filteredDeposits.length === 0 ? (
           <div className="emptyState">
             <div className="emptyIcon">
               {statusFilter === "all" ? "📦" :
@@ -299,7 +287,7 @@ const RiwayatTabung = () => {
           </div>
         ) : (
           <div className="depositsList">
-            {deposits.map((deposit) => (
+            {filteredDeposits.map((deposit) => (
               <DepositCard
                 key={deposit.tabung_sampah_id}
                 deposit={deposit}

@@ -27,8 +27,31 @@ export default function RiwayatTransaksi() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    completed: 0
+  });
 
-  const statusOptions = ["semua", "pending", "diproses", "selesai", "ditolak"];
+  const statusOptions = [
+    { value: "semua", label: "Semua" },
+    { value: "pending", label: "Menunggu" },
+    { value: "approved", label: "Disetujui" },
+    { value: "completed", label: "Selesai" },
+    { value: "rejected", label: "Ditolak" }
+  ];
+
+  const normalizeStatus = (status) => {
+    if (!status) return "pending";
+    const statusLower = status.toLowerCase();
+    if (["approved", "disetujui", "claimed", "delivered"].includes(statusLower)) return "approved";
+    if (["completed", "selesai"].includes(statusLower)) return "completed";
+    if (["rejected", "ditolak", "cancelled", "dibatalkan"].includes(statusLower)) return "rejected";
+    if (["pending", "menunggu", "diproses"].includes(statusLower)) return "pending";
+    return "pending";
+  };
 
   // Optimized fetch with parallel requests and caching
   const fetchTransactions = useCallback(async (forceRefresh = false) => {
@@ -82,6 +105,7 @@ export default function RiwayatTransaksi() {
             points: -item.jumlah_poin,
             amount: item.jumlah_rupiah,
             status: item.status,
+            normalizedStatus: normalizeStatus(item.status),
             timestamp: item.created_at,
             bankName: item.nama_bank,
             accountNumber: item.nomor_rekening,
@@ -99,12 +123,13 @@ export default function RiwayatTransaksi() {
           type: 'tabung_sampah',
           kategori: 'tabung',
           deskripsi: `Tabung ${item.jenis_sampah}`,
-          detail: `+${item.poin_diperoleh || 0} poin`,
-          points: item.poin_diperoleh || 0,
+          detail: `+${item.poin_didapat || item.poin_diperoleh || 0} poin`,
+          points: item.poin_didapat || item.poin_diperoleh || 0,
           status: item.status || 'approved',
+          normalizedStatus: normalizeStatus(item.status || 'approved'),
           timestamp: item.tanggal_setor || item.created_at,
           wasteType: item.jenis_sampah,
-          weight: item.berat,
+          weight: item.berat_kg || item.berat,
           location: item.titik_lokasi || item.lokasi,
         }));
       }
@@ -123,6 +148,7 @@ export default function RiwayatTransaksi() {
             detail: `-${item.poin_digunakan || item.jumlah_poin || 0} poin`,
             points: -(item.poin_digunakan || item.jumlah_poin || 0),
             status: item.status || 'pending',
+            normalizedStatus: normalizeStatus(item.status || 'pending'),
             timestamp: item.created_at,
             productName: item.nama_produk || item.produk?.nama,
             productId: item.produk_id,
@@ -138,6 +164,16 @@ export default function RiwayatTransaksi() {
       // Combine and sort
       const allTransactions = [...withdrawals, ...wasteDeposits, ...productRedemptions];
       allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      // Calculate stats
+      const newStats = {
+        total: allTransactions.length,
+        pending: allTransactions.filter(t => t.normalizedStatus === 'pending').length,
+        approved: allTransactions.filter(t => t.normalizedStatus === 'approved').length,
+        rejected: allTransactions.filter(t => t.normalizedStatus === 'rejected').length,
+        completed: allTransactions.filter(t => t.normalizedStatus === 'completed').length
+      };
+      setStats(newStats);
 
       setTransactions(allTransactions);
       // Cache for 1 minute
@@ -160,6 +196,7 @@ export default function RiwayatTransaksi() {
       case "selesai":
       case "delivered":
       case "claimed":
+      case "completed":
         return <CheckCircle className="statusIcon green" />;
       case "pending":
       case "diproses":
@@ -183,20 +220,21 @@ export default function RiwayatTransaksi() {
       case "rejected": return "Ditolak";
       case "claimed": return "Sudah Diambil";
       case "selesai": return "Selesai";
+      case "completed": return "Selesai";
       case "dikirim": return "Dikirim";
       case "shipped": return "Dalam Pengiriman";
       case "delivered": return "Sudah Diterima";
       case "diproses": return "Diproses";
       case "dibatalkan": return "Dibatalkan";
       case "cancelled": return "Dibatalkan";
-      default: return "Pending";
+      default: return "Menunggu";
     }
   };
 
-  // Filter transactions
+  // Filter transactions using normalizedStatus
   const filteredTransactions = transactions.filter((item) => {
     const matchKategori = filterKategori === "semua" || item.kategori === filterKategori;
-    const matchStatus = filterStatus === "semua" || item.status === filterStatus;
+    const matchStatus = filterStatus === "semua" || item.normalizedStatus === filterStatus;
     const matchSearch = item.deskripsi.toLowerCase().includes(searchTerm.toLowerCase());
     return matchKategori && matchStatus && matchSearch;
   });
@@ -227,6 +265,26 @@ export default function RiwayatTransaksi() {
         </div>
       </header>
 
+      {/* Stats Info - Similar to Riwayat Tabung */}
+      <div className="riwayatStatsInfo">
+        <div className="statItem">
+          <span className="statLabel">Total</span>
+          <span className="statValue">{stats.total}</span>
+        </div>
+        <div className="statItem">
+          <span className="statLabel">Menunggu</span>
+          <span className="statValue">{stats.pending}</span>
+        </div>
+        <div className="statItem">
+          <span className="statLabel">Disetujui</span>
+          <span className="statValue">{stats.approved}</span>
+        </div>
+        <div className="statItem">
+          <span className="statLabel">Ditolak</span>
+          <span className="statValue">{stats.rejected}</span>
+        </div>
+      </div>
+
       {/* Search & Status Filter */}
       <div className="searchAndStatus">
         <div className="searchBox">
@@ -244,9 +302,9 @@ export default function RiwayatTransaksi() {
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          {statusOptions.map((status) => (
-            <option key={status} value={status}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>

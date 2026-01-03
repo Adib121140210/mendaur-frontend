@@ -62,6 +62,40 @@
   to { transform: rotate(360deg); }
 }
 
+/* Stats Info */
+.riwayatStatsInfo {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.riwayatStatsInfo .statItem {
+  flex: 1;
+  min-width: 80px;
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.riwayatStatsInfo .statLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.riwayatStatsInfo .statValue {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
 /* Search & Status Filter */
 .searchAndStatus {
   display: flex;
