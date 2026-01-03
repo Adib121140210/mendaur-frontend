@@ -128,7 +128,7 @@
   background: transparent;
   font-size: 0.875rem;
   width: 100%;
-  padding-left: 0.25rem;
+  padding-left: 1.75rem;
 }
 
 .searchBox input::placeholder {
@@ -140,6 +140,11 @@
   flex-shrink: 0;
   width: 18px;
   height: 18px;
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .statusDropdown {
