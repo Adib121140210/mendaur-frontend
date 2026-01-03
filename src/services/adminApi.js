@@ -1297,6 +1297,42 @@ export const adminApi = {
     }
   },
 
+  /**
+   * Complete product redemption (mark as picked up/completed)
+   * PATCH /api/admin/penukar-produk/{id}/complete
+   * Auto-sends notification to user after completion
+   */
+  completeRedemption: async (redemptionId, catatan = '', userId = null, productName = null) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/complete`, {
+        method: 'PATCH',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ catatan })
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP ${response.status}`)
+      }
+      const data = await response.json()
+      
+      // 🔔 AUTO SEND NOTIFICATION to user
+      if (userId) {
+        await sendTransactionNotification(
+          userId,
+          'Produk Berhasil Diambil 🎉',
+          `Produk${productName ? ` "${productName}"` : ''} telah berhasil Anda ambil. Terima kasih telah menggunakan poin Anda!`,
+          'success',
+          redemptionId,
+          'penukaran_produk'
+        )
+      }
+      
+      return { success: true, data: data.data || data }
+    } catch (error) {
+      return handleError(error, 'Failed to complete redemption')
+    }
+  },
+
   // ============================================
   // WASTE ITEM & CATEGORY MANAGEMENT (5 endpoints)
   // ============================================

@@ -201,13 +201,13 @@ export default function ProductRedemptionManagement() {
     return true;
   });
 
-  // Calculate stats
+  // Calculate stats - support both 'picked_up' and 'completed' status
   const stats = {
     total: redemptions.length,
     pending: redemptions.filter((r) => r.status === 'pending').length,
-    approved: redemptions.filter((r) => r.status === 'approved').length,
-    rejected: redemptions.filter((r) => r.status === 'rejected').length,
-    picked_up: redemptions.filter((r) => r.status === 'picked_up').length,
+    approved: redemptions.filter((r) => r.status === 'approved' || r.status === 'diproses' || r.status === 'dikirim').length,
+    rejected: redemptions.filter((r) => r.status === 'rejected' || r.status === 'cancelled').length,
+    picked_up: redemptions.filter((r) => r.status === 'picked_up' || r.status === 'completed').length,
     totalPoints: redemptions.reduce((sum, r) => sum + (Number(r.poin_digunakan) || 0), 0),
   };
 
@@ -227,10 +227,14 @@ export default function ProductRedemptionManagement() {
       case 'pending':
         return '#f59e0b';
       case 'approved':
+      case 'diproses':
+      case 'dikirim':
         return '#3b82f6';
       case 'picked_up':
+      case 'completed':
         return '#10b981';
       case 'rejected':
+      case 'cancelled':
         return '#ef4444';
       default:
         return '#6b7280';
@@ -243,9 +247,15 @@ export default function ProductRedemptionManagement() {
         return 'Menunggu';
       case 'approved':
         return 'Disetujui';
+      case 'diproses':
+        return 'Diproses';
+      case 'dikirim':
+        return 'Dikirim';
       case 'picked_up':
-        return 'Diambil';
+      case 'completed':
+        return 'Selesai';
       case 'rejected':
+      case 'cancelled':
         return 'Ditolak';
       default:
         return 'Unknown';
@@ -257,14 +267,23 @@ export default function ProductRedemptionManagement() {
       case 'pending':
         return <Clock size={16} />;
       case 'approved':
+      case 'diproses':
+      case 'dikirim':
         return <CheckCircle size={16} />;
       case 'picked_up':
+      case 'completed':
         return <Check size={16} />;
       case 'rejected':
+      case 'cancelled':
         return <XCircle size={16} />;
       default:
         return null;
     }
+  };
+
+  // Check if status allows complete action
+  const canComplete = (status) => {
+    return ['approved', 'diproses', 'dikirim'].includes(status);
   };
 
   // Action handlers
@@ -371,17 +390,26 @@ export default function ProductRedemptionManagement() {
   const handlePickupClick = async (redemption) => {
     if (window.confirm('Konfirmasi produk sudah diambil oleh nasabah?')) {
       try {
-        const result = await adminApi.markRedemptionAsPickedUp(redemption.id);
+        // Get user_id and product name for notification
+        const userId = redemption?.user_id;
+        const productName = redemption?.nama_produk || redemption?.product_name;
+        
+        const result = await adminApi.completeRedemption(
+          redemption.id,
+          'Produk sudah diambil oleh nasabah',
+          userId,
+          productName
+        );
         if (result.success) {
           // Refresh data from server
           await loadProductRedemptions();
-          alert('✅ Status updated: Produk sudah diambil');
+          alert('✅ Status updated: Produk sudah diambil/selesai');
         } else {
-          alert(`❌ ${result.message || 'Gagal update status pickup'}`);
+          alert(`❌ ${result.message || 'Gagal update status'}`);
         }
       } catch (err) {
-        console.error('Pickup error:', err);
-        alert('Terjadi kesalahan saat update status pickup');
+        console.error('Complete error:', err);
+        alert('Terjadi kesalahan saat update status');
       }
     }
   };
@@ -654,14 +682,23 @@ export default function ProductRedemptionManagement() {
                             </button>
                           </>
                         )}
-                        {redemption.status === 'approved' && (
-                          <button
-                            className="action-btn pickup-btn"
-                            onClick={() => handlePickupClick(redemption)}
-                            title="Tandai Diambil"
-                          >
-                            <Check size={16} />
-                          </button>
+                        {canComplete(redemption.status) && (
+                          <>
+                            <button
+                              className="action-btn pickup-btn"
+                              onClick={() => handlePickupClick(redemption)}
+                              title="Tandai Selesai/Diambil"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              className="action-btn reject-btn"
+                              onClick={() => handleRejectClick(redemption)}
+                              title="Tolak & Refund Poin"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -716,10 +753,15 @@ export default function ProductRedemptionManagement() {
                       </button>
                     </>
                   )}
-                  {redemption.status === 'approved' && (
-                    <button className="action-btn pickup-btn" onClick={() => handlePickupClick(redemption)}>
-                      <Check size={16} /> Diambil
-                    </button>
+                  {canComplete(redemption.status) && (
+                    <>
+                      <button className="action-btn pickup-btn" onClick={() => handlePickupClick(redemption)}>
+                        <Check size={16} /> Selesai
+                      </button>
+                      <button className="action-btn reject-btn" onClick={() => handleRejectClick(redemption)}>
+                        <X size={16} /> Tolak
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
