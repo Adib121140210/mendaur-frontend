@@ -1,4 +1,4 @@
-/* ===== ARTIKEL DETAIL PAGE - PINUSI INSPIRED ===== */
+/* Artikel Detail Page */
 
 .artikel-detail-page {
   min-height: 100vh;
@@ -419,7 +419,7 @@
   color: #2ecc71;
 }
 
-/* ===== RESPONSIVE ===== */
+/* Responsive */
 @media (max-width: 1024px) {
   .artikel-detail-container {
     grid-template-columns: 1fr;

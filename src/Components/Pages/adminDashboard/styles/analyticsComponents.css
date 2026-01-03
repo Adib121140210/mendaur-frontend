@@ -1,6 +1,4 @@
-/* ============================================================================
-   WASTE ANALYTICS COMPONENT STYLES
-   ============================================================================ */
+/* Waste Analytics Component */
 
 .waste-analytics {
   background: white;
@@ -197,9 +195,7 @@
   font-style: italic;
 }
 
-/* ============================================================================
-   POINTS DISTRIBUTION COMPONENT STYLES
-   ============================================================================ */
+/* Points Distribution Component */
 
 .points-distribution {
   background: white;
@@ -351,9 +347,7 @@
   color: #FF9800;
 }
 
-/* ============================================================================
-   WASTE BY USER TABLE COMPONENT STYLES
-   ============================================================================ */
+/* Waste By User Table Component */
 
 .waste-by-user {
   background: white;
@@ -513,10 +507,7 @@
   font-weight: 500;
 }
 
-/* ============================================================================
-   RESPONSIVE DESIGN
-   ============================================================================ */
-
+/* Responsive */
 @media (max-width: 768px) {
   .waste-header,
   .points-header,

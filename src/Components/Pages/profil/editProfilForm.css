@@ -1,6 +1,4 @@
-/* ========================================
-   EDIT PROFIL FORM - MINIMALIST DESIGN
-   ======================================== */
+/* Edit Profil Form */
 
 .editProfilContainer {
   background-color: #ffffff;
@@ -20,7 +18,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* === ALERTS === */
+/* Alerts */
 .successAlert {
   background-color: #ecfdf5;
   color: #065f46;
@@ -43,7 +41,7 @@
   border: 1px solid #fecaca;
 }
 
-/* === AVATAR SECTION === */
+/* Avatar Section */
 .avatarEditSection {
   display: flex;
   flex-direction: column;
@@ -119,7 +117,7 @@
   margin-top: 8px;
 }
 
-/* === FORM === */
+/* Form */
 .editProfilForm {
   display: flex;
   flex-direction: column;
@@ -175,7 +173,7 @@
   min-height: 80px;
 }
 
-/* === ACTION BUTTONS === */
+/* Action Buttons */
 .formActions {
   display: flex;
   gap: 12px;
@@ -234,7 +232,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* === RESPONSIVE === */
+/* Responsive */
 @media (max-width: 640px) {
   .editProfilContainer {
     padding: 1.5rem;

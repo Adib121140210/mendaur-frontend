@@ -3,18 +3,7 @@ import { X, AlertTriangle, Loader, ShieldAlert } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import '../styles/DangerConfirmDialog.css'
 
-/**
- * DangerConfirmDialog - Modal konfirmasi untuk operasi berbahaya
- * 
- * @param {string} title - Judul dialog
- * @param {string} message - Pesan konfirmasi
- * @param {string} confirmText - Teks yang harus diketik untuk konfirmasi
- * @param {string} actionType - Jenis aksi: 'delete_account', 'change_role', 'edit_deposit', 'critical'
- * @param {function} onConfirm - Callback saat dikonfirmasi
- * @param {function} onCancel - Callback saat dibatalkan
- * @param {boolean} isProcessing - Status sedang proses
- * @param {string} buttonText - Teks tombol konfirmasi (default: 'Confirm')
- */
+// Modal konfirmasi untuk operasi berbahaya
 export default function DangerConfirmDialog({ 
   title = 'Confirm Action',
   message,

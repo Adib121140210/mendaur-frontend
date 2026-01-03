@@ -1309,10 +1309,7 @@
   color: #374151;
 }
 
-/* ================================ */
-/* Line Chart with Dots Styles */
-/* ================================ */
-
+/* Line Chart with Dots */
 .section-header {
   display: flex;
   justify-content: space-between;

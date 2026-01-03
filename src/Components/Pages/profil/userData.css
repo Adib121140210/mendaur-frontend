@@ -536,7 +536,7 @@
   color: #db2777;
 }
 
-/* === RESPONSIF === */
+/* Responsive */
 @media screen and (max-width: 768px) {
   .userDataContainer {
     padding: 1rem;

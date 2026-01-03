@@ -340,10 +340,7 @@
   cursor: pointer;
 }
 
-/* ============================= */
-/* RESPONSIVE ADJUSTMENTS       */
-/* ============================= */
-
+/* Responsive */
 @media (min-width: 1024px) {
   .TabungActionBar {
     display: block;

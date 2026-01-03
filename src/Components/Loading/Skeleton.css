@@ -1,7 +1,4 @@
-/* ===================================
-   SKELETON LOADER - Mendaur Design System
-   Optimized for fast perceived loading
-=================================== */
+/* Skeleton Loader */
 
 /* Base Skeleton Animation */
 @keyframes skeleton-shimmer {
@@ -70,9 +67,7 @@
   border-radius: 8px;
 }
 
-/* ===================================
-   Dashboard Skeleton Components
-=================================== */
+/* Dashboard Skeleton Components */
 
 .skeleton-dashboard {
   display: flex;
@@ -269,13 +264,7 @@
   gap: 8px;
 }
 
-/* ===================================
-   Responsive Skeleton
-   Mobile Small:   320px - 480px
-   Mobile Large:   481px - 768px
-   Tablet/Laptop:  769px - 1024px
-   Desktop:        1025px+
-=================================== */
+/* Responsive */
 
 /* Desktop (1025px+) */
 @media (min-width: 1025px) {

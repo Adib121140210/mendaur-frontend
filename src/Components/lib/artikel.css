@@ -282,13 +282,7 @@
   font-weight: 500;
 }
 
-/* ===================================
-   RESPONSIVE - Standard Breakpoints
-   Mobile Small:   320px - 480px
-   Mobile Large:   481px - 768px
-   Tablet/Laptop:  769px - 1024px
-   Desktop:        1025px+
-=================================== */
+/* Responsive */
 
 /* Desktop (1025px+) */
 @media (min-width: 1025px) {

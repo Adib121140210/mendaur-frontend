@@ -1,9 +1,6 @@
-/* ========================================
-   LEADERBOARD HEADER - CLEAN CARD DESIGN
-   Based on Reference Design
-   ======================================== */
+/* Leaderboard Header */
 
-/* === WRAPPER UTAMA === */
+/* Wrapper */
 .leaderboard-header {
   padding: 0;
   background-color: transparent;
@@ -11,7 +8,7 @@
   box-shadow: none;
 }
 
-/* === INFO USER === */
+/* User Info */
 .user-info-header {
   margin-bottom: 1.25rem;
 }
@@ -29,7 +26,7 @@
   line-height: 1.4;
 }
 
-/* === ROW KARTU === */
+/* Card Row */
 .statsCardRow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -37,7 +34,7 @@
   margin-bottom: 1rem;
 }
 
-/* === KARTU INDIVIDU === */
+/* Card */
 .infoCard {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
@@ -51,7 +48,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* === BAGIAN ATAS KARTU === */
+/* Card Top */
 .cardTop {
   display: flex;
   justify-content: space-between;
@@ -66,7 +63,7 @@
   margin: 0;
 }
 
-/* === IKON KARTU === */
+/* Card Icon */
 .cardIcon {
   background-color: rgba(2, 61, 45, 0.08);
   padding: 0.5rem;
@@ -82,7 +79,7 @@
   color: #023d2d;
 }
 
-/* === NILAI UTAMA === */
+/* Card Value */
 .cardValue {
   font-size: 1.75rem;
   font-weight: 700;
@@ -91,7 +88,7 @@
   line-height: 1.2;
 }
 
-/* === DESKRIPSI TAMBAHAN (trend indicator) === */
+/* Card Description */
 .cardDescription {
   display: flex;
   align-items: center;
@@ -106,7 +103,7 @@
   font-size: 0.875rem;
 }
 
-/* === RESET BANNER === */
+/* Reset Banner */
 .resetBanner {
   display: flex;
   align-items: center;
@@ -174,9 +171,7 @@
   color: #065f46;
 }
 
-/* ========================================
-   RESPONSIVE
-   ======================================== */
+/* Responsive */
 
 /* Tablet */
 @media (max-width: 1024px) {

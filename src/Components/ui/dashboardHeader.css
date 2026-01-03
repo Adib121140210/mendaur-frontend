@@ -1,4 +1,4 @@
-/* === WRAPPER UTAMA === */
+/* Header */
 .dashboardHeader {
   position: sticky;
   top: 0;
@@ -9,7 +9,6 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* === CONTAINER === */
 .headerContent {
   display: flex;
   justify-content: space-between;
@@ -18,7 +17,6 @@
   margin: 0 auto;
 }
 
-/* === KIRI & KANAN === */
 .headerLeft,
 .headerRight {
   display: flex;
@@ -26,7 +24,7 @@
   gap: 1rem;
 }
 
-/* === JUDUL === */
+/* Title */
 .headerTitle {
   font-size: 1.125rem;
   font-weight: 600;
@@ -40,7 +38,7 @@
   margin: 0;
 }
 
-/* === RESPONSIF JUDUL === */
+/* Responsive Title */
 .desktopTitle {
   display: none;
 }
@@ -59,7 +57,7 @@
   }
 }
 
-/* === TOMBOL IKON === */
+/* Icon Buttons */
 .iconButton {
   background: none;
   border: none;
@@ -93,7 +91,7 @@
   color: #dc2626;
 }
 
-/* === MODAL PENCARIAN === */
+/* Search Modal */
 .searchModal {
   position: fixed;
   top: 0;
@@ -186,11 +184,7 @@
   transform: translateY(0);
 }
 
-/* ===================================
-   RESPONSIVE - Standard Breakpoints
-=================================== */
-
-/* Tablet (769px - 1024px) */
+/* Responsive */
 @media (max-width: 1024px) {
   .dashboardHeader {
     padding: 1rem 1.25rem;
@@ -210,7 +204,6 @@
   }
 }
 
-/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
   .dashboardHeader {
     padding: 0.75rem 1rem;

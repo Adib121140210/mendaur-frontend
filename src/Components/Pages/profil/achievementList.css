@@ -1,4 +1,4 @@
-/* === BADGE REWARDS SUMMARY === */
+/* Badge Rewards Summary */
 .badgeRewardsSummary {
   margin-bottom: 24px;
 }
@@ -65,7 +65,7 @@
   opacity: 0.95;
 }
 
-/* === FILTER TOMBOL === */
+/* Filter Button */
 .badgeFilter {
   display: flex;
   gap: 12px;
@@ -218,7 +218,7 @@
   max-width: 400px;
 }
 
-/* === GRID KARTU === */
+/* Grid Card */
 .achievementList {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -226,7 +226,7 @@
   width: 100%;
 }
 
-/* === KARTU BADGE === */
+/* Badge Card */
 .achievementCard {
   background-color: #1e293b;
   border-radius: 12px;
@@ -390,7 +390,7 @@
   color: #64748b;
 }
 
-/* === BAGIAN ATAS KARTU === */
+/* Card Top */
 .achievementTop {
   display: flex;
   align-items: center;
@@ -415,7 +415,7 @@
   color: var(--color-primary);
 }
 
-/* === INFO BADGE === */
+/* Badge Info */
 .badgeInfo {
   flex: 1;
 }
@@ -432,7 +432,7 @@
   white-space: nowrap;
 }
 
-/* === RESPONSIF === */
+/* Responsive */
 @media (max-width: 768px) {
   .badgeRewardsSummary {
     margin-bottom: 16px;

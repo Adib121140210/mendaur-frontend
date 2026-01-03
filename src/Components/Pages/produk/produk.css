@@ -170,9 +170,7 @@
   font-size: 1.1rem;
 }
 
-/* ===================================
-   RESPONSIVE - Standard Breakpoints
-=================================== */
+/* Responsive */
 
 /* Desktop (1025px+) */
 @media (min-width: 1025px) {

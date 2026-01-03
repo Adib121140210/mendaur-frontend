@@ -1,4 +1,4 @@
-/* ========== Container & Header ========== */
+/* Container & Header */
 .riwayatContainer {
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -62,7 +62,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ========== Search & Status Filter ========== */
+/* Search & Status Filter */
 .searchAndStatus {
   display: flex;
   gap: 1rem;
@@ -124,7 +124,7 @@
   border-color: #10b981;
 }
 
-/* ========== Kategori Filter ========== */
+/* Kategori Filter */
 .riwayatFilterBar {
   margin: 1rem 0;
 }
@@ -174,30 +174,29 @@
   color: #374151;
 }
 
-/* Icon Colors */
 .statusIcon.green { color: #065f46; }
 .statusIcon.red { color: #991b1b; }
 .statusIcon.gray { color: #374151; }
 .statusIcon.blue { color: #0369a1; }
 .statusIcon.orange { color: #92400e; }
 
-/* ========== Card Wrapper & Scroll ========== */
+/* Card Wrapper */
 .riwayatCardWrapper {
   margin-top: 1rem;
   border-radius: 8px;
   background-color: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   max-height: 600px;
-  overflow-y: scroll; /* Always show scrollbar (even when not needed) */
+  overflow-y: scroll;
   padding: 1rem;
 }
 
 .riwayatCardWrapper::-webkit-scrollbar {
-  width: 8px; /* Slightly wider for better visibility */
+  width: 8px;
 }
 
 .riwayatCardWrapper::-webkit-scrollbar-track {
-  background: #f3f4f6; /* Light background for track */
+  background: #f3f4f6;
   border-radius: 4px;
 }
 
@@ -207,10 +206,10 @@
 }
 
 .riwayatCardWrapper::-webkit-scrollbar-thumb:hover {
-  background-color: #9ca3af; /* Darker on hover */
+  background-color: #9ca3af;
 }
 
-/* ========== Card List & Items ========== */
+/* Card List */
 .riwayatCardList {
   list-style: none;
   padding: 0;
@@ -237,7 +236,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* ========== Card Content ========== */
+/* Card Content */
 .cardTop {
   display: flex;
   justify-content: space-between;
@@ -277,7 +276,7 @@
   height: 16px;
 }
 
-/* ========== Card Detail ========== */
+/* Card Detail */
 .cardDetail {
   display: flex;
   justify-content: space-between;
@@ -312,7 +311,7 @@
   color: #991b1b;
 }
 
-/* ========== Metadata & Status ========== */
+/* Metadata & Status */
 .cardMeta {
   display: flex;
   gap: 1rem;
@@ -343,7 +342,7 @@
   color: #374151;
 }
 
-/* ========== Loading & Error States ========== */
+/* Loading & Error States */
 .loadingState,
 .errorState {
   display: flex;
@@ -387,7 +386,7 @@
   background-color: #047857;
 }
 
-/* ========== Empty State ========== */
+/* Empty State */
 .emptyState {
   text-align: center;
   padding: 3rem 1rem;
@@ -399,7 +398,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* ========== Card Info Elements ========== */
+/* Card Info Elements */
 .cardInfo {
   font-size: 0.75rem;
   color: #6b7280;
@@ -471,7 +470,7 @@
   gap: 4px;
 }
 
-/* ========== Responsive ========== */
+/* Responsive */
 
 /* Desktop (1025px+) */
 @media (min-width: 1025px) {

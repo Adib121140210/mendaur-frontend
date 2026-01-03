@@ -60,14 +60,7 @@
   --chart-2: #92400e;
   --chart-3: #78350f;
 
-  /* =============================================
-     RESPONSIVE BREAKPOINTS STANDARD (Mendaur)
-     =============================================
-     Mobile Small:     320px - 480px
-     Mobile Large:     481px - 768px  
-     Tablet/Laptop:    769px - 1024px
-     Desktop:          1025px+
-  */
+  /* Responsive Breakpoints: Mobile Small 320-480px, Mobile Large 481-768px, Tablet 769-1024px, Desktop 1025px+ */
 }
 
 
