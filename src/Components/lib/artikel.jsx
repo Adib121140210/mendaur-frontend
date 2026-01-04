@@ -181,9 +181,9 @@ const ArtikelCard = ({
           <div className="artikelCard" key={item.artikel_id || item.id}>
             <Link to={linkPath} className="artikelCardImageLink">
               <div className="artikelCardImage">
-                {item.gambar ? (
+                {(item.gambar || item.cover || item.foto || item.image) ? (
                   <img
-                    src={getImageUrl(item.gambar)}
+                    src={getImageUrl(item.gambar || item.cover || item.foto || item.image)}
                     alt={item.judul || 'Artikel'}
                     onError={(e) => { 
                       e.target.style.display = 'none';
@@ -191,7 +191,7 @@ const ArtikelCard = ({
                     }}
                   />
                 ) : null}
-                <div className="artikelNoImage" style={{ display: item.gambar ? 'none' : 'flex' }}>
+                <div className="artikelNoImage" style={{ display: (item.gambar || item.cover || item.foto || item.image) ? 'none' : 'flex' }}>
                   <span>📰</span>
                   <p>Gambar tidak tersedia</p>
                 </div>

@@ -4,6 +4,8 @@ import {
   Search,
   ArrowUpCircle,
   ArrowDownCircle,
+  ArrowUp,
+  ArrowDown,
   Calendar,
   CheckCircle,
   Truck,
@@ -24,6 +26,7 @@ export default function RiwayatTransaksi() {
   const [filterKategori, setFilterKategori] = useState("semua");
   const [filterStatus, setFilterStatus] = useState("semua");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc"); // desc = terbaru, asc = terlama
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -229,13 +232,19 @@ export default function RiwayatTransaksi() {
     }
   };
 
-  // Filter transactions using normalizedStatus
-  const filteredTransactions = transactions.filter((item) => {
-    const matchKategori = filterKategori === "semua" || item.kategori === filterKategori;
-    const matchStatus = filterStatus === "semua" || item.normalizedStatus === filterStatus;
-    const matchSearch = item.deskripsi.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchKategori && matchStatus && matchSearch;
-  });
+  // Filter and sort transactions using normalizedStatus
+  const filteredTransactions = transactions
+    .filter((item) => {
+      const matchKategori = filterKategori === "semua" || item.kategori === filterKategori;
+      const matchStatus = filterStatus === "semua" || item.normalizedStatus === filterStatus;
+      const matchSearch = item.deskripsi.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchKategori && matchStatus && matchSearch;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.tanggal);
+      const dateB = new Date(b.tanggal);
+      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="riwayatContainer">
@@ -279,6 +288,24 @@ export default function RiwayatTransaksi() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
+        <button
+          className="sortButton"
+          onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+          title={sortOrder === "desc" ? "Terbaru" : "Terlama"}
+        >
+          {sortOrder === "desc" ? (
+            <>
+              <ArrowDown size={16} />
+              <span>Terbaru</span>
+            </>
+          ) : (
+            <>
+              <ArrowUp size={16} />
+              <span>Terlama</span>
+            </>
+          )}
+        </button>
 
         <select
           className="statusDropdown"

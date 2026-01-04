@@ -14,15 +14,6 @@ const Banner = () => {
           <p className="bannerText">
             Bergabunglah dalam misi mengurangi sampah dan menciptakan lingkungan yang lebih bersih untuk generasi mendatang.
           </p>
-          <div className="bannerActions">
-            <button className="bannerBtnPrimary">
-              Mulai Berkontribusi
-              <span className="arrowIcon">→</span>
-            </button>
-            <button className="bannerBtnSecondary">
-              Pelajari Lebih Lanjut
-            </button>
-          </div>
         </div>
     </div>
 );

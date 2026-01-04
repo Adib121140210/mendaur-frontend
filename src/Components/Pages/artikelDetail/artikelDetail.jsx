@@ -1,4 +1,3 @@
-import useScrollTop from "../../lib/useScrollTop";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, Calendar, User, ArrowLeft, Clock, Share2, BookOpen, TrendingUp } from "lucide-react";
@@ -6,8 +5,6 @@ import { API_BASE_URL, getStorageUrl } from "../../../config/api";
 import "./artikelDetail.css";
 
 const ArtikelDetail = () => {
-  useScrollTop();
-  
   const { id: artikelId } = useParams(); // Using artikel_id instead of slug
   const navigate = useNavigate();
   const [artikelData, setArtikelData] = useState(null);
@@ -15,6 +12,11 @@ const ArtikelDetail = () => {
   const [popularArticles, setPopularArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Scroll to top when article changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [artikelId]);
 
   useEffect(() => {
     fetchArtikelDetail();

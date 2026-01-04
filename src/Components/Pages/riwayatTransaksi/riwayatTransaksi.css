@@ -147,6 +147,36 @@
   pointer-events: none;
 }
 
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sortButton:hover {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.sortButton:active {
+  background-color: #dcfce7;
+}
+
+.sortButton svg {
+  color: #10b981;
+}
+
 .statusDropdown {
   padding: 10px 14px;
   font-size: 0.875rem;

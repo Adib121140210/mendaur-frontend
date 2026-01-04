@@ -381,19 +381,28 @@ function DepositModal({ deposit, onClose, formatDate, getStatusIcon, getStatusCo
             <span>{getStatusText(deposit.status)}</span>
           </div>
 
-          {/* Photo Evidence */}
-          {deposit.foto_bukti && (
-            <div className="photoSection">
-              <h3 className="sectionTitle">Foto Bukti</h3>
-              <img
-                src={deposit.foto_bukti.startsWith('http')
-                  ? deposit.foto_bukti
-                  : getStorageUrl(deposit.foto_bukti)}
-                alt="Bukti tabung sampah"
-                className="evidencePhoto"
-              />
-            </div>
-          )}
+          {/* Photo Evidence - Check multiple possible field names */}
+          {(() => {
+            const fotoUrl = deposit.foto_bukti || deposit.foto || deposit.gambar || deposit.image || deposit.photo || deposit.bukti_foto;
+            if (!fotoUrl) return null;
+            
+            const fullUrl = fotoUrl.startsWith('http') ? fotoUrl : getStorageUrl(fotoUrl);
+            
+            return (
+              <div className="photoSection">
+                <h3 className="sectionTitle">Foto Bukti</h3>
+                <img
+                  src={fullUrl}
+                  alt="Bukti tabung sampah"
+                  className="evidencePhoto"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.style.display = 'none';
+                  }}
+                />
+              </div>
+            );
+          })()}
 
           {/* Deposit Information */}
           <div className="infoSection">

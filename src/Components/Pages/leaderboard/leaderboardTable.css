@@ -258,18 +258,24 @@
 
 /* Top 3 */
 .leaderboardCard.gold {
-  background-color: #fffbeb;
-  border-color: #fcd34d;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%);
+  border-color: #f59e0b;
+  border-width: 2px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 .leaderboardCard.silver {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border-color: #9ca3af;
+  border-width: 2px;
+  box-shadow: 0 4px 12px rgba(156, 163, 175, 0.2);
 }
 
 .leaderboardCard.bronze {
-  background-color: #fff7ed;
-  border-color: #fdba74;
+  background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #fdba74 100%);
+  border-color: #f97316;
+  border-width: 2px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
 }
 
 /* Current user */

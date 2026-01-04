@@ -106,7 +106,7 @@ const HomeContent = () => {
       const [statsRes, leaderRes, badgesRes, tabungRes, redeemRes, withdrawRes] = await Promise.allSettled([
         !cachedStats ? fetchWithTimeout(`${API_BASE_URL}/dashboard/stats/${userId}`, 10000) : Promise.resolve(null),
         !cachedLeaderboard ? fetchWithTimeout(`${API_BASE_URL}/dashboard/leaderboard`, 10000) : Promise.resolve(null),
-        !cachedBadges ? fetchWithTimeout(`${API_BASE_URL}/users/${userId}/badges`, 8000) : Promise.resolve(null),
+        !cachedBadges ? fetchWithTimeout(`${API_BASE_URL}/users/${userId}/badges-list?filter=unlocked`, 8000) : Promise.resolve(null),
         !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/setor-sampah/user/${userId}`, 6000) : Promise.resolve(null),
         !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/penukaran-produk/user/${userId}`, 6000) : Promise.resolve(null),
         !cachedActivities ? fetchWithTimeout(`${API_BASE_URL}/penarikan-tunai/user/${userId}`, 6000) : Promise.resolve(null),
@@ -126,11 +126,18 @@ const HomeContent = () => {
         cache.set('leaderboard', data.data || [], 60000);
       }
 
-      // Process badges
+      // Process badges - map from badges-list API format
       if (!cachedBadges && badgesRes.status === 'fulfilled' && badgesRes.value?.ok) {
         const data = await badgesRes.value.json();
-        setUserBadges(data.data || []);
-        cache.set(`badges-${userId}`, data.data || [], 300000);
+        const badges = (data.data || []).map(badge => ({
+          ...badge,
+          badge_id: badge.badge_id || badge.id,
+          nama_badge: badge.nama || badge.nama_badge,
+          reward_poin: badge.reward_poin || 0,
+          icon: badge.icon || null,
+        }));
+        setUserBadges(badges);
+        cache.set(`badges-${userId}`, badges, 300000);
       }
 
       // Process activities in parallel
