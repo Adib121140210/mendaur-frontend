@@ -51,9 +51,9 @@ export default defineConfig({
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,
-        // Offline fallback page
-        navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        // Use index.html as navigation fallback (SPA)
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /\.(js|css|png|jpg|jpeg|svg|gif|ico|woff|woff2|json)$/],
         // Precache important pages
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Cache strategies for different resource types
