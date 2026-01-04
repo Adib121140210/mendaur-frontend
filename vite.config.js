@@ -121,6 +121,8 @@ export default defineConfig({
     },
   },
   build: {
+    // Target Safari 14+ dan iOS 14+ untuk kompatibilitas lebih baik
+    target: ['es2020', 'safari14', 'ios14'],
     // Code splitting for better load times
     rollupOptions: {
       output: {
