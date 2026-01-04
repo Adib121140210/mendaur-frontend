@@ -136,21 +136,20 @@ export default function RiwayatTransaksi() {
       // Process product redemptions
       if (productRes.status === 'fulfilled' && productRes.value.ok) {
         const data = await productRes.value.json();
-        const allRedemptions = Array.isArray(data) ? data : (data.data?.data || data.data || []);
+        const allRedemptions = Array.isArray(data) ? data : (data.data || []);
         productRedemptions = allRedemptions
-          .filter(item => item.user_id?.toString() === userId?.toString())
           .map(item => ({
-            id: `product-${item.penukaran_produk_id}`,
+            id: `product-${item.id || item.penukaran_produk_id}`,
             type: 'tukar_produk',
             kategori: 'penukaran',
-            deskripsi: `Penukaran ${item.nama_produk || item.produk?.nama || 'Produk'}`,
+            deskripsi: `Penukaran ${item.produk?.nama || item.nama_produk || 'Produk'}`,
             detail: `-${item.poin_digunakan || item.jumlah_poin || 0} poin`,
             points: -(item.poin_digunakan || item.jumlah_poin || 0),
             status: item.status || 'pending',
             normalizedStatus: normalizeStatus(item.status || 'pending'),
             timestamp: item.created_at,
-            productName: item.nama_produk || item.produk?.nama,
-            productId: item.produk_id,
+            productName: item.produk?.nama || item.nama_produk,
+            productId: item.produk?.id || item.produk_id,
             quantity: item.jumlah || 1,
             claimInstructions: item.status === 'approved' ? 'Silakan datang ke kantor Bank Sampah untuk mengambil produk' : null,
             adminNote: item.catatan_admin,
@@ -361,7 +360,7 @@ export default function RiwayatTransaksi() {
               </div>
             ) : (
               filteredTransactions.map((item) => (
-                <li key={item.poin_transaksi_id} className={`riwayatCard ${item.status}`}>
+                <li key={item.id} className={`riwayatCard ${item.normalizedStatus}`}>
                   <div className="cardTop">
                     <div className="cardTitleBlock">
                       <h3 className="cardTitle">{item.deskripsi}</h3>
