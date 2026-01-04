@@ -51,27 +51,42 @@ export default defineConfig({
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,
-        // Use index.html as navigation fallback (SPA)
+        // Navigasi fallback - untuk SPA routing
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /\.(js|css|png|jpg|jpeg|svg|gif|ico|woff|woff2|json)$/],
+        // Jangan fallback untuk API calls dan static files
+        navigateFallbackDenylist: [/^\/api\//],
         // Precache important pages
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Cache strategies for different resource types
         runtimeCaching: [
           {
-            // Cache API responses with network-first strategy
+            // Cache API responses - gunakan StaleWhileRevalidate untuk offline support
             urlPattern: /^https:\/\/mendaur\.up\.railway\.app\/api\/.*/i,
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'api-cache',
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 // 1 hour
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours untuk offline
               },
               cacheableResponse: {
                 statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Cache untuk sedulurmendaur API juga
+            urlPattern: /^https:\/\/sedulurmendaur.*\.up\.railway\.app\/api\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache-alt',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
               },
-              networkTimeoutSeconds: 5 // Fallback to cache after 5s
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {
@@ -99,16 +114,15 @@ export default defineConfig({
             }
           },
           {
-            // Cache static assets - use NetworkFirst to always get latest
+            // Cache static assets - StaleWhileRevalidate untuk offline support
             urlPattern: /\.(?:js|css|woff2?)$/i,
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'static-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 day
-              },
-              networkTimeoutSeconds: 3
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
             }
           }
         ]
