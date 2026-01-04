@@ -3,6 +3,7 @@ import {Routes, Route, Navigate} from 'react-router-dom'
 import "./index.css"
 import { useAuth } from './Components/Pages/context/AuthContext'
 import BottomNav from './Components/BottomNav/bottomNav'
+import OfflineIndicator from './Components/OfflineIndicator/OfflineIndicator'
 
 // Loading component for Suspense - Optimized with minimal render
 const PageLoader = () => (
@@ -135,6 +136,9 @@ const App = () => {
 
   return (
     <>
+      {/* Offline Status Indicator */}
+      <OfflineIndicator />
+      
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Root Route - Redirect based on auth status */}

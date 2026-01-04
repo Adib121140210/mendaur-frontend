@@ -13,7 +13,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'robots.txt'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'robots.txt', 'offline.html'],
       // Force immediate update of service worker
       devOptions: {
         enabled: false // Disable SW in dev mode
@@ -51,6 +51,11 @@ export default defineConfig({
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,
+        // Offline fallback page
+        navigateFallback: '/offline.html',
+        navigateFallbackDenylist: [/^\/api\//],
+        // Precache important pages
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Cache strategies for different resource types
         runtimeCaching: [
           {
