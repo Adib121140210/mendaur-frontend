@@ -429,11 +429,6 @@ export default function TukarPoin() {
 
   return (
     <div className="tukarPoinContainer">
-      {/* Header Section */}
-      <header className="tukarPoinHeader">
-        <p className="pageSubtitle">Tukar poin Anda dengan berbagai manfaat berkelanjutan</p>
-      </header>
-
       {/* Banner Poin */}
       <section className="userPointsSection">
         <div className="userPointsCard">

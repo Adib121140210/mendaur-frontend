@@ -17,15 +17,14 @@
   margin: 0;
 }
 
-/* BANNER POIN */
+/* BANNER POIN - Tema dari banner home */
 .userPointsSection {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  background: #123524;
   border-radius: 20px;
   padding: 2rem 2.5rem;
   margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .userPointsCard {
@@ -41,7 +40,7 @@
 }
 
 .userPointsCard .pointsLabel {
-  color: #059669;
+  color: #facc15;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 1px;
@@ -55,18 +54,17 @@
 .userPointsCard .pointsValue {
   font-size: 2.75rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #facc15;
   margin: 0 0 0.25rem 0;
   line-height: 1.1;
-  text-shadow: 0 2px 4px rgba(251, 191, 36, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .userPointsCard .pointsNote {
   font-size: 0.85rem;
   font-weight: 400;
-  color: #059669;
+  color: rgba(255, 255, 255, 0.8);
   display: block;
-  opacity: 0.8;
 }
 
 .pointsRow {
@@ -151,7 +149,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #123524, #1e5631);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -159,7 +157,7 @@
 /* Hover: naik sedikit + border lebih tegas */
 .menuCard:hover {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border-color: #10b981;
+  border-color: #123524;
   transform: translateY(-4px);
 }
 
@@ -194,14 +192,23 @@
 }
 
 .menuCard.active {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border: 2px solid #10b981;
-  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, #123524 0%, #1e5631 100%);
+  border: 2px solid #123524;
+  box-shadow: 0 10px 30px rgba(18, 53, 36, 0.3);
   transform: translateY(-4px);
+}
+
+.menuCard.active .menuTitle {
+  color: #ffffff;
+}
+
+.menuCard.active .menuPoin {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .menuCard.active::before {
   opacity: 1;
+  background: linear-gradient(90deg, #facc15, #eab308);
 }
 
 /* Produk Ramah Lingkungan  => Aktif */
