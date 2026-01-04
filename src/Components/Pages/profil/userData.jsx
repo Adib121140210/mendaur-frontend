@@ -7,18 +7,18 @@ import cache from "../../../utils/cache";
 import { Recycle, Star, ArrowLeftRight, Calendar, Trophy, MapPin, Phone, Gift, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 
 const CACHE_TTL = {
-  USER_DETAIL: 3 * 60 * 1000, // 3 minutes
-  ACTIVITY: 2 * 60 * 1000,    // 2 minutes  
-  BADGES: 3 * 60 * 1000,      // 3 minutes
+  USER_DETAIL: 10 * 60 * 1000, // 10 minutes - increased for better offline support
+  ACTIVITY: 5 * 60 * 1000,     // 5 minutes  
+  BADGES: 10 * 60 * 1000,      // 10 minutes
 };
 
-export default function UserData() {
+export default function UserData({ cachedData, onDataLoaded }) {
   const { user } = useAuth();
-  const [aktivitas, setAktivitas] = useState([]);
-  const [badgeCount, setBadgeCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [userCreatedAt, setUserCreatedAt] = useState(null);
-  const [totalBadgeRewards, setTotalBadgeRewards] = useState(0);
+  const [aktivitas, setAktivitas] = useState(cachedData?.aktivitas || []);
+  const [badgeCount, setBadgeCount] = useState(cachedData?.badgeInfo?.count || 0);
+  const [loading, setLoading] = useState(!cachedData);
+  const [userCreatedAt, setUserCreatedAt] = useState(cachedData?.userCreatedAt || null);
+  const [totalBadgeRewards, setTotalBadgeRewards] = useState(cachedData?.badgeInfo?.rewards || 0);
 
   // Check for user change (clear stale cache)
   useEffect(() => {
@@ -37,6 +37,17 @@ export default function UserData() {
     const cachedActivity = cache.get(cacheKeyActivity);
     const cachedBadges = cache.get(cacheKeyBadges);
 
+    // Helper function to notify parent
+    const notifyParent = (userCreated, activities, badgeInfo) => {
+      if (onDataLoaded) {
+        onDataLoaded({
+          userCreatedAt: userCreated,
+          aktivitas: activities,
+          badgeInfo: badgeInfo
+        });
+      }
+    };
+
     // If all cached, use cached data immediately
     if (cachedUser && cachedActivity && cachedBadges) {
       setUserCreatedAt(cachedUser);
@@ -44,6 +55,7 @@ export default function UserData() {
       setBadgeCount(cachedBadges.count);
       setTotalBadgeRewards(cachedBadges.rewards);
       setLoading(false);
+      notifyParent(cachedUser, cachedActivity, cachedBadges);
       return;
     }
 
@@ -68,13 +80,19 @@ export default function UserData() {
         createFetchWithTimeout(getUserBadges(user.user_id))
     ]);
 
+    let newUserCreatedAt = cachedUser;
+    let newAktivitas = cachedActivity || [];
+    let newBadgeInfo = cachedBadges || { count: 0, rewards: 0 };
+
     // Process user detail
     if (userResult.status === 'fulfilled') {
       const result = userResult.value;
       if (result.cached) {
         setUserCreatedAt(result.data);
+        newUserCreatedAt = result.data;
       } else if (result.data?.created_at) {
         setUserCreatedAt(result.data.created_at);
+        newUserCreatedAt = result.data.created_at;
         cache.set(cacheKeyUser, result.data.created_at, CACHE_TTL.USER_DETAIL);
       }
     }
@@ -84,9 +102,11 @@ export default function UserData() {
       const result = activityResult.value;
       if (result.cached) {
         setAktivitas(result.data);
+        newAktivitas = result.data;
       } else if (result.status === 'success') {
         const activityData = result.data || [];
         setAktivitas(activityData);
+        newAktivitas = activityData;
         cache.set(cacheKeyActivity, activityData, CACHE_TTL.ACTIVITY);
       }
     }
@@ -97,17 +117,21 @@ export default function UserData() {
       if (result.cached) {
         setBadgeCount(result.data.count);
         setTotalBadgeRewards(result.data.rewards);
+        newBadgeInfo = result.data;
       } else if (result.status === 'success') {
         const badges = result.data || [];
         const count = badges.length;
         const rewards = badges.reduce((sum, badge) => sum + (badge.reward_poin || 0), 0);
         setBadgeCount(count);
         setTotalBadgeRewards(rewards);
-        cache.set(cacheKeyBadges, { count, rewards }, CACHE_TTL.BADGES);
+        newBadgeInfo = { count, rewards };
+        cache.set(cacheKeyBadges, newBadgeInfo, CACHE_TTL.BADGES);
       }
     }
 
     setLoading(false);
+    notifyParent(newUserCreatedAt, newAktivitas, newBadgeInfo);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.user_id]);
 
   useEffect(() => {

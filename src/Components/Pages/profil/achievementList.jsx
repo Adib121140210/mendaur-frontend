@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 
 const CACHE_TTL = {
-  BADGES: 2 * 60 * 1000,       // 2 minutes
-  TOTAL_REWARDS: 5 * 60 * 1000, // 5 minutes
+  BADGES: 5 * 60 * 1000,        // 5 minutes - increased for better offline support
+  TOTAL_REWARDS: 10 * 60 * 1000, // 10 minutes
 };
 
 // Icon mapping by badge type
@@ -118,16 +118,16 @@ function BadgeCard({ badge }) {
 }
 
 // Main component
-export default function AchievementList() {
+export default function AchievementList({ cachedData, onDataLoaded }) {
   const { user } = useAuth();
-  const [allBadges, setAllBadges] = useState([]);
+  const [allBadges, setAllBadges] = useState(cachedData?.badges || []);
   // eslint-disable-next-line no-unused-vars
-  const [userBadges, setUserBadges] = useState([]);
+  const [userBadges, setUserBadges] = useState(cachedData?.userBadges || []);
   const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [initialLoading, setInitialLoading] = useState(true); // Loading awal saja
-  const [counts, setCounts] = useState({ all: 0, unlocked: 0, locked: 0 });
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(!cachedData);
+  const [initialLoading, setInitialLoading] = useState(!cachedData); // Loading awal saja
+  const [counts, setCounts] = useState(cachedData?.counts || { all: 0, unlocked: 0, locked: 0 });
+  const [message, setMessage] = useState(cachedData?.message || "");
   const [totalRewardsEarned, setTotalRewardsEarned] = useState(0);
   const [totalPossibleRewards, setTotalPossibleRewards] = useState(0);
 
@@ -183,6 +183,11 @@ export default function AchievementList() {
       setCounts(cached.counts);
       setMessage(cached.message);
       setLoading(false);
+      setInitialLoading(false);
+      // Notify parent of loaded data
+      if (onDataLoaded) {
+        onDataLoaded(cached);
+      }
       return;
     }
 
@@ -222,12 +227,18 @@ export default function AchievementList() {
         setUserBadges(unlockedBadges);
         
         // Cache the processed data
-        cache.set(cacheKey, {
+        const cacheData = {
           badges: badgesWithStatus,
           userBadges: unlockedBadges,
           counts: result.counts || counts,
           message: result.message || ''
-        }, CACHE_TTL.BADGES);
+        };
+        cache.set(cacheKey, cacheData, CACHE_TTL.BADGES);
+        
+        // Notify parent of loaded data
+        if (onDataLoaded) {
+          onDataLoaded(cacheData);
+        }
       }
     } catch {
       // Use expanded mock data when API is not available
@@ -299,6 +310,7 @@ export default function AchievementList() {
       setLoading(false);
       setInitialLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.user_id, filter, counts]);
 
   // Fetch badges when user or filter changes
