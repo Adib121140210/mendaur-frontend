@@ -80,7 +80,7 @@ export default function RiwayatTransaksi() {
         fetch(`${API_BASE_URL}/users/${userId}/tabung-sampah`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         }),
-        fetch(`${API_BASE_URL}/penukaran-produk`, {
+        fetch(`${API_BASE_URL}/penukaran-produk/user/${userId}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         }),
       ]);
@@ -441,8 +441,8 @@ export default function RiwayatTransaksi() {
                             </p>
                           )}
 
-                          {/* Admin Note for Rejected */}
-                          {item.status === 'rejected' && item.adminNote && (
+                          {/* Admin Note for Rejected/Cancelled */}
+                          {(item.status === 'rejected' || item.status === 'cancelled') && item.adminNote && (
                             <p className="adminNote">
                               <AlertCircle size={14} />
                               Alasan: {item.adminNote}
