@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { notificationService } from '../../services/notificationService'
+import { useAuth } from './Pages/context/AuthContext'
+import { notificationService } from '../services/notificationService'
 import './NotificationBell.css'
 
 const NotificationBell = () => {
-  const { hasPermission } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -41,14 +41,14 @@ const NotificationBell = () => {
 
   // Initial load and polling
   useEffect(() => {
-    if (!hasPermission('view_notifications')) {
+    if (!isAuthenticated) {
       return
     }
     
     fetchUnreadCount()
     const interval = setInterval(fetchUnreadCount, 30000) // Poll every 30 seconds
     return () => clearInterval(interval)
-  }, [hasPermission])
+  }, [isAuthenticated])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -100,8 +100,8 @@ const NotificationBell = () => {
     }
   }
 
-  // Don't render if no permission
-  if (!hasPermission('view_notifications')) {
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
     return null
   }
 

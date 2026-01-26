@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Pages/context/AuthContext";
+import NotificationBell from "../NotificationBell";
 import "./dashboardHeader.css";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 export default function DashboardHeader() {
   const navigate = useNavigate();
@@ -14,11 +15,6 @@ export default function DashboardHeader() {
       logout();
       navigate("/login", { replace: true });
     }
-  };
-
-  /* handle notifications */
-  const handleNotifications = () => {
-    // Implementasi notifikasi akan ditambahkan nanti
   };
 
   return (
@@ -35,15 +31,8 @@ export default function DashboardHeader() {
         </div>
 
         <nav className="headerRight" aria-label="Navigasi cepat">
-          {/* Tombol Notifikasi */}
-          <button
-            className="iconButton"
-            onClick={handleNotifications}
-            aria-label="Notifikasi"
-            title="Notifikasi"
-          >
-            <Bell className="icon" />
-          </button>
+          {/* Tombol Notifikasi - Menggunakan NotificationBell component */}
+          <NotificationBell />
 
           {/* Tombol Logout */}
           <button
