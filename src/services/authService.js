@@ -1,6 +1,8 @@
 // Auth Service - login, logout, token management
+// Updated with Safari/iOS compatibility
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api';
+import { API_BASE_URL } from '../config/api';
+import { getItem, setItem, removeItem, getRawItem } from '../utils/storage';
 
 export const authService = {
   login: async (email, password) => {
@@ -11,75 +13,78 @@ export const authService = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        credentials: 'same-origin',
+        mode: 'cors',
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        console.warn('[Auth] Login failed:', response.status, data.message);
         return {
           success: false,
-          message: data.message || 'Login failed',
+          message: data.message || 'Login gagal. Periksa email dan password Anda.',
           data: null,
         };
       }
 
-      // Store token and user data
+      // Store token and user data using storage utility
       if (data.data?.token) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        setItem('token', data.data.token);
+        setItem('user', data.data.user);
         
         // Determine role from user level
         const userLevel = data.data.user?.level?.toLowerCase() || 'nasabah';
         let role = 'nasabah';
         if (userLevel.includes('superadmin')) role = 'superadmin';
         else if (userLevel.includes('admin')) role = 'admin';
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('userId', data.data.user?.user_id || '');
+        setItem('userRole', role);
+        setItem('userId', data.data.user?.user_id || '');
       }
 
       return {
         success: true,
-        message: 'Login successful',
+        message: 'Login berhasil',
         data: data.data,
       };
-    } catch {
+    } catch (error) {
+      console.error('[Auth] Login error:', error);
       return {
         success: false,
-        message: 'Network error. Please try again.',
+        message: 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
         data: null,
       };
     }
   },
 
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    return { success: true, message: 'Logged out successfully' };
+    removeItem('token');
+    removeItem('user');
+    removeItem('userRole');
+    removeItem('userId');
+    return { success: true, message: 'Logout berhasil' };
   },
 
   getToken: () => {
-    return localStorage.getItem('token');
+    return getRawItem('token');
   },
 
   getUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    return getItem('user', null);
   },
 
   getUserId: () => {
-    const id = localStorage.getItem('userId');
+    const id = getItem('userId');
     return id ? parseInt(id) : null;
   },
 
   getUserRole: () => {
-    return localStorage.getItem('userRole') || 'nasabah';
+    return getItem('userRole', 'nasabah');
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem('token');
+    return !!getRawItem('token');
   },
 
   isNasabah: () => {
@@ -111,18 +116,22 @@ export const authService = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        credentials: 'same-origin',
+        mode: 'cors',
       });
 
       const data = await response.json();
 
       if (data.data?.token) {
-        localStorage.setItem('token', data.data.token);
+        setItem('token', data.data.token);
         return { success: true, token: data.data.token };
       }
 
       return { success: false, token: null };
-    } catch {
+    } catch (error) {
+      console.error('[Auth] Token refresh error:', error);
       return { success: false, token: null };
     }
   },

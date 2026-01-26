@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, ArrowLeft, Leaf, AlertCircle, CheckCircle, KeyRound, Lock, Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL } from "../../../config/api";
@@ -24,6 +24,14 @@ export default function ForgotPassword() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+
+  // Refs for OTP inputs - better for iOS compatibility
+  const otpRefs = useRef([]);
+
+  // Initialize refs array
+  useEffect(() => {
+    otpRefs.current = otpRefs.current.slice(0, 6);
+  }, []);
 
   // Start resend timer
   const startResendTimer = () => {
@@ -69,6 +77,8 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        credentials: "same-origin",
+        mode: "cors",
         body: JSON.stringify({ email: email.trim() }),
       });
 
@@ -120,11 +130,14 @@ export default function ForgotPassword() {
     }
   };
 
-  // Handle OTP input change
+  // Handle OTP input change - iOS compatible version using refs
   const handleOtpChange = (index, value) => {
-    if (value.length > 1) {
-      // Handle paste
-      const pastedValue = value.slice(0, 6).split('');
+    // Only allow numeric input
+    const numericValue = value.replace(/\D/g, '');
+    
+    if (numericValue.length > 1) {
+      // Handle paste - spread across inputs
+      const pastedValue = numericValue.slice(0, 6).split('');
       const newOtp = [...otp];
       pastedValue.forEach((char, i) => {
         if (index + i < 6) {
@@ -133,17 +146,23 @@ export default function ForgotPassword() {
       });
       setOtp(newOtp);
       
-      // Focus last filled input or next empty
+      // Focus last filled input or next empty using refs
       const nextIndex = Math.min(index + pastedValue.length, 5);
-      document.getElementById(`otp-${nextIndex}`)?.focus();
+      // Use setTimeout for iOS Safari compatibility
+      setTimeout(() => {
+        otpRefs.current[nextIndex]?.focus();
+      }, 10);
     } else {
       const newOtp = [...otp];
-      newOtp[index] = value;
+      newOtp[index] = numericValue;
       setOtp(newOtp);
       
-      // Auto-focus next input
-      if (value && index < 5) {
-        document.getElementById(`otp-${index + 1}`)?.focus();
+      // Auto-focus next input using refs
+      if (numericValue && index < 5) {
+        // Use setTimeout for iOS Safari compatibility
+        setTimeout(() => {
+          otpRefs.current[index + 1]?.focus();
+        }, 10);
       }
     }
   };
@@ -151,7 +170,33 @@ export default function ForgotPassword() {
   // Handle OTP key down for backspace
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus();
+      // Use setTimeout for iOS Safari compatibility
+      setTimeout(() => {
+        otpRefs.current[index - 1]?.focus();
+      }, 10);
+    }
+  };
+
+  // Handle OTP paste event directly
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData?.getData('text') || '';
+    const numericValue = pastedData.replace(/\D/g, '').slice(0, 6);
+    
+    if (numericValue) {
+      const newOtp = [...otp];
+      numericValue.split('').forEach((char, i) => {
+        if (i < 6) {
+          newOtp[i] = char;
+        }
+      });
+      setOtp(newOtp);
+      
+      // Focus last input
+      const lastIndex = Math.min(numericValue.length - 1, 5);
+      setTimeout(() => {
+        otpRefs.current[lastIndex]?.focus();
+      }, 10);
     }
   };
 
@@ -180,6 +225,8 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        credentials: "same-origin",
+        mode: "cors",
         body: JSON.stringify(payload),
       });
 
@@ -245,6 +292,8 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        credentials: "same-origin",
+        mode: "cors",
         body: JSON.stringify({ email: email.trim() }),
       });
 
@@ -335,6 +384,8 @@ export default function ForgotPassword() {
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
+          credentials: "same-origin",
+          mode: "cors",
           body: JSON.stringify(payload),
         });
 
@@ -443,16 +494,19 @@ export default function ForgotPassword() {
                 {otp.map((digit, index) => (
                   <input
                     key={index}
-                    id={`otp-${index}`}
-                    type="text"
+                    ref={(el) => (otpRefs.current[index] = el)}
+                    type="tel"
                     inputMode="numeric"
-                    maxLength={6}
+                    pattern="[0-9]*"
+                    maxLength={1}
                     className="otpInput"
                     value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={handleOtpPaste}
                     disabled={loading}
-                    autoFocus={index === 0}
+                    autoComplete="one-time-code"
+                    aria-label={`OTP digit ${index + 1}`}
                   />
                 ))}
               </div>
