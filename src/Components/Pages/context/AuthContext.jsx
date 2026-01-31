@@ -134,7 +134,9 @@ export const AuthProvider = ({ children }) => {
   const hasPermission = (permission) => {
     // Superadmin has ALL permissions
     if (role === 'superadmin') return true;
-    // Admin and regular users must have explicit permission
+    // Admin also has all admin-related permissions by default
+    if (role === 'admin') return true;
+    // Regular users must have explicit permission
     if (!Array.isArray(permissions)) return false;
     return permissions.includes(permission);
   };

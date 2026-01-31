@@ -141,6 +141,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRol
                 <div className="menu-items">
                   {group.items.map((item) => {
                     // ✅ Permission check - filter menu items based on user permissions
+                    // Admin and Superadmin have access to all admin menu items
                     const itemPermissionMap = {
                       'waste-deposits': 'view_deposits',
                       'product-redemption': 'view_redemptions',
@@ -153,7 +154,10 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, userRol
                     }
                     
                     const requiredPermission = itemPermissionMap[item.id]
-                    if (requiredPermission && !hasPermission(requiredPermission)) {
+                    // If user is admin or superadmin (has userRole prop), they can see all items
+                    // Otherwise check specific permission
+                    const isAdminRole = userRole === 'admin' || userRole === 'superadmin'
+                    if (requiredPermission && !isAdminRole && !hasPermission(requiredPermission)) {
                       return null
                     }
                     
