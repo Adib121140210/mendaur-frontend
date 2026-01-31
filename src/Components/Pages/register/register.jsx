@@ -132,6 +132,8 @@ export default function Register() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        credentials: "include",  // ⚠️ WAJIB untuk Safari/iOS
+        mode: "cors",
         body: JSON.stringify(payload),
       });
 

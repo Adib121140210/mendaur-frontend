@@ -9,6 +9,8 @@ const requestInterceptor = (options = {}) => {
 
   return {
     ...options,
+    credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',

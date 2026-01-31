@@ -13,7 +13,7 @@ export const authService = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        credentials: 'same-origin',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
         mode: 'cors',
         body: JSON.stringify({ email, password }),
       });
@@ -118,7 +118,7 @@ export const authService = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        credentials: 'same-origin',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
         mode: 'cors',
       });
 

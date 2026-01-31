@@ -47,8 +47,11 @@ const RiwayatTabung = () => {
       
       const response = await fetch(url, {
         method: 'GET',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });

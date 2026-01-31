@@ -76,14 +76,22 @@ export default function RiwayatTransaksi() {
 
     try {
       // Fetch ALL 3 endpoints in PARALLEL
+      const fetchOptions = {
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
+      };
+      
       const [withdrawalsRes, wasteRes, productRes] = await Promise.allSettled([
         fetch(`${API_BASE_URL}/penarikan-tunai`, {
+          ...fetchOptions,
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         }),
         fetch(`${API_BASE_URL}/users/${userId}/tabung-sampah`, {
+          ...fetchOptions,
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         }),
         fetch(`${API_BASE_URL}/penukaran-produk/user/${userId}`, {
+          ...fetchOptions,
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         }),
       ]);

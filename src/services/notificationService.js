@@ -17,7 +17,7 @@ const getFetchOptions = (method = 'GET', body = null) => {
   const options = {
     method,
     headers: getAuthHeader(),
-    credentials: 'same-origin',
+    credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
     mode: 'cors',
   };
   

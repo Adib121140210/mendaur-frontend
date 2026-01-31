@@ -123,6 +123,8 @@ export default function LeaderboardTable() {
 
       const response = await fetch(url, {
         method: 'GET',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,

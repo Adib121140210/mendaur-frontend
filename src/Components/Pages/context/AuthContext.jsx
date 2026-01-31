@@ -109,6 +109,8 @@ export const AuthProvider = ({ children }) => {
       if (!token) return;
 
       const response = await fetch(`${API_BASE_URL}/profile`, {
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',

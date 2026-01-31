@@ -245,6 +245,8 @@ export default function TukarPoin() {
 
       const response = await fetch(`${API_BASE_URL}/penarikan-tunai`, {
         method: 'POST',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -365,6 +367,8 @@ export default function TukarPoin() {
       
       const response = await fetch(`${API_BASE_URL}/penukaran-produk`, {
         method: 'POST',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

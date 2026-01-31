@@ -77,7 +77,7 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        credentials: "same-origin",
+        credentials: "include",
         mode: "cors",
         body: JSON.stringify({ email: email.trim() }),
       });
@@ -225,7 +225,7 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        credentials: "same-origin",
+        credentials: "include",
         mode: "cors",
         body: JSON.stringify(payload),
       });
@@ -292,7 +292,7 @@ export default function ForgotPassword() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        credentials: "same-origin",
+        credentials: "include",
         mode: "cors",
         body: JSON.stringify({ email: email.trim() }),
       });
@@ -384,7 +384,7 @@ export default function ForgotPassword() {
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
-          credentials: "same-origin",
+          credentials: "include",
           mode: "cors",
           body: JSON.stringify(payload),
         });

@@ -31,6 +31,8 @@ const JadwalPengambilan = () => {
         }
 
         const response = await fetch(`${API_BASE_URL}/jadwal-penyetoran`, {
+          credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+          mode: 'cors',
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,

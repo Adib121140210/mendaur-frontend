@@ -138,8 +138,8 @@ export const fetchApi = async (endpoint, options = {}, config = {}) => {
   const fetchOptions = {
     ...options,
     headers,
-    // Important for Safari CORS handling
-    credentials: 'same-origin',
+    // ⚠️ WAJIB untuk Safari/iOS - gunakan 'include' untuk cross-origin credentials
+    credentials: 'include',
     // Ensure proper mode for CORS
     mode: 'cors',
   };
@@ -297,6 +297,56 @@ export const postFormData = async (endpoint, formData, config = {}) => {
   }, config);
 };
 
+/**
+ * Check Safari/iOS compatibility with backend
+ * Call this to diagnose connection issues on Safari/iOS
+ */
+export const checkSafariCompatibility = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/debug/safari-ios`, {
+      method: 'GET',
+      credentials: 'include',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      return {
+        success: false,
+        message: `HTTP ${response.status}`,
+        browserInfo: {
+          isSafari: isSafari(),
+          isIOS: isIOS(),
+          userAgent: navigator.userAgent,
+        },
+      };
+    }
+    
+    const data = await response.json();
+    return {
+      success: true,
+      data,
+      browserInfo: {
+        isSafari: isSafari(),
+        isIOS: isIOS(),
+        userAgent: navigator.userAgent,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      browserInfo: {
+        isSafari: isSafari(),
+        isIOS: isIOS(),
+        userAgent: navigator.userAgent,
+      },
+    };
+  }
+};
+
 export default {
   fetchApi,
   get,
@@ -305,6 +355,7 @@ export default {
   patch,
   del,
   postFormData,
+  checkSafariCompatibility,
   getAuthHeaders,
   isSafari,
   isIOS,

@@ -53,6 +53,8 @@ const HomeContent = () => {
     try {
       const response = await fetch(url, { 
         headers: getHeaders(),
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         signal: controller.signal 
       });
       clearTimeout(timeoutId);

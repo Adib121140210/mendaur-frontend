@@ -106,6 +106,8 @@ const BookingModal = ({ onClose, onSuccess }) => {
 
       const response = await fetch(`${API_BASE_URL}/jadwal-penyetoran`, {
         method: "POST",
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",

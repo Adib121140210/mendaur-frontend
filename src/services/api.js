@@ -9,6 +9,8 @@ const fetchWithTimeout = async (url, options = {}, timeout = DEFAULT_TIMEOUT) =>
   try {
     const response = await fetch(url, {
       ...options,
+      credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+      mode: 'cors',
       signal: controller.signal,
     });
     clearTimeout(timeoutId);

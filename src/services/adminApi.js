@@ -19,6 +19,18 @@ const getAuthHeader = (isFormData = false) => {
   }
 }
 
+// ⚠️ Safari/iOS compatible fetch options
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: 'include',  // WAJIB untuk Safari/iOS
+  mode: 'cors',
+})
+
+// Safari/iOS compatible fetch wrapper
+const safeFetch = (url, options = {}) => {
+  return fetch(url, getFetchOptions(options))
+}
+
 const buildFormData = (data, fileFields = []) => {
   const formData = new FormData()
   
@@ -55,7 +67,7 @@ const sendTransactionNotification = async (userId, judul, pesan, tipe = 'info', 
       return { success: false, message: 'No user_id' }
     }
 
-    const response = await fetch(`${API_BASE_URL}/admin/notifications`, {
+    const response = await safeFetch(`${API_BASE_URL}/admin/notifications`, {
       method: 'POST',
       headers: getAuthHeader(),
       body: JSON.stringify({
@@ -98,7 +110,7 @@ export const adminApi = {
         }
       }
 
-      const response = await fetch(`${API_BASE_URL}/admin/dashboard/overview`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/dashboard/overview`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -134,7 +146,7 @@ export const adminApi = {
         ...filters
       })
 
-      const response = await fetch(`${API_BASE_URL}/admin/users?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -155,7 +167,7 @@ export const adminApi = {
 
   updateUserStatus: async (userId, status) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ status })
@@ -177,7 +189,7 @@ export const adminApi = {
 
   deleteUser: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -198,7 +210,7 @@ export const adminApi = {
   // Create user (backend may return 405)
   createUser: async (userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(userData)
@@ -232,7 +244,7 @@ export const adminApi = {
         ...filters
       })
 
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/waste?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/analytics/waste?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -267,7 +279,7 @@ export const adminApi = {
 
       const url = `${API_BASE_URL}/admin/analytics/waste-by-user?${params}`
       
-      const response = await fetch(url, {
+      const response = await safeFetch(url, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -299,7 +311,7 @@ export const adminApi = {
         ...filters
       })
 
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/points?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/analytics/points?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -321,7 +333,7 @@ export const adminApi = {
 
   awardPoints: async (userId, points, reason = '') => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/points/award`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/points/award`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify({
@@ -353,7 +365,7 @@ export const adminApi = {
         ...filters
       })
 
-      const response = await fetch(`${API_BASE_URL}/admin/points/history?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/points/history?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -377,7 +389,7 @@ export const adminApi = {
     try {
       const params = new URLSearchParams({ period, limit })
 
-      const response = await fetch(`${API_BASE_URL}/admin/leaderboard?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/leaderboard?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -399,7 +411,7 @@ export const adminApi = {
   // Reports
   generateReport: async (type, period, startDate, endDate, format = 'pdf') => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/reports/generate`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/reports/generate`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify({
@@ -429,7 +441,7 @@ export const adminApi = {
     try {
       const params = new URLSearchParams({ type, format })
 
-      const response = await fetch(`${API_BASE_URL}/admin/export?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/export?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -467,7 +479,7 @@ export const adminApi = {
 
       const headers = getAuthHeader()
 
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah?${params}`, {
         method: 'GET',
         headers: headers
       })
@@ -493,7 +505,7 @@ export const adminApi = {
    */
   getWasteDepositDetail: async (depositId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -534,7 +546,7 @@ export const adminApi = {
         payload.catatan_admin = catatanAdmin.trim()
       }
       
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/approve`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/approve`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify(payload)
@@ -585,7 +597,7 @@ export const adminApi = {
         }
       }
       
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/reject`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({
@@ -628,7 +640,7 @@ export const adminApi = {
    */
   deleteWasteDeposit: async (depositId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${depositId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -658,7 +670,7 @@ export const adminApi = {
     try {
       const headers = getAuthHeader()
 
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
         method: 'GET',
         headers: headers
       })
@@ -690,7 +702,7 @@ export const adminApi = {
   getAllAdmins: async (page = 1, limit = 10) => {
     try {
       const params = new URLSearchParams({ page, limit })
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -709,7 +721,7 @@ export const adminApi = {
    */
   getAdminById: async (adminId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -728,7 +740,7 @@ export const adminApi = {
    */
   createAdmin: async (adminData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(adminData)
@@ -748,7 +760,7 @@ export const adminApi = {
    */
   updateAdmin: async (adminId, adminData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(adminData)
@@ -768,7 +780,7 @@ export const adminApi = {
    */
   deleteAdmin: async (adminId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins/${adminId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -788,7 +800,7 @@ export const adminApi = {
   getAdminActivityLogs: async (adminId, page = 1, limit = 20) => {
     try {
       const params = new URLSearchParams({ page, limit })
-      const response = await fetch(`${API_BASE_URL}/superadmin/admins/${adminId}/activity-logs?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/admins/${adminId}/activity-logs?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -808,7 +820,7 @@ export const adminApi = {
    */
   getAllRoles: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -827,7 +839,7 @@ export const adminApi = {
    */
   getRoleById: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -846,7 +858,7 @@ export const adminApi = {
    */
   createRole: async (roleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(roleData)
@@ -866,7 +878,7 @@ export const adminApi = {
    */
   updateRole: async (roleId, roleData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(roleData)
@@ -886,7 +898,7 @@ export const adminApi = {
    */
   deleteRole: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles/${roleId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -906,7 +918,7 @@ export const adminApi = {
    */
   assignPermissionsToRole: async (roleId, permissionIds) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify({ permission_ids: permissionIds })
@@ -926,7 +938,7 @@ export const adminApi = {
    */
   getRolePermissions: async (roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/roles/${roleId}/permissions`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -945,7 +957,7 @@ export const adminApi = {
    */
   getAllPermissions: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/superadmin/permissions`, {
+      const response = await safeFetch(`${API_BASE_URL}/superadmin/permissions`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -966,7 +978,7 @@ export const adminApi = {
   getAllBadges: async (page = 1, limit = 20) => {
     try {
       const params = new URLSearchParams({ page, limit })
-      const response = await fetch(`${API_BASE_URL}/admin/badges?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -998,7 +1010,7 @@ export const adminApi = {
         icon: badgeData.icon || '🌱' // Emoji string, not file
       }
       
-      const response = await fetch(`${API_BASE_URL}/admin/badges`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(payload)
@@ -1031,7 +1043,7 @@ export const adminApi = {
         icon: badgeData.icon || '🌱' // Emoji string, not file
       }
       
-      const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges/${badgeId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(payload)
@@ -1051,7 +1063,7 @@ export const adminApi = {
    */
   deleteBadge: async (badgeId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges/${badgeId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1070,7 +1082,7 @@ export const adminApi = {
    */
   assignBadgeToUser: async (badgeId, userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}/assign`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges/${badgeId}/assign`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify({ user_id: userId })
@@ -1099,7 +1111,7 @@ export const adminApi = {
         limit,
         ...filters
       })
-      const response = await fetch(`${API_BASE_URL}/admin/produk?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/produk?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1130,7 +1142,7 @@ export const adminApi = {
         foto: productData.foto
       }, ['foto'])
       
-      const response = await fetch(`${API_BASE_URL}/admin/produk`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/produk`, {
         method: 'POST',
         headers: getAuthHeader(true),
         body: formData
@@ -1165,7 +1177,7 @@ export const adminApi = {
       // Add _method field for Laravel to handle PUT via POST
       formData.append('_method', 'PUT')
       
-      const response = await fetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
         method: 'POST',
         headers: getAuthHeader(true),
         body: formData
@@ -1185,7 +1197,7 @@ export const adminApi = {
    */
   deleteProduct: async (produkId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/produk/${produkId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1209,7 +1221,7 @@ export const adminApi = {
   getProductRedemptions: async (page = 1, limit = 20, filters = {}) => {
     try {
       const params = new URLSearchParams({ page, limit, ...filters })
-      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penukar-produk?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1229,7 +1241,7 @@ export const adminApi = {
    */
   approveRedemption: async (redemptionId, approvalData, userId = null, productName = null) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/approve`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/approve`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify(approvalData)
@@ -1268,7 +1280,7 @@ export const adminApi = {
         ? (rejectionData.reason || rejectionData.alasan || '')
         : (rejectionData || '')
       
-      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/reject`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ alasan })
@@ -1304,7 +1316,7 @@ export const adminApi = {
    */
   completeRedemption: async (redemptionId, catatan = '', userId = null, productName = null) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/complete`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penukar-produk/${redemptionId}/complete`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ catatan })
@@ -1343,7 +1355,7 @@ export const adminApi = {
    */
   getAllWasteCategories: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/waste-categories`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/waste-categories`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1367,7 +1379,7 @@ export const adminApi = {
         limit,
         ...filters
       })
-      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jenis-sampah?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1386,7 +1398,7 @@ export const adminApi = {
    */
   createWasteItem: async (wasteItemData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jenis-sampah`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(wasteItemData)
@@ -1406,7 +1418,7 @@ export const adminApi = {
    */
   updateWasteItem: async (jenisSampahId, wasteItemData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(wasteItemData)
@@ -1426,7 +1438,7 @@ export const adminApi = {
    */
   deleteWasteItem: async (jenisSampahId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jenis-sampah/${jenisSampahId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1454,7 +1466,7 @@ export const adminApi = {
         limit,
         ...filters
       })
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jadwal-penyetoran?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1473,7 +1485,7 @@ export const adminApi = {
    */
   getScheduleDetail: async (jadwalId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1510,7 +1522,7 @@ export const adminApi = {
       
       
       
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jadwal-penyetoran`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(payload)
@@ -1570,7 +1582,7 @@ export const adminApi = {
       
       
       
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(payload)
@@ -1590,7 +1602,7 @@ export const adminApi = {
    */
   deleteSchedule: async (jadwalId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/jadwal-penyetoran/${jadwalId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1623,7 +1635,7 @@ export const adminApi = {
       const url = `${API_BASE_URL}/admin/notifications?${params}`
       
       
-      const response = await fetch(url, {
+      const response = await safeFetch(url, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1654,7 +1666,7 @@ export const adminApi = {
    */
   createNotification: async (notificationData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/notifications`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/notifications`, {
         method: 'POST',
         headers: getAuthHeader(),
         body: JSON.stringify(notificationData)
@@ -1674,7 +1686,7 @@ export const adminApi = {
    */
   deleteNotification: async (notificationId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/notifications/${notificationId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1702,7 +1714,7 @@ export const adminApi = {
         limit,
         ...filters
       })
-      const response = await fetch(`${API_BASE_URL}/admin/artikel?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/artikel?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1721,7 +1733,7 @@ export const adminApi = {
    */
   getArticleDetail: async (slug) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1754,7 +1766,7 @@ export const adminApi = {
           foto_cover: articleData.foto_cover
         }, ['foto_cover'])
         
-        const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
+        const response = await safeFetch(`${API_BASE_URL}/admin/artikel`, {
           method: 'POST',
           headers: getAuthHeader(true),
           body: formData
@@ -1765,7 +1777,7 @@ export const adminApi = {
         return { success: true, data: data.data || data }
       } else {
         // Use JSON for non-file data
-        const response = await fetch(`${API_BASE_URL}/admin/artikel`, {
+        const response = await safeFetch(`${API_BASE_URL}/admin/artikel`, {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify({
@@ -1807,7 +1819,7 @@ export const adminApi = {
         }, ['foto_cover'])
         formData.append('_method', 'PUT')
         
-        const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+        const response = await safeFetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
           method: 'POST',
           headers: getAuthHeader(true),
           body: formData
@@ -1818,7 +1830,7 @@ export const adminApi = {
         return { success: true, data: data.data || data }
       } else {
         // Use JSON for non-file updates
-        const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+        const response = await safeFetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
           method: 'PUT',
           headers: getAuthHeader(),
           body: JSON.stringify({
@@ -1845,7 +1857,7 @@ export const adminApi = {
    */
   deleteArticle: async (slug) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/artikel/${slug}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -1869,7 +1881,7 @@ export const adminApi = {
   getAllTransactions: async (page = 1, limit = 20, filters = {}) => {
     try {
       const params = new URLSearchParams({ page, limit, ...filters })
-      const response = await fetch(`${API_BASE_URL}/admin/transactions?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/transactions?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1889,7 +1901,7 @@ export const adminApi = {
   exportTransactions: async (format = 'csv', filters = {}) => {
     try {
       const params = new URLSearchParams({ format, ...filters })
-      const response = await fetch(`${API_BASE_URL}/admin/transactions/export?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/transactions/export?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1907,7 +1919,7 @@ export const adminApi = {
   getCashWithdrawals: async (page = 1, limit = 20, filters = {}) => {
     try {
       const params = new URLSearchParams({ page, limit, ...filters })
-      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penarikan-tunai?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -1926,7 +1938,7 @@ export const adminApi = {
    */
   approveCashWithdrawal: async (id, notes = '', userId = null, amount = null) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/approve`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/approve`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ catatan_admin: notes })
@@ -1966,7 +1978,7 @@ export const adminApi = {
         ? (rejectionData.reason || rejectionData.catatan_admin || rejectionData.notes || '')
         : (rejectionData || '')
       
-      const response = await fetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/reject`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penarikan-tunai/${id}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ catatan_admin })
@@ -1998,7 +2010,7 @@ export const adminApi = {
   // ============ ADDITIONAL USER MANAGEMENT ENDPOINTS ============
   getAdminUserById: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2017,7 +2029,7 @@ export const adminApi = {
       
       
       
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(userData)
@@ -2044,7 +2056,7 @@ export const adminApi = {
 
   updateUserRole: async (userId, roleId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ role_id: roleId })
@@ -2059,7 +2071,7 @@ export const adminApi = {
 
   deleteAdminUser: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -2074,7 +2086,7 @@ export const adminApi = {
   // ============ WASTE DEPOSITS ADDITIONAL METHODS ============
   getPenyetoranSampahById: async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2088,7 +2100,7 @@ export const adminApi = {
 
   approvePenyetoranSampah: async (id, catatan = '') => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/approve`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/approve`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ catatan_admin: catatan })
@@ -2103,7 +2115,7 @@ export const adminApi = {
 
   rejectPenyetoranSampah: async (id, catatan = '') => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/reject`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}/reject`, {
         method: 'PATCH',
         headers: getAuthHeader(),
         body: JSON.stringify({ catatan_admin: catatan })
@@ -2118,7 +2130,7 @@ export const adminApi = {
 
   getPenyetoranStats: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/stats/overview`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2132,7 +2144,7 @@ export const adminApi = {
 
   deletePenyetoranSampah: async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/penyetoran-sampah/${id}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       })
@@ -2147,7 +2159,7 @@ export const adminApi = {
   // ============ BADGE ADDITIONAL METHODS ============
   getBadgeAdminById: async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/badges/${id}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges/${id}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2162,7 +2174,7 @@ export const adminApi = {
   getUsersWithBadge: async (badgeId, page = 1, perPage = 50) => {
     try {
       const params = new URLSearchParams({ page, per_page: perPage })
-      const response = await fetch(`${API_BASE_URL}/admin/badges/${badgeId}/users?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/badges/${badgeId}/users?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2177,7 +2189,7 @@ export const adminApi = {
   // ============ PRODUCT ADDITIONAL METHODS ============
   getProdukById: async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/produk/${id}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/produk/${id}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2193,7 +2205,7 @@ export const adminApi = {
   getWasteByUserAnalytics: async (page = 1, perPage = 50) => {
     try {
       const params = new URLSearchParams({ page, per_page: perPage })
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/waste-by-user?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/analytics/waste-by-user?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2214,7 +2226,7 @@ export const adminApi = {
       if (filters.date_from) params.append('date_from', filters.date_from)
       if (filters.date_to) params.append('date_to', filters.date_to)
       
-      const response = await fetch(`${API_BASE_URL}/admin/activity-logs?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/activity-logs?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2232,7 +2244,7 @@ export const adminApi = {
       if (dateFrom) params.append('date_from', dateFrom)
       if (dateTo) params.append('date_to', dateTo)
       
-      const response = await fetch(`${API_BASE_URL}/admin/activity-logs/stats/overview?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/activity-logs/stats/overview?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })
@@ -2251,7 +2263,7 @@ export const adminApi = {
       if (filters.date_from) params.append('date_from', filters.date_from)
       if (filters.date_to) params.append('date_to', filters.date_to)
       
-      const response = await fetch(`${API_BASE_URL}/admin/activity-logs/export/csv?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/activity-logs/export/csv?${params}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
@@ -2277,7 +2289,7 @@ export const adminApi = {
   getUserActivityLogs: async (userId, page = 1, perPage = 50) => {
     try {
       const params = new URLSearchParams({ page, per_page: perPage })
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/activity-logs?${params}`, {
+      const response = await safeFetch(`${API_BASE_URL}/admin/users/${userId}/activity-logs?${params}`, {
         method: 'GET',
         headers: getAuthHeader()
       })

@@ -61,8 +61,11 @@ export default function TabungSampah() {
       const token = localStorage.getItem('token');
       const fetchOptions = {
         method: 'GET',
+        credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
           'Expires': '0',

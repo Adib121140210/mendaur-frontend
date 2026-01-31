@@ -56,7 +56,12 @@ const LeaderboardHeader = () => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), timeout);
           try {
-            const response = await fetch(url, { ...options, signal: controller.signal });
+            const response = await fetch(url, { 
+              ...options, 
+              credentials: 'include',  // ⚠️ WAJIB untuk Safari/iOS
+              mode: 'cors',
+              signal: controller.signal 
+            });
             clearTimeout(timeoutId);
             return response;
           } catch (error) {

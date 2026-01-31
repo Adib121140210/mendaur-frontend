@@ -134,6 +134,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Dev server configuration
+  server: {
+    port: 5173,
+    strictPort: true, // Fail if port is already in use
+  },
   build: {
     // Target Safari 14+ dan iOS 14+ untuk kompatibilitas lebih baik
     target: ['es2020', 'safari14', 'ios14'],
