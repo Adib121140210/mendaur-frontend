@@ -1,12 +1,12 @@
 // API Configuration
 const rawUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
 const baseUrl = rawUrl && !rawUrl.startsWith('http') ? `https://${rawUrl}` : rawUrl;
-const PRODUCTION_URL = 'https://mendaur.up.railway.app/api';
-const PRODUCTION_STORAGE_URL = 'https://mendaur.up.railway.app';
+const PRODUCTION_URL = 'https://bsusedulurmendaur.my.id/api';
+const PRODUCTION_STORAGE_URL = 'https://bsusedulurmendaur.my.id';
 
 // API_BASE_URL should include /api suffix
 // For local dev: VITE_API_URL=http://127.0.0.1:8000/api
-// For production: defaults to https://mendaur.up.railway.app/api
+// For production: defaults to https://bsusedulurmendaur.my.id/api
 export const API_BASE_URL = baseUrl || PRODUCTION_URL;
 export const STORAGE_URL = baseUrl ? baseUrl.replace('/api', '') : PRODUCTION_STORAGE_URL;
 

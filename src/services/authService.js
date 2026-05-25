@@ -34,11 +34,11 @@ export const authService = {
         setItem('token', data.data.token);
         setItem('user', data.data.user);
         
-        // Determine role from user level
-        const userLevel = data.data.user?.level?.toLowerCase() || 'nasabah';
+        // Determine role from user.role field (from API response)
+        const userRole = data.data.user?.role?.toLowerCase() || 'nasabah';
         let role = 'nasabah';
-        if (userLevel.includes('superadmin')) role = 'superadmin';
-        else if (userLevel.includes('admin')) role = 'admin';
+        if (userRole.includes('superadmin')) role = 'superadmin';
+        else if (userRole.includes('admin')) role = 'admin';
         setItem('userRole', role);
         setItem('userId', data.data.user?.user_id || '');
       }

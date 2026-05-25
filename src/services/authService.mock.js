@@ -9,7 +9,7 @@
  * 4. Once backend is fixed, switch back to real authService.js
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mendaur.up.railway.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://bsusedulurmendaur.my.id/api';
 
 // Mock users for testing different roles
 const MOCK_CREDENTIALS = {
